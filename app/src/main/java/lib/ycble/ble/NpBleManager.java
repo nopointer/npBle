@@ -3,11 +3,10 @@ package lib.ycble.ble;
 import android.content.Context;
 
 import npble.nopointer.exception.BleUUIDNullException;
-import npble.nopointer.ble.conn.BleUUIDCfg;
 import npble.nopointer.ble.conn.NpBleAbsConnManager;
 import npble.nopointer.ota.absimpl.xc.no.nordicsemi.android.BleManagerCallbacks;
 
-public class BleManager extends NpBleAbsConnManager implements BleUUIDCfg {
+public class NpBleManager extends NpBleAbsConnManager implements BleUUIDCfg {
     /**
      * The manager constructor.
      * <p>
@@ -18,7 +17,7 @@ public class BleManager extends NpBleAbsConnManager implements BleUUIDCfg {
      *
      * @param context the context.
      */
-    private BleManager(Context context) {
+    private NpBleManager(Context context) {
 
         super(context);
     }
@@ -54,11 +53,11 @@ public class BleManager extends NpBleAbsConnManager implements BleUUIDCfg {
     }
 
 
-    private static BleManager instance = null;
+    private static NpBleManager instance = null;
 
-    public static BleManager getInstance(Context context) {
+    public static NpBleManager getInstance(Context context) {
         if (instance == null) {
-            instance = new BleManager(context);
+            instance = new NpBleManager(context);
         }
         return instance;
     }

@@ -110,12 +110,12 @@ public class MainActivity extends Activity implements ScanListener {
 //        }
 
 
-//        BleManager.getBleManager().connBleDevice(macForXinCore);
+//        NpBleManager.getBleManager().connBleDevice(macForXinCore);
 
 //        startService(new Intent(this, MainBackLiveService.class));
 //        BleScanner.getBleScaner().startScan();
 
-//        BleManager.getBleManager().connDevice(mac);
+//        NpBleManager.getBleManager().connDevice(mac);
 
 
 //        ycBleLog.e("MTK mode==>" + WearableManager.getInstance().getWorkingMode());

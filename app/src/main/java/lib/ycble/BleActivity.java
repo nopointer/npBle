@@ -3,7 +3,7 @@ package lib.ycble;
 import android.app.Activity;
 import android.os.Bundle;
 
-import lib.ycble.ble.BleManager;
+import lib.ycble.ble.NpBleManager;
 
 public class BleActivity extends Activity {
 
@@ -14,7 +14,7 @@ public class BleActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        BleManager.getInstance(this).connDevice(macForXinCore);
+        NpBleManager.getInstance(this).connDevice(macForXinCore);
 
     }
 }

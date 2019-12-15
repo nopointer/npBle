@@ -1,4 +1,4 @@
-package npble.nopointer.ble.conn;
+package lib.ycble.ble;
 
 import java.util.UUID;
 

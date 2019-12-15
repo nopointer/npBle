@@ -13,7 +13,7 @@
 //
 //public class MainActivityBack extends AppCompatActivity {
 //
-////    BleManager bleManager = BleManager.getBleManager();
+////    NpBleManager bleManager = NpBleManager.getBleManager();
 ////    String mac = "C9:6F:C2:DA:2C:A1";
 ////    String mac = "D2:BE:1A:8D:55:C8";
 //
