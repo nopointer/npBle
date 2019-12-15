@@ -135,7 +135,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
 
         @Override
         public boolean isRequiredServiceSupported(@NonNull final BluetoothGatt gatt) {
-            mBluetoothGatt =gatt;
+            mBluetoothGatt = gatt;
             ycBleLog.e("判断设备支持与否===>" + new Gson().toJson(mustUUIDList));
             if (mustUUIDList == null || mustUUIDList.size() < 0) return true;
             int count = 0;
@@ -244,7 +244,15 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     /**
      * 处理连接后的时序，用户根据需求添加一系列的同步指令，比如同步时间，打开通知，读取数据等等,不需要的话就不管
      */
-    public abstract void loadCfg();
+    protected abstract void loadCfg();
+
+    /**
+     * 处理具体的接收到的数据的逻辑，交给具体的实现类去完成
+     *
+     * @param data
+     * @param uuid
+     */
+    protected abstract void onDataReceive(final byte[] data, final UUID uuid);
 
 
     /**
@@ -258,7 +266,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         readCharacteristic(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid)).with(new NpDataReceivedCallback(uuid) {
             @Override
             public void onDataReceived(@NonNull BluetoothDevice device, @NonNull Data data, UUID uuid) {
-
+                onDataReceive(data.getValue(),uuid);
             }
         }).enqueue();
     }
@@ -291,6 +299,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             @Override
             public void onDataReceived(@NonNull BluetoothDevice device, @NonNull Data data, UUID uuid) {
                 ycBleLog.e("onDataReceived : " + uuid.toString() + "{ " + BleUtil.byte2HexStr(data.getValue()) + " }");
+                onDataReceive(data.getValue(),uuid);
             }
         });
     }

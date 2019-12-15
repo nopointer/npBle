@@ -2,6 +2,8 @@ package lib.ycble.ble;
 
 import android.content.Context;
 
+import java.util.UUID;
+
 import npble.nopointer.exception.BleUUIDNullException;
 import npble.nopointer.ble.conn.NpBleAbsConnManager;
 import npble.nopointer.ota.absimpl.xc.no.nordicsemi.android.BleManagerCallbacks;
@@ -50,6 +52,11 @@ public class NpBleManager extends NpBleAbsConnManager implements BleUUIDCfg {
             e.printStackTrace();
             disconnect();
         }
+    }
+
+    @Override
+    protected void onDataReceive(byte[] data, UUID uuid) {
+
     }
 
 
