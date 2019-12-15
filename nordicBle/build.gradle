@@ -1,0 +1,32 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion var.compileSdkVersion
+
+    defaultConfig {
+        minSdkVersion var.minSdkVersion
+        targetSdkVersion var.targetSdkVersion
+        versionCode 27
+        versionName "2.1.1"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            consumerProguardFiles 'ble-proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    //noinspection GradleDependency
+
+    implementation "com.android.support:support-annotations:${var.supportLibraryVersion}"
+
+    implementation 'no.nordicsemi.android:log:2.2.0'
+}

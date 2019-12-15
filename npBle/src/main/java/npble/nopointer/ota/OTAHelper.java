@@ -1,0 +1,97 @@
+package npble.nopointer.ota;
+
+import android.content.Context;
+
+import no.nordicsemi.android.dfu.DfuBaseService;
+import npble.nopointer.device.BleDevice;
+import npble.nopointer.log.ycBleLog;
+import npble.nopointer.ota.absimpl.freqchip.FreqchipOTAHelper;
+import npble.nopointer.ota.absimpl.htx.HTXOTAHelper;
+import npble.nopointer.ota.absimpl.nordic.DfuHelper;
+import npble.nopointer.ota.absimpl.telink.TeLinkOTAHelper;
+import npble.nopointer.ota.absimpl.ti.TIOTAHelper;
+import npble.nopointer.ota.absimpl.xc.XcOTAImpl;
+import npble.nopointer.ota.callback.OTACallback;
+
+/**
+ * OTA 助手
+ */
+public class OTAHelper {
+
+    private static final OTAHelper ourInstance = new OTAHelper();
+
+    public static OTAHelper getInstance() {
+        return ourInstance;
+    }
+
+    /**
+     * 设置DfuService
+     */
+    public Class<? extends DfuBaseService> dfuBaseService;
+
+    public void setDfuBaseService(Class<? extends DfuBaseService> dfuBaseService) {
+        this.dfuBaseService = dfuBaseService;
+    }
+
+    private OTAHelper() {
+    }
+
+    public void startOTA(Context context, String filePath, BleDevice bleDevice, FirmType firmType, OTACallback otaCallback) {
+        ycBleLog.e("startOTA======>");
+        ycBleLog.e("firmType======>" + firmType);
+        ycBleLog.e("filePath======>" + filePath);
+        ycBleLog.e("bleDevice======>" + bleDevice);
+        ycBleLog.e("otaCallback======>" + otaCallback);
+        startOTA(context, filePath, bleDevice.getMac(), bleDevice.getName(), firmType, otaCallback);
+    }
+
+    public void startOTA(Context context, String filePath, String mac, String name, FirmType firmType, OTACallback otaCallback) {
+        switch (firmType) {
+            //nordic的ota 也是默认的ota
+            case NORDIC:
+                DfuHelper.getDfuHelper().start(context, filePath, mac, name, otaCallback, dfuBaseService);
+                break;
+            case HTX://汉天下的OTA
+                ycBleLog.e("开始汉天下的ota======>");
+                HTXOTAHelper htxotaHelper = HTXOTAHelper.getInstance();
+                htxotaHelper.setAppFilePath(filePath);
+                htxotaHelper.setDeviceMac(mac);
+                htxotaHelper.setOtaCallback(otaCallback);
+                htxotaHelper.startOTA(context);
+                break;
+            case TELINK:
+                TeLinkOTAHelper.getInstance().startOTA(context, mac, filePath, otaCallback);
+                break;
+            case FREQCHIP:
+                FreqchipOTAHelper.getInstance().startOTA(context, mac, filePath, otaCallback);
+                break;
+            case TI:
+                TIOTAHelper.getInstance().startOTA(context, mac, filePath, otaCallback);
+                break;
+            case XC:
+                new XcOTAImpl().startOTA(context, mac, filePath, otaCallback);
+                break;
+            default:
+                ycBleLog.e("暂无合适的固件");
+                break;
+        }
+    }
+
+
+    public void startOTAForTi(Context context, byte[] imageBytes, String mac, OTACallback otaCallback) {
+        TIOTAHelper.getInstance().startOTA(context, mac, imageBytes, otaCallback);
+    }
+
+    public void stopOTAForTi() {
+        TIOTAHelper.getInstance().stopOTA();
+    }
+
+
+    /**
+     * 释放资源
+     */
+    public void free() {
+        HTXOTAHelper.getInstance().free();
+    }
+
+}

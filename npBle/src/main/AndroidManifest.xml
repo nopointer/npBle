@@ -1,0 +1,24 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="npble.nopointer">
+
+
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
+    <application>
+
+        <service
+            android:name="npble.nopointer.ota.absimpl.htx.BluetoothLeService"
+            android:enabled="true"
+            android:exported="true" />
+
+
+        <receiver android:name=".ble.scan.BleScanner$ScannerReceiver">
+            <intent-filter>
+                <action android:name="lib.ycble.device.ACTION_FOUND" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+
+</manifest>
