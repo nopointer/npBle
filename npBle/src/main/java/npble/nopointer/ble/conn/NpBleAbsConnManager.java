@@ -95,6 +95,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             return;
         }
         taskIndex++;
+        ycBleLog.e("task:" + taskIndex + "/" + taskCount);
         if (taskIndex < taskCount) {
             BleTask bleTask = requestTaskList.get(taskIndex);
             if (bleTask.getRequest() instanceof WriteRequest) {
@@ -102,9 +103,8 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                         .done(new SuccessCallback() {
                             @Override
                             public void onRequestCompleted(@NonNull BluetoothDevice device) {
-                                ycBleLog.e("写数据成功" + BleUtil.byte2HexStr(bleTask.getData()));
+                                ycBleLog.e("写数据成功 " + BleUtil.byte2HexStr(bleTask.getData()));
                                 onDataWriteSuccess(bleTask.getUuid(), bleTask.getData());
-//                                nextTask();
                             }
                         }).fail(new FailCallback() {
                     @Override
@@ -247,13 +247,16 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             }
             loadCfg();
             taskIndex = -1;
+            taskCount = 0;
             if (requestTaskList != null && requestTaskList.size() > 0) {
                 taskCount = requestTaskList.size();
             }
+
             if (taskCount > 0) {
                 hasAfterConnectedTaskEnd = false;
                 nextTask();
             } else {
+                hasAfterConnectedTaskEnd = true;
                 onFinishTaskAfterConn();
             }
         }
@@ -469,7 +472,6 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         setNotificationCallback(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid)).with(new NpDataReceivedCallback(uuid) {
             @Override
             public void onDataReceived(@NonNull BluetoothDevice device, @NonNull Data data, UUID uuid) {
-                ycBleLog.e("onDataReceived : " + uuid.toString() + "{ " + BleUtil.byte2HexStr(data.getValue()) + " }");
                 onDataReceive(data.getValue(), uuid);
             }
         });
