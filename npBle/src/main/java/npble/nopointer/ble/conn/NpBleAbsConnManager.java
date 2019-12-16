@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.UUID;
 
 import no.nordicsemi.android.ble.BleManager;
+import no.nordicsemi.android.ble.callback.SuccessCallback;
 import no.nordicsemi.android.ble.callback.WriteProgressCallback;
 import no.nordicsemi.android.ble.data.Data;
 import no.nordicsemi.android.log.LogContract;
@@ -23,6 +24,8 @@ import no.nordicsemi.android.log.Logger;
 import npble.nopointer.ble.conn.callbacks.NpBleCallback;
 import npble.nopointer.ble.conn.callbacks.NpDataReceivedCallback;
 import npble.nopointer.ble.conn.callbacks.NpDataSentCallback;
+import npble.nopointer.ble.conn.callbacks.NpFailCallback;
+import npble.nopointer.ble.conn.callbacks.NpSuccessCallback;
 import npble.nopointer.core.NpBleConnState;
 import npble.nopointer.exception.BleUUIDNullException;
 import npble.nopointer.log.ycBleLog;
@@ -171,7 +174,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                 return;
             }
             try {
-                Thread.sleep(600);
+                Thread.sleep(800);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -309,6 +312,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         public void onDeviceNotSupported(@NonNull BluetoothDevice device) {
             ycBleLog.e("onDeviceNotSupported : " + device.getAddress());
         }
+
     };
 
 
@@ -359,6 +363,16 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             @Override
             public void onDataSent(@NonNull BluetoothDevice device, @NonNull Data data, UUID uuid) {
                 ycBleLog.e("onDataSent : " + uuid.toString() + "{ " + BleUtil.byte2HexStr(data.getValue()) + " }");
+            }
+        }).done(new NpSuccessCallback(uuid, data) {
+            @Override
+            public void onRequestCompleted(UUID uuid, byte[] data) {
+                onDataWriteSuccess(uuid, data);
+            }
+        }).fail(new NpFailCallback(uuid, data) {
+            @Override
+            public void onRequestFailed(UUID uuid, byte[] data, int status) {
+                onDataWriteFail(uuid, data, status);
             }
         }).enqueue();
     }
@@ -416,7 +430,27 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     }
 
 
+    /**
+     * 连接异常
+     */
     protected abstract void onConnException();
+
+    /**
+     * 数据写成功
+     *
+     * @param uuid
+     * @param data
+     */
+    protected abstract void onDataWriteSuccess(UUID uuid, byte[] data);
+
+    /**
+     * 数据写失败
+     *
+     * @param uuid
+     * @param data
+     * @param status
+     */
+    protected abstract void onDataWriteFail(UUID uuid, byte[] data, int status);
 
 
 }
