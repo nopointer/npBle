@@ -11,10 +11,14 @@ import android.support.annotation.Nullable;
 
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
 
 import no.nordicsemi.android.ble.BleManager;
+import no.nordicsemi.android.ble.WriteRequest;
+import no.nordicsemi.android.ble.callback.FailCallback;
 import no.nordicsemi.android.ble.callback.SuccessCallback;
 import no.nordicsemi.android.ble.callback.WriteProgressCallback;
 import no.nordicsemi.android.ble.data.Data;
@@ -49,6 +53,11 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         setGattCallbacks(npBleCallback);
     }
 
+    /**
+     * 连接后的任务时序是否已经完成
+     */
+    private boolean hasAfterConnectedTaskEnd = false;
+
 
     /**
      * 是否是手动断开
@@ -65,6 +74,62 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     public NpBleConnState getBleConnState() {
         return bleConnState;
     }
+
+
+    /**
+     * 当前任务的索引
+     */
+    private int taskIndex = -1;
+    /**
+     * 任务栈的数量
+     */
+    private int taskCount = 0;
+    /**
+     * 请求列表
+     */
+    private List<BleTask> requestTaskList = new ArrayList<>();
+
+    protected void nextTask() {
+        if (hasAfterConnectedTaskEnd) {
+            ycBleLog.e("此时已经不是时序了");
+            return;
+        }
+        taskIndex++;
+        if (taskIndex < taskCount) {
+            BleTask bleTask = requestTaskList.get(taskIndex);
+            if (bleTask.getRequest() instanceof WriteRequest) {
+                ((WriteRequest) bleTask.getRequest())
+                        .done(new SuccessCallback() {
+                            @Override
+                            public void onRequestCompleted(@NonNull BluetoothDevice device) {
+                                ycBleLog.e("写数据成功" + BleUtil.byte2HexStr(bleTask.getData()));
+//                                nextTask();
+                            }
+                        }).fail(new FailCallback() {
+                    @Override
+                    public void onRequestFailed(@NonNull BluetoothDevice device, int status) {
+                        ycBleLog.e("写数据失败" + BleUtil.byte2HexStr(bleTask.getData()));
+                        nextTask();
+                    }
+                }).enqueue();
+            }
+        } else {
+            hasAfterConnectedTaskEnd = true;
+            ycBleLog.e("任务完成");
+            onFinishTaskAfterConn();
+        }
+    }
+
+
+    /**
+     * 添加任务
+     *
+     * @param bleTask
+     */
+    public void addTask(BleTask bleTask) {
+        requestTaskList.add(bleTask);
+    }
+
 
     @NonNull
     @Override
@@ -179,6 +244,16 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                 e.printStackTrace();
             }
             loadCfg();
+            taskIndex = -1;
+            if (requestTaskList != null && requestTaskList.size() > 0) {
+                taskCount = requestTaskList.size();
+            }
+            if (taskCount > 0) {
+                hasAfterConnectedTaskEnd = false;
+                nextTask();
+            } else {
+                onFinishTaskAfterConn();
+            }
         }
 
         @Override
@@ -210,17 +285,6 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             }
         }
 
-        @Override
-        protected void onDeviceReady() {
-            super.onDeviceReady();
-            ycBleLog.e("onDeviceReady");
-        }
-
-        @Override
-        protected void onManagerReady() {
-            super.onManagerReady();
-            ycBleLog.e("onManagerReady");
-        }
     };
 
 
@@ -286,6 +350,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             ycBleLog.e("onDeviceReady : " + device.getAddress());
             onBleDeviceReady();
         }
+
 
         @Override
         public void onBondingRequired(@NonNull BluetoothDevice device) {
@@ -358,8 +423,8 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * @param uuid
      * @throws BleUUIDNullException
      */
-    public void writeCharacteristic(UUID serviceUUId, UUID uuid, byte[] data) throws BleUUIDNullException {
-        writeCharacteristic(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid), data).with(new NpDataSentCallback(uuid) {
+    public WriteRequest writeCharacteristic(UUID serviceUUId, UUID uuid, byte[] data) throws BleUUIDNullException {
+        return writeCharacteristic(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid), data).with(new NpDataSentCallback(uuid) {
             @Override
             public void onDataSent(@NonNull BluetoothDevice device, @NonNull Data data, UUID uuid) {
                 ycBleLog.e("onDataSent : " + uuid.toString() + "{ " + BleUtil.byte2HexStr(data.getValue()) + " }");
@@ -367,14 +432,16 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         }).done(new NpSuccessCallback(uuid, data) {
             @Override
             public void onRequestCompleted(UUID uuid, byte[] data) {
+                ycBleLog.e("写数据成功" + BleUtil.byte2HexStr(data));
                 onDataWriteSuccess(uuid, data);
             }
         }).fail(new NpFailCallback(uuid, data) {
             @Override
             public void onRequestFailed(UUID uuid, byte[] data, int status) {
+                ycBleLog.e("写数据失败" + BleUtil.byte2HexStr(data));
                 onDataWriteFail(uuid, data, status);
             }
-        }).enqueue();
+        });
     }
 
 
@@ -385,8 +452,8 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * @param uuid
      * @throws BleUUIDNullException
      */
-    public void writeCharacteristicWithMostPack(UUID serviceUUId, UUID uuid, byte[] data, int offset, final int length, WriteProgressCallback writeProgressCallback) throws BleUUIDNullException {
-        writeCharacteristic(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid), data, offset, length).split(writeProgressCallback).enqueue();
+    public WriteRequest writeCharacteristicWithMostPack(UUID serviceUUId, UUID uuid, byte[] data, int offset, final int length, WriteProgressCallback writeProgressCallback) throws BleUUIDNullException {
+        return writeCharacteristic(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid), data, offset, length).split(writeProgressCallback);
     }
 
     /**
@@ -422,6 +489,45 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         }).enqueue();
     }
 
+
+    /**
+     * 创建一个使能通知请求，但是不会执行（等待调用），用于里连接后的时序
+     *
+     * @param serviceUUId
+     * @param uuid
+     * @throws BleUUIDNullException
+     */
+    public BleTask createEnableNotificationsTask(UUID serviceUUId, UUID uuid) throws BleUUIDNullException {
+        WriteRequest writeRequest = null;
+        try {
+            writeRequest = enableNotifications(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid));
+            return BleTask.createEnableNotifyTask(writeRequest, uuid);
+        } catch (BleUUIDNullException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+    /**
+     * 创建一个写任务的请求，并不会写数据（等待调用），用于里连接后的时序
+     *
+     * @param serviceUUId
+     * @param uuid
+     * @param data
+     * @return
+     */
+    protected BleTask createWriteTask(UUID serviceUUId, UUID uuid, byte data[]) {
+        WriteRequest writeRequest = null;
+        try {
+            writeRequest = writeCharacteristic(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid), data);
+            return BleTask.createWriteTask(writeRequest, uuid, data);
+        } catch (BleUUIDNullException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     final void withBleConnState(NpBleConnState connState) {
         bleConnState = connState;
         for (NpBleConnCallback connCallback : bleBleConnCallbackHashSet) {
@@ -451,6 +557,11 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * @param status
      */
     protected abstract void onDataWriteFail(UUID uuid, byte[] data, int status);
+
+    /**
+     * 连接成功后的时序任务完成
+     */
+    protected abstract void onFinishTaskAfterConn();
 
 
 }

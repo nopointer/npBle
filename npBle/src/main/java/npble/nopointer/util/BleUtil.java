@@ -46,6 +46,8 @@ public class BleUtil {
      * @return
      */
     public static String byte2HexStr(byte[] data) {
+        if (data == null || data.length < 1)
+            return "EE";
         StringBuilder sb = new StringBuilder();
         for (byte b : data) {
             sb.append(String.format("%02X", (b & 0xff)));
