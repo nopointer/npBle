@@ -207,6 +207,17 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             }
         }
 
+        @Override
+        protected void onDeviceReady() {
+            super.onDeviceReady();
+            ycBleLog.e("onDeviceReady");
+        }
+
+        @Override
+        protected void onManagerReady() {
+            super.onManagerReady();
+            ycBleLog.e("onManagerReady");
+        }
     };
 
 
@@ -251,6 +262,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             if (isHandDisConn) {
                 withBleConnState(NpBleConnState.HANDDISCONN);
             } else {
+                onConnException();
                 withBleConnState(NpBleConnState.CONNEXCEPTION);
             }
             isHandDisConn = false;
@@ -269,6 +281,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         @Override
         public void onDeviceReady(@NonNull BluetoothDevice device) {
             ycBleLog.e("onDeviceReady : " + device.getAddress());
+            onBleDeviceReady();
         }
 
         @Override
@@ -303,6 +316,11 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * 处理连接后的时序，用户根据需求添加一系列的同步指令，比如同步时间，打开通知，读取数据等等,不需要的话就不管
      */
     protected abstract void loadCfg();
+
+    /**
+     * 设备在连接时序后完成了，可自定义交互数据了
+     */
+    protected abstract void onBleDeviceReady();
 
     /**
      * 处理具体的接收到的数据的逻辑，交给具体的实现类去完成
@@ -396,6 +414,9 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             connCallback.onConnState(connState);
         }
     }
+
+
+    protected abstract void onConnException();
 
 
 }
