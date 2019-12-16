@@ -103,12 +103,14 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                             @Override
                             public void onRequestCompleted(@NonNull BluetoothDevice device) {
                                 ycBleLog.e("写数据成功" + BleUtil.byte2HexStr(bleTask.getData()));
+                                onDataWriteSuccess(bleTask.getUuid(), bleTask.getData());
 //                                nextTask();
                             }
                         }).fail(new FailCallback() {
                     @Override
                     public void onRequestFailed(@NonNull BluetoothDevice device, int status) {
                         ycBleLog.e("写数据失败" + BleUtil.byte2HexStr(bleTask.getData()));
+                        onDataWriteFail(bleTask.getUuid(), bleTask.getData(), status);
                         nextTask();
                     }
                 }).enqueue();
