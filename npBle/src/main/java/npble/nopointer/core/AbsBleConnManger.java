@@ -235,7 +235,7 @@ final class AbsBleConnManger {
             if (PhoneBleExceptionCode.isPhoneBleExcepiton(status)) {
                 ycBleLog.e("系统蓝牙挂壁了");
                 if (absBleConnCallback != null) {
-                    absBleConnCallback.connResult(BleConnState.PHONEBLEANR);
+                    absBleConnCallback.connResult(NpBleConnState.PHONEBLEANR);
                 }
                 return;
             }
@@ -265,7 +265,7 @@ final class AbsBleConnManger {
                 isConnected = true;
 
                 if (absBleConnCallback != null) {
-                    absBleConnCallback.connResult(BleConnState.CONNECTED);
+                    absBleConnCallback.connResult(NpBleConnState.CONNECTED);
                 }
                 ycBleLog.e("先移除所有的关于一次连接的消息队列");
                 hasServicesDiscovered = false;
@@ -309,17 +309,17 @@ final class AbsBleConnManger {
                     //如果是拦截中断的话
                     if (boolIsInterceptConn) {
                         if (absBleConnCallback != null) {
-                            absBleConnCallback.connResult(BleConnState.HANDDISCONN);
+                            absBleConnCallback.connResult(NpBleConnState.HANDDISCONN);
                         }
                     } else {
                         if (absBleConnCallback != null) {
-                            absBleConnCallback.connResult(isHandDisConn ? BleConnState.HANDDISCONN : BleConnState.CONNEXCEPTION);
+                            absBleConnCallback.connResult(isHandDisConn ? NpBleConnState.HANDDISCONN : NpBleConnState.CONNEXCEPTION);
                         }
                     }
                 } else {
                     ycBleLog.e("如果是断开之前没有连接，很明显，异常连接");
                     if (absBleConnCallback != null) {
-                        absBleConnCallback.connResult(BleConnState.CONNEXCEPTION);
+                        absBleConnCallback.connResult(NpBleConnState.CONNEXCEPTION);
                     }
                 }
 
@@ -635,7 +635,7 @@ final class AbsBleConnManger {
     }
 
     public static abstract class AbsBleConnCallback {
-        protected abstract void connResult(BleConnState bleConnState);
+        protected abstract void connResult(NpBleConnState bleConnState);
 
         protected abstract void onLoadCharas(BluetoothGatt gatt);
 

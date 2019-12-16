@@ -23,6 +23,7 @@ import no.nordicsemi.android.log.Logger;
 import npble.nopointer.ble.conn.callbacks.NpBleCallback;
 import npble.nopointer.ble.conn.callbacks.NpDataReceivedCallback;
 import npble.nopointer.ble.conn.callbacks.NpDataSentCallback;
+import npble.nopointer.core.NpBleConnState;
 import npble.nopointer.exception.BleUUIDNullException;
 import npble.nopointer.log.ycBleLog;
 import npble.nopointer.util.BleUtil;
@@ -46,7 +47,21 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     }
 
 
+    /**
+     * 是否是手动断开
+     */
+    private boolean isHandDisConn = false;
+
     private BluetoothGatt mBluetoothGatt = null;
+
+    /**
+     * 设备的连接状态
+     */
+    private NpBleConnState bleConnState = null;
+
+    public NpBleConnState getBleConnState() {
+        return bleConnState;
+    }
 
     @NonNull
     @Override
@@ -67,6 +82,41 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                     .retry(3, 100)
                     .useAutoConnect(false)
                     .enqueue();
+        }
+    }
+
+    /**
+     * 断开设备
+     */
+    public void disConnDevice() {
+        isHandDisConn = true;
+        disconnect();
+    }
+
+    /**
+     * 蓝牙连接结果的回调
+     */
+    private HashSet<NpBleConnCallback> bleBleConnCallbackHashSet = new HashSet();
+
+    /**
+     * 注册连接回调
+     *
+     * @param connCallback
+     */
+    public void registerConnCallback(NpBleConnCallback connCallback) {
+        if (!bleBleConnCallbackHashSet.contains(connCallback)) {
+            bleBleConnCallbackHashSet.add(connCallback);
+        }
+    }
+
+    /**
+     * 注销连接回调
+     *
+     * @param connCallback
+     */
+    public void unRegisterConnCallback(NpBleConnCallback connCallback) {
+        if (bleBleConnCallbackHashSet.contains(connCallback)) {
+            bleBleConnCallbackHashSet.remove(connCallback);
         }
     }
 
@@ -115,17 +165,17 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         @Override
         protected void initialize() {
             ycBleLog.e("initialize===>");
+            if (isHandDisConn) {
+                ycBleLog.e("有拦截请求，需要断开");
+                disconnect();
+                return;
+            }
             try {
-                Thread.sleep(800);
+                Thread.sleep(600);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             loadCfg();
-//            setNotificationCallback(mButtonCharacteristic).with(mButtonCallback);
-//            readCharacteristic(mLedCharacteristic).with(mLedCallback).enqueue();
-//            readCharacteristic(mButtonCharacteristic).with(mButtonCallback).enqueue();
-//            enableNotifications(mButtonCharacteristic).enqueue();
-//            disableNotifications()
         }
 
         @Override
@@ -181,11 +231,13 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         @Override
         public void onDeviceConnecting(@NonNull BluetoothDevice device) {
             ycBleLog.e("onDeviceConnecting : " + device.getAddress());
+            withBleConnState(NpBleConnState.CONNECTING);
         }
 
         @Override
         public void onDeviceConnected(@NonNull BluetoothDevice device) {
             ycBleLog.e("onDeviceConnected : " + device.getAddress());
+            withBleConnState(NpBleConnState.CONNECTED);
         }
 
         @Override
@@ -196,8 +248,12 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         @Override
         public void onDeviceDisconnected(@NonNull BluetoothDevice device) {
             ycBleLog.e("onDeviceDisconnected : " + device.getAddress());
-
-            connDevice(device.getAddress());
+            if (isHandDisConn) {
+                withBleConnState(NpBleConnState.HANDDISCONN);
+            } else {
+                withBleConnState(NpBleConnState.CONNEXCEPTION);
+            }
+            isHandDisConn = false;
         }
 
         @Override
@@ -233,6 +289,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         @Override
         public void onError(@NonNull BluetoothDevice device, @NonNull String message, int errorCode) {
             ycBleLog.e("onError : " + device.getAddress());
+//            withBleConnState(NpBleConnState.CONNEXCEPTION);
         }
 
         @Override
@@ -267,7 +324,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         readCharacteristic(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid)).with(new NpDataReceivedCallback(uuid) {
             @Override
             public void onDataReceived(@NonNull BluetoothDevice device, @NonNull Data data, UUID uuid) {
-                onDataReceive(data.getValue(),uuid);
+                onDataReceive(data.getValue(), uuid);
             }
         }).enqueue();
     }
@@ -296,8 +353,8 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * @param uuid
      * @throws BleUUIDNullException
      */
-    public void writeCharacteristicWithMostPack(UUID serviceUUId, UUID uuid, byte[] data,int offset,final int length,WriteProgressCallback writeProgressCallback) throws BleUUIDNullException {
-        writeCharacteristic(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid), data,offset,length).split(writeProgressCallback).enqueue();
+    public void writeCharacteristicWithMostPack(UUID serviceUUId, UUID uuid, byte[] data, int offset, final int length, WriteProgressCallback writeProgressCallback) throws BleUUIDNullException {
+        writeCharacteristic(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid), data, offset, length).split(writeProgressCallback).enqueue();
     }
 
     /**
@@ -312,7 +369,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             @Override
             public void onDataReceived(@NonNull BluetoothDevice device, @NonNull Data data, UUID uuid) {
                 ycBleLog.e("onDataReceived : " + uuid.toString() + "{ " + BleUtil.byte2HexStr(data.getValue()) + " }");
-                onDataReceive(data.getValue(),uuid);
+                onDataReceive(data.getValue(), uuid);
             }
         });
     }
@@ -331,6 +388,13 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                 ycBleLog.e("onDataSent : " + uuid.toString() + "{ enableNotifications }");
             }
         }).enqueue();
+    }
+
+    final void withBleConnState(NpBleConnState connState) {
+        bleConnState = connState;
+        for (NpBleConnCallback connCallback : bleBleConnCallbackHashSet) {
+            connCallback.onConnState(connState);
+        }
     }
 
 

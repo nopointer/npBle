@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 import npble.nopointer.ble.scan.BleScanner;
-import npble.nopointer.ble.conn.BleConnCallback;
+import npble.nopointer.ble.conn.NpBleConnCallback;
 import npble.nopointer.exception.BleUUIDNullException;
 import npble.nopointer.log.ycBleLog;
 import npble.nopointer.util.BleUtil;
@@ -98,7 +98,7 @@ public abstract class AbsBleManager {
     //任务队列的长度
     private static int bleTaskSize = 0;
     //蓝牙连接结果的回调
-    private HashSet<BleConnCallback> bleBleConnCallbackHashSet = new HashSet();
+    private HashSet<NpBleConnCallback> bleBleConnCallbackHashSet = new HashSet();
     //是否调用了连接方法，避免多次调用连接方法
     private boolean isConnectIng = false;
 
@@ -118,25 +118,25 @@ public abstract class AbsBleManager {
     }
 
     //当前的连接状态
-    protected BleConnState bleConnState = null;
+    protected NpBleConnState bleConnState = null;
 
-    public BleConnState getBleConnState() {
+    public NpBleConnState getBleConnState() {
         return bleConnState;
     }
 
-    public void setBleConnState(BleConnState bleConnState) {
+    public void setBleConnState(NpBleConnState bleConnState) {
         this.bleConnState = bleConnState;
     }
 
     //注册连接回调
-    public void registerConnCallback(BleConnCallback connCallback) {
+    public void registerConnCallback(NpBleConnCallback connCallback) {
         if (!bleBleConnCallbackHashSet.contains(connCallback)) {
             bleBleConnCallbackHashSet.add(connCallback);
         }
     }
 
     //注销连接回调
-    public void unRegisterConnCallback(BleConnCallback connCallback) {
+    public void unRegisterConnCallback(NpBleConnCallback connCallback) {
         if (bleBleConnCallbackHashSet.contains(connCallback)) {
             bleBleConnCallbackHashSet.remove(connCallback);
         }
@@ -323,7 +323,7 @@ public abstract class AbsBleManager {
 
     protected void withOnConnException() {
         clearSomeFlag();
-        withBleConnState(BleConnState.CONNEXCEPTION);
+        withBleConnState(NpBleConnState.CONNEXCEPTION);
     }
 
 
@@ -351,19 +351,19 @@ public abstract class AbsBleManager {
     //注册连接成功回调事件
     protected final void withOnConnectSuccess() {
         clearSomeFlag();
-        withBleConnState(BleConnState.CONNECTED);
+        withBleConnState(NpBleConnState.CONNECTED);
     }
 
 
     //注册手动断开回调事件
     public void withOnHandDisConn() {
         clearSomeFlag();
-        withBleConnState(BleConnState.HANDDISCONN);
+        withBleConnState(NpBleConnState.HANDDISCONN);
     }
 
-    public final void withBleConnState(BleConnState connState) {
+    public final void withBleConnState(NpBleConnState connState) {
         this.bleConnState = connState;
-        for (BleConnCallback connCallback : bleBleConnCallbackHashSet) {
+        for (NpBleConnCallback connCallback : bleBleConnCallbackHashSet) {
             connCallback.onConnState(connState);
         }
     }
@@ -519,7 +519,7 @@ public abstract class AbsBleManager {
             ycBleLog.e("ble-当前已经发出了连接请求，还没响应，不需要再发送这次请求");
             return;
         }
-        withBleConnState(BleConnState.CONNECTING);
+        withBleConnState(NpBleConnState.CONNECTING);
         absBleConnManger.connect(mac);
         isConnectIng = true;
     }
@@ -528,13 +528,13 @@ public abstract class AbsBleManager {
     private AbsBleConnManger.AbsBleConnCallback absBleConnCallback = new AbsBleConnManger.AbsBleConnCallback() {
 
         @Override
-        protected void connResult(BleConnState connResult) {
+        protected void connResult(NpBleConnState connResult) {
             isConnectIng = false;
-            isConn = connResult == BleConnState.CONNECTED;
+            isConn = connResult == NpBleConnState.CONNECTED;
             ycBleLog.e("连接结果==>connResult==>" + connResult + "=isConn=>" + isConn);
 
             //连接上的情况
-            if (connResult == BleConnState.CONNECTED) {
+            if (connResult == NpBleConnState.CONNECTED) {
                 //连接成功状态
                 withOnConnectSuccess();
                 onConnectSuccess();
@@ -542,12 +542,12 @@ public abstract class AbsBleManager {
                 //非连接的情况就比较多了，可能是连接失败，可能是连接异常，可能是手动断开
 
                 //这是个比较另类的问题，系统的蓝牙挂壁了，为小概率事件，且此处的手机型号收集并不完整
-                if (connResult == BleConnState.PHONEBLEANR) {
+                if (connResult == NpBleConnState.PHONEBLEANR) {
                     onPhoneBleStateException();
-                } else if (connResult == BleConnState.CONNEXCEPTION) {
+                } else if (connResult == NpBleConnState.CONNEXCEPTION) {
                     withOnConnException();
                     onConnException();
-                } else if (connResult == BleConnState.HANDDISCONN) {
+                } else if (connResult == NpBleConnState.HANDDISCONN) {
                     withOnHandDisConn();
                     onHandDisConn();
                 }
@@ -838,7 +838,7 @@ public abstract class AbsBleManager {
 
         if (isConnectIng) {
             ycBleLog.e("ble-当前已经发出了连接请求，还没响应，不需要再发送这次请求");
-            withBleConnState(BleConnState.CONNECTING);
+            withBleConnState(NpBleConnState.CONNECTING);
             return false;
         }
 

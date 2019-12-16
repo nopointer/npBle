@@ -2,12 +2,12 @@ package lib.ycble;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import npble.nopointer.aider.PushAiderHelper;
 import npble.nopointer.ble.scan.ScanListener;
 import npble.nopointer.device.BleDevice;
 import npble.nopointer.log.ycBleLog;
@@ -42,6 +42,8 @@ public class MainActivity extends Activity implements ScanListener {
                     Manifest.permission.ACCESS_COARSE_LOCATION,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE,
                     Manifest.permission.READ_SMS,
+                    Manifest.permission.RECEIVE_SMS,
+                    Manifest.permission.READ_CONTACTS,
                     Manifest.permission.READ_PHONE_STATE,
                     Manifest.permission.READ_CALL_LOG
             }, 100);
@@ -50,12 +52,12 @@ public class MainActivity extends Activity implements ScanListener {
         textBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                PushAiderHelper.getAiderHelper().goToSettingNotificationAccess(MainActivity.this);
-                startActivity(new Intent(MainActivity.this,BleActivity.class));
+                PushAiderHelper.getAiderHelper().goToSettingNotificationAccess(MainActivity.this);
+//                startActivity(new Intent(MainActivity.this,BleActivity.class));
             }
         });
 
-        startActivity(new Intent(MainActivity.this,BleActivity.class));
+//        startActivity(new Intent(MainActivity.this,BleActivity.class));
 //        BleScanner.getInstance().registerScanListener(this);
 //        BleScanner.getInstance().startScan();
 
@@ -155,15 +157,15 @@ public class MainActivity extends Activity implements ScanListener {
     protected void onResume() {
         super.onResume();
 
+        PushAiderHelper.getAiderHelper().registerCallAndSmsReceiver(this);
 //        PushAiderHelper.getAiderHelper().startListeningForNotifications(this);
-//        PushAiderHelper.getAiderHelper().stopListeningForNotifications(this);
-//        if (PushAiderHelper.getAiderHelper().isNotifyEnable(this)) {
-//            PushAiderHelper.getAiderHelper().startListeningForNotifications(this);
-//            textBtn.setText("已开启");
-//
-//        } else {
-//            textBtn.setText("未开启");
-//        }
+        if (PushAiderHelper.getAiderHelper().isNotifyEnable(this)) {
+            PushAiderHelper.getAiderHelper().startListeningForNotifications(this);
+            textBtn.setText("已开启");
+
+        } else {
+            textBtn.setText("未开启");
+        }
     }
 
     //    adb shell dumpsys activity | grep -i run

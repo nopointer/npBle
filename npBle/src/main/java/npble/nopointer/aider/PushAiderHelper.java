@@ -139,7 +139,12 @@ public final class PushAiderHelper {
      */
     public void registerCallReceiver(Context context) {
         //注册来电状态的广播
-        context.registerReceiver(npPhoneStateReceiver, NPPhoneStateReceiver.createIntentFilter());
+        try {
+            ycBleLog.e("注册来电监听广播");
+            context.registerReceiver(npPhoneStateReceiver, NPPhoneStateReceiver.createIntentFilter());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -149,7 +154,12 @@ public final class PushAiderHelper {
      */
     public void registerSmsReceiver(Context context) {
         //注册短信接收的广播
-        context.registerReceiver(npSmsReciver, NPSmsReciver.createIntentFilter());
+        try {
+            ycBleLog.e("注册短信监听广播");
+            context.registerReceiver(npSmsReciver, NPSmsReciver.createIntentFilter());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**

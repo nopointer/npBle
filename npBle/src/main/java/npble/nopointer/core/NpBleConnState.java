@@ -4,7 +4,7 @@ package npble.nopointer.core;
  * 蓝牙连接状态
  * 20181112 14:33
  */
-public enum BleConnState {
+public enum NpBleConnState {
 
     /**
      * 搜索设备中

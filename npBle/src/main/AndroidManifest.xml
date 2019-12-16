@@ -12,7 +12,6 @@
             android:enabled="true"
             android:exported="true" />
 
-
         <receiver android:name=".ble.scan.BleScanner$ScannerReceiver">
             <intent-filter>
                 <action android:name="lib.ycble.device.ACTION_FOUND" />
