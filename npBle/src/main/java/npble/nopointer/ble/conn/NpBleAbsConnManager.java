@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.UUID;
 
 import no.nordicsemi.android.ble.BleManager;
+import no.nordicsemi.android.ble.callback.WriteProgressCallback;
 import no.nordicsemi.android.ble.data.Data;
 import no.nordicsemi.android.log.LogContract;
 import no.nordicsemi.android.log.LogSession;
@@ -295,13 +296,8 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * @param uuid
      * @throws BleUUIDNullException
      */
-    public void writeCharacteristicWithMostPack(UUID serviceUUId, UUID uuid, byte[] data,int offset,int length) throws BleUUIDNullException {
-        writeCharacteristic(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid), data,offset,length).with(new NpDataSentCallback(uuid) {
-            @Override
-            public void onDataSent(@NonNull BluetoothDevice device, @NonNull Data data, UUID uuid) {
-                ycBleLog.e("onDataSent : " + uuid.toString() + "{ " + BleUtil.byte2HexStr(data.getValue()) + " }");
-            }
-        }).enqueue();
+    public void writeCharacteristicWithMostPack(UUID serviceUUId, UUID uuid, byte[] data,int offset,final int length,WriteProgressCallback writeProgressCallback) throws BleUUIDNullException {
+        writeCharacteristic(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid), data,offset,length).split(writeProgressCallback).enqueue();
     }
 
     /**
