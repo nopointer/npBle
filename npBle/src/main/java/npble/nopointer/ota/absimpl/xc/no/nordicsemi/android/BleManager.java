@@ -79,7 +79,7 @@ import npble.nopointer.ota.absimpl.xc.no.nordicsemi.android.utils.ParserUtils;
  * 	<li>When initialization complete, the {@link BleManagerCallbacks#onDeviceReady(BluetoothDevice)}
  * 	callback is called.</li>
  * </ol>
- * The manager also is responsible for parsing the Battery Level values and calling
+ * The manager also is responsible for parsing the Battery Level values-zh and calling
  * {@link BleManagerCallbacks#onBatteryValueReceived(BluetoothDevice, int)} method.
  * <p>
  * If {@link #()} was called, the events are logged into the nRF Logger
@@ -223,7 +223,7 @@ public abstract class BleManager<E extends BleManagerCallbacks> implements ILogg
 			if (mBluetoothGatt == null || !device.getAddress().equals(mBluetoothGatt.getDevice().getAddress()))
 				return;
 
-			// String values are used as the constants are not available for Android 4.3.
+			// String values-zh are used as the constants are not available for Android 4.3.
 			final int variant = intent.getIntExtra("android.bluetooth.device.extra.PAIRING_VARIANT"/*BluetoothDevice.EXTRA_PAIRING_VARIANT*/, 0);
 			log(Log.INFO, "[Broadcast] Action received: android.bluetooth.device.action.PAIRING_REQUEST"/*BluetoothDevice.ACTION_PAIRING_REQUEST*/ +
 					", pairing variant: " + pairingVariantToString(variant) + " (" + variant + ")");
@@ -934,7 +934,7 @@ public abstract class BleManager<E extends BleManagerCallbacks> implements ILogg
 	}
 
 	/**
-	 * Requests the new connection priority. Acceptable values are:
+	 * Requests the new connection priority. Acceptable values-zh are:
 	 * <ol>
 	 * <li>{@link BluetoothGatt#CONNECTION_PRIORITY_HIGH} - Interval: 11.25 -15 ms, latency: 0, supervision timeout: 20 sec,</li>
 	 * <li>{@link BluetoothGatt#CONNECTION_PRIORITY_BALANCED} - Interval: 30 - 50 ms, latency: 0, supervision timeout: 20 sec,</li>
@@ -1097,7 +1097,7 @@ public abstract class BleManager<E extends BleManagerCallbacks> implements ILogg
 		 * <p>If this callback is invoked while a reliable write transaction is
 		 * in progress, the value of the characteristic represents the value
 		 * reported by the remote device. An application should compare this
-		 * value to the desired value to be written. If the values don't match,
+		 * value to the desired value to be written. If the values-zh don't match,
 		 * the application must abort the reliable write transaction.
 		 *
 		 * @param gatt           GATT client
@@ -1122,7 +1122,7 @@ public abstract class BleManager<E extends BleManagerCallbacks> implements ILogg
 		 * <p>If this callback is invoked while a reliable write transaction is in progress,
 		 * the value of the characteristic represents the value reported by the remote device.
 		 * An application should compare this value to the desired value to be written.
-		 * If the values don't match, the application must abort the reliable write transaction.
+		 * If the values-zh don't match, the application must abort the reliable write transaction.
 		 *
 		 * @param gatt       GATT client
 		 * @param descriptor Descriptor that was written to the associated remote device.

@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import npble.nopointer.device.BleDevice;
-import npble.nopointer.log.ycBleLog;
+import npble.nopointer.log.NpBleLog;
 import npble.nopointer.util.BleUtil;
 
 class Peripheral extends BluetoothGattCallback {
@@ -147,7 +147,7 @@ class Peripheral extends BluetoothGattCallback {
 
         synchronized (this.mStateLock) {
             if (this.mConnState == CONN_STATE_IDLE) {
-                ycBleLog.d("connect " + this.getDeviceName() + " -- "
+                NpBleLog.d("connect " + this.getDeviceName() + " -- "
                         + this.getMacAddress());
                 this.mConnState = CONN_STATE_CONNECTING;
                 this.gatt = this.device.connectGatt(context, false, this);
@@ -168,7 +168,7 @@ class Peripheral extends BluetoothGattCallback {
                 return;
         }
 
-        ycBleLog.d("disconnect " + this.getDeviceName() + " -- "
+        NpBleLog.d("disconnect " + this.getDeviceName() + " -- "
                 + this.getMacAddress());
 
         this.clear();
@@ -392,7 +392,7 @@ class Peripheral extends BluetoothGattCallback {
 
     private void commandError(CommandContext commandContext, String errorMsg) {
 
-        ycBleLog.d("commandError");
+        NpBleLog.d("commandError");
 
         if (commandContext != null) {
 
@@ -415,7 +415,7 @@ class Peripheral extends BluetoothGattCallback {
     }
 
     private boolean commandTimeout(CommandContext commandContext) {
-        ycBleLog.d("commandTimeout");
+        NpBleLog.d("commandTimeout");
 
         if (commandContext != null) {
 
@@ -676,7 +676,7 @@ class Peripheral extends BluetoothGattCallback {
 
     @Override
     public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-        ycBleLog.d("onConnectionStateChange  status :" + status + " state : " + newState);
+        NpBleLog.d("onConnectionStateChange  status :" + status + " state : " + newState);
 
         if (newState == BluetoothGatt.STATE_CONNECTED) {
 
@@ -685,7 +685,7 @@ class Peripheral extends BluetoothGattCallback {
             }
 
             if (this.gatt == null || !this.gatt.discoverServices()) {
-                ycBleLog.d("remote service discovery has been stopped status = "
+                NpBleLog.d("remote service discovery has been stopped status = "
                         + newState);
 
                 this.disconnect();
@@ -697,7 +697,7 @@ class Peripheral extends BluetoothGattCallback {
         } else {
 
             synchronized (this.mStateLock) {
-                ycBleLog.d("Close");
+                NpBleLog.d("Close");
 
                 if (this.gatt != null) {
                     this.gatt.close();
@@ -808,7 +808,7 @@ class Peripheral extends BluetoothGattCallback {
             this.mServices = services;
             this.onServicesDiscovered(services);
         } else {
-            ycBleLog.d("Service discovery failed");
+            NpBleLog.d("Service discovery failed");
             this.disconnect();
         }
     }
@@ -830,7 +830,7 @@ class Peripheral extends BluetoothGattCallback {
     public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
         super.onMtuChanged(gatt, mtu, status);
 
-        ycBleLog.d("mtu changed : " + mtu);
+        NpBleLog.d("mtu changed : " + mtu);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package npble.nopointer.util;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -8,6 +9,7 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.text.TextUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -18,7 +20,7 @@ import java.util.UUID;
 
 import no.nordicsemi.android.dfu.internal.scanner.BootloaderScanner;
 import npble.nopointer.exception.BleUUIDNullException;
-import npble.nopointer.log.ycBleLog;
+import npble.nopointer.log.NpBleLog;
 
 import static npble.nopointer.BleCfg.npBleTag;
 
@@ -27,6 +29,13 @@ import static npble.nopointer.BleCfg.npBleTag;
  */
 
 public class BleUtil {
+
+
+    /**
+     * mac地址的正则匹配表达式
+     */
+    private static final String strMacRule = "^[A-F0-9]{2}(:[A-F0-9]{2}){5}$";
+
 
     public static String debug(byte[] data) {
         StringBuilder sb = new StringBuilder().append("[");
@@ -37,7 +46,7 @@ public class BleUtil {
     }
 
     public static void debug(String tag, byte[] data) {
-        ycBleLog.e(npBleTag + tag + debug(data));
+        NpBleLog.e(npBleTag + tag + debug(data));
     }
 
     /***
@@ -47,7 +56,7 @@ public class BleUtil {
      */
     public static String byte2HexStr(byte[] data) {
         if (data == null || data.length < 1)
-            return "EE";
+            return " ";
         StringBuilder sb = new StringBuilder();
         for (byte b : data) {
             sb.append(String.format("%02X", (b & 0xff)));
@@ -305,7 +314,7 @@ public class BleUtil {
      * @return
      */
     public static List<BluetoothDevice> connDeviceList(Context context) {
-        ycBleLog.e(npBleTag + "读取当前系统连接的蓝牙设备");
+        NpBleLog.e(npBleTag + "读取当前系统连接的蓝牙设备");
         if (context == null) {
             return null;
         }
@@ -315,7 +324,7 @@ public class BleUtil {
         }
         final List<BluetoothDevice> devices = manager.getConnectedDevices(BluetoothProfile.GATT);
         for (BluetoothDevice device : devices) {
-            ycBleLog.e("debug==>device：===>" + device.getAddress() + "==" + device.getName());
+            NpBleLog.e("debug==>device：===>" + device.getAddress() + "==" + device.getName());
         }
         return devices;
     }
@@ -384,8 +393,40 @@ public class BleUtil {
             throw new BleUUIDNullException(String.format("not find this uuid %s for BluetoothGattCharacteristic please check service  or charateristic or descriptor uuid", U_descriptor.toString()));
         }
         return result;
-
     }
 
+
+    /**
+     * 蓝牙开关是否是打开的
+     *
+     * @return
+     */
+    public static boolean isBLeEnabled() {
+        return BluetoothAdapter.getDefaultAdapter().isEnabled();
+    }
+
+
+    /**
+     * 判断是否是正确的蓝牙mac地址
+     *
+     * @param mac
+     * @return
+     */
+    public static boolean isRightBleMacAddress(String mac) {
+        if (TextUtils.isEmpty(mac) || !mac.matches(strMacRule)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * g根据mac地址获取蓝牙设备
+     *
+     * @param mac
+     * @return
+     */
+    public static BluetoothDevice getBluetoothDevice(String mac) {
+        return BluetoothAdapter.getDefaultAdapter().getRemoteDevice(mac);
+    }
 
 }

@@ -300,7 +300,7 @@ public final class Request {
 	 * Requests new MTU (Maximum Transfer Unit). This is only supported on Android Lollipop or newer.
 	 * The target device may reject requested value and set smalled MTU.
 	 *
-	 * @param mtu the new MTU. Acceptable values are &lt;23, 517&gt;.
+	 * @param mtu the new MTU. Acceptable values-zh are &lt;23, 517&gt;.
 	 * @return the new request that can be enqueued using {@link BleManager#enqueue(Request)} method.
 	 */
 	public static Request newMtuRequest(int mtu) {
@@ -312,7 +312,7 @@ public final class Request {
 	}
 
 	/**
-	 * Requests the new connection priority. Acceptable values are:
+	 * Requests the new connection priority. Acceptable values-zh are:
 	 * <ol>
 	 * <li>{@link BluetoothGatt#CONNECTION_PRIORITY_HIGH} - Interval: 11.25 -15 ms, latency: 0, supervision timeout: 20 sec,</li>
 	 * <li>{@link BluetoothGatt#CONNECTION_PRIORITY_BALANCED} - Interval: 30 - 50 ms, latency: 0, supervision timeout: 20 sec,</li>

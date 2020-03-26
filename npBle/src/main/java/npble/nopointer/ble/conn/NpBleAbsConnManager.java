@@ -5,9 +5,14 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Build;
+import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import com.google.gson.Gson;
 
@@ -17,24 +22,31 @@ import java.util.List;
 import java.util.UUID;
 
 import no.nordicsemi.android.ble.BleManager;
+import no.nordicsemi.android.ble.ConnectionPriorityRequest;
 import no.nordicsemi.android.ble.WriteRequest;
+import no.nordicsemi.android.ble.callback.BeforeCallback;
 import no.nordicsemi.android.ble.callback.FailCallback;
 import no.nordicsemi.android.ble.callback.SuccessCallback;
 import no.nordicsemi.android.ble.callback.WriteProgressCallback;
 import no.nordicsemi.android.ble.data.Data;
-import no.nordicsemi.android.log.LogContract;
-import no.nordicsemi.android.log.LogSession;
-import no.nordicsemi.android.log.Logger;
+import npLog.nopointer.core.NpLog;
 import npble.nopointer.ble.conn.callbacks.NpBleCallback;
 import npble.nopointer.ble.conn.callbacks.NpDataReceivedCallback;
 import npble.nopointer.ble.conn.callbacks.NpDataSentCallback;
 import npble.nopointer.ble.conn.callbacks.NpFailCallback;
 import npble.nopointer.ble.conn.callbacks.NpSuccessCallback;
-import npble.nopointer.core.NpBleConnState;
+import npble.nopointer.ble.scan.BleScanner;
+import npble.nopointer.ble.scan.ScanListener;
+import npble.nopointer.device.BleDevice;
 import npble.nopointer.exception.BleUUIDNullException;
-import npble.nopointer.log.ycBleLog;
 import npble.nopointer.util.BleUtil;
 
+import static android.bluetooth.BluetoothAdapter.ACTION_STATE_CHANGED;
+import static android.bluetooth.BluetoothDevice.ACTION_ACL_DISCONNECTED;
+
+/**
+ * 抽象的连接管理对象
+ */
 public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
 
 
@@ -42,7 +54,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * The manager constructor.
      * <p>
      * After constructing the manager, the callbacks object must be set with
-     * {@link #setGattCallbacks(BleManagerCallbacks)}.
+     * //     * {@link
      * <p>
      * To connect a device, call {@link #connect(BluetoothDevice)}.
      *
@@ -50,19 +62,47 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      */
     public NpBleAbsConnManager(@NonNull Context context) {
         super(context);
+        if (bleStateReceiver == null) {
+            bleStateReceiver = new BleStateReceiver();
+        }
+        bleStateReceiver.startListen(context);
         setGattCallbacks(npBleCallback);
     }
+
+    /**
+     * 蓝牙状态接收器
+     */
+    protected BleStateReceiver bleStateReceiver = null;
 
     /**
      * 连接后的任务时序是否已经完成
      */
     private boolean hasAfterConnectedTaskEnd = false;
 
+    public boolean isHasAfterConnectedTaskEnd() {
+        return hasAfterConnectedTaskEnd;
+    }
+
+    /**
+     * 是否请求了连接，因为蓝牙的连接需要一个过程（并不是马上就能连接成功），所以需要一个标志位做判断
+     */
+    private boolean isConnectIng = false;
+
 
     /**
      * 是否是手动断开
      */
     private boolean isHandDisConn = false;
+
+    protected boolean isHandDisConn() {
+        return isHandDisConn;
+    }
+
+    /**
+     * 是否拦截中途拦截蓝牙的连接
+     */
+    private boolean boolIsInterceptConn = false;
+
 
     private BluetoothGatt mBluetoothGatt = null;
 
@@ -76,6 +116,12 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     }
 
 
+    @Override
+    public void log(int priority, @NonNull String message) {
+//        super.log(priority, message);
+        NpLog.eAndSave(priority + "," + message);
+    }
+
     /**
      * 当前任务的索引
      */
@@ -87,29 +133,36 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     /**
      * 请求列表
      */
-    private List<BleTask> requestTaskList = new ArrayList<>();
+    private List<NpBleTask> requestTaskList = new ArrayList<>();
 
     protected void nextTask() {
         if (hasAfterConnectedTaskEnd) {
-            ycBleLog.e("此时已经不是时序了");
+            NpLog.eAndSave("此时已经不是时序了");
             return;
         }
         taskIndex++;
-        ycBleLog.e("task:" + taskIndex + "/" + taskCount+"、、、"+this);
+        NpLog.eAndSave("task:" + taskIndex + "/" + taskCount + "、、、");
         if (taskIndex < taskCount) {
-            BleTask bleTask = requestTaskList.get(taskIndex);
+            NpBleTask bleTask = requestTaskList.get(taskIndex);
+
+
             if (bleTask.getRequest() instanceof WriteRequest) {
-                ((WriteRequest) bleTask.getRequest())
+                WriteRequest writeRequest = (WriteRequest) bleTask.getRequest();
+                writeRequest
+                        .before(new BeforeCallback() {
+                            @Override
+                            public void onRequestStarted(@NonNull BluetoothDevice device) {
+                                onBeforeWriteData(bleTask.getUuid(), bleTask.getData());
+                            }
+                        })
                         .done(new SuccessCallback() {
                             @Override
                             public void onRequestCompleted(@NonNull BluetoothDevice device) {
-                                ycBleLog.e("写数据成功 " + BleUtil.byte2HexStr(bleTask.getData()));
                                 onDataWriteSuccess(bleTask.getUuid(), bleTask.getData());
                             }
                         }).fail(new FailCallback() {
                     @Override
                     public void onRequestFailed(@NonNull BluetoothDevice device, int status) {
-                        ycBleLog.e("写数据失败" + BleUtil.byte2HexStr(bleTask.getData()));
                         onDataWriteFail(bleTask.getUuid(), bleTask.getData(), status);
                         nextTask();
                     }
@@ -117,7 +170,10 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             }
         } else {
             hasAfterConnectedTaskEnd = true;
-            ycBleLog.e("任务完成");
+            NpLog.eAndSave("任务完成");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                requestConnectionPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_BALANCED).enqueue();
+            }
             onFinishTaskAfterConn();
         }
     }
@@ -128,9 +184,17 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      *
      * @param bleTask
      */
-    public void addTask(BleTask bleTask) {
+    public void addTask(NpBleTask bleTask) {
         requestTaskList.add(bleTask);
     }
+
+    /**
+     * 写数据之前的回调 ，可以在这里自定义超时处理或者其他特殊指令的处理
+     *
+     * @param uuid
+     * @param data
+     */
+    protected abstract void onBeforeWriteData(UUID uuid, byte[] data);
 
 
     @NonNull
@@ -140,28 +204,101 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     }
 
 
+    /**
+     * 连接设备
+     *
+     * @param mac
+     */
     public void connDevice(String mac) {
-        refreshDeviceCache();
-        BluetoothDevice bluetoothDevice = BleUtil.isInConnList(mac, getContext());
-        if (bluetoothDevice == null) {
-            bluetoothDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(mac);
+        if (!verifyConnBefore(mac)) {
+            return;
         }
-        ycBleLog.e("bluetoothDevice : " + bluetoothDevice.getName() + "///" + bluetoothDevice.getAddress());
+        isHandDisConn = false;
+        BluetoothDevice bluetoothDevice = BleUtil.getBluetoothDevice(mac);
+        NpLog.eAndSave("bluetoothDevice : " + bluetoothDevice.getName() + "///" + bluetoothDevice.getAddress());
         if (bluetoothDevice != null) {
-            connect(bluetoothDevice)
-                    .retry(3, 100)
-                    .useAutoConnect(false)
-                    .enqueue();
+            isConnectIng = true;
+            connectCode(bluetoothDevice);
         }
     }
 
     /**
-     * 断开设备
+     * 手动断开连接,同时也做成拦截（防止蓝牙在发出连接请求后，后续连接上的情况）
      */
-    public void disConnDevice() {
+    public void disConnectDevice() {
+        NpLog.eAndSave("=====>手动断开指令");
         isHandDisConn = true;
-        disconnect();
+        isConnectIng = false;
+        if (mBluetoothGatt != null && isConnected()) {
+            NpLog.eAndSave("已经在连接中，就不发出拦截请求了，直接断开");
+            disconnect().enqueue();
+        } else {
+            NpLog.eAndSave("没有在连接中，发出拦截请求即连接后立马断开）");
+            boolIsInterceptConn = true;
+        }
     }
+
+    /**
+     * 扫描后的连接标志位
+     */
+    private boolean hadScanDeviceFlag = true;
+
+    private Handler handler = new Handler();
+
+    /**
+     * 连接设备
+     *
+     * @param bluetoothDevice
+     */
+    protected void connectCode(final BluetoothDevice bluetoothDevice) {
+        NpLog.eAndSave("当前实际发出连接请求的设备是:" + new Gson().toJson(new String[]{bluetoothDevice.getAddress(), bluetoothDevice.getName()}));
+        boolIsInterceptConn = false;
+        isHandDisConn = false;
+
+        if (!TextUtils.isEmpty(bluetoothDevice.getName())) {
+            if (mBluetoothGatt != null) {
+                NpLog.eAndSave("已经有过设备缓存信息,刷新后,开始连接");
+//                refreshDeviceCache().enqueue();
+            }
+            connect(bluetoothDevice)
+                    .retry(3, 100)
+                    .useAutoConnect(false)
+                    .enqueue();
+        } else {
+            NpLog.eAndSave("名称为空，需要开启一下扫描来缓存一下设备名称");
+            hadScanDeviceFlag = true;
+            BleScanner.getInstance().registerScanListener(new ScanListener() {
+                @Override
+                public void onScan(BleDevice bleDevice) {
+                    NpLog.i("hadScanDeviceFlag=====>" + hadScanDeviceFlag + "///扫描到的设备:" + new Gson().toJson(bleDevice));
+                    if (hadScanDeviceFlag) {
+                        if (bleDevice != null && bleDevice.getMac().equalsIgnoreCase(bluetoothDevice.getAddress())) {
+                            BleScanner.getInstance().unRegisterScanListener(this);
+                            hadScanDeviceFlag = false;
+                            BleScanner.getInstance().stopScan();
+                            NpLog.eAndSave("扫描到设备了，停止扫描，然后再连接");
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    connect(bluetoothDevice)
+                                            .retry(3, 100)
+                                            .useAutoConnect(false)
+                                            .enqueue();
+                                }
+                            }, 2000);
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(int code) {
+
+                }
+            });
+            BleScanner.getInstance().startScan();
+        }
+    }
+
 
     /**
      * 蓝牙连接结果的回调
@@ -212,6 +349,9 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     }
 
     protected void addMustUUID(UUID uuid) {
+        if (mustUUIDList == null) {
+            mustUUIDList = new HashSet<>();
+        }
         mustUUIDList.add(uuid);
     }
 
@@ -232,19 +372,31 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * BluetoothGatt callbacks object.
      */
     private final BleManagerGattCallback mGattCallback = new BleManagerGattCallback() {
+
+        /**
+         * 这个函数就是在扫描完服务后回调的函数
+         */
         @Override
         protected void initialize() {
-            ycBleLog.e("initialize===>");
+            NpLog.eAndSave("initialize===>");
             if (isHandDisConn) {
-                ycBleLog.e("有拦截请求，需要断开");
-                disconnect();
+                NpLog.eAndSave("有拦截请求，需要断开");
+                disconnect().enqueue();
                 return;
             }
             try {
-                Thread.sleep(800);
+                Thread.sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            if (requestTaskList == null) {
+                requestTaskList = new ArrayList<>();
+            }
+            requestTaskList.clear();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                requestConnectionPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH).enqueue();
+            }
+            clearQueue();
             loadCfg();
             taskIndex = -1;
             taskCount = 0;
@@ -270,7 +422,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         @Override
         public boolean isRequiredServiceSupported(@NonNull final BluetoothGatt gatt) {
             mBluetoothGatt = gatt;
-            ycBleLog.e("判断设备支持与否===>" + new Gson().toJson(mustUUIDList));
+            NpLog.eAndSave("判断设备支持与否===>" + new Gson().toJson(mustUUIDList));
             if (mustUUIDList == null || mustUUIDList.size() < 0) return true;
             int count = 0;
             for (BluetoothGattService bluetoothGattService : gatt.getServices()) {
@@ -285,7 +437,8 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             if (count == mustUUIDList.size()) {
                 return true;
             } else {
-                ycBleLog.e("uuid对不上，情况不对");
+                NpLog.eAndSave("uuid对不上，情况不对");
+                isHandDisConn = true;
                 return false;
             }
         }
@@ -293,47 +446,32 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     };
 
 
-    private LogSession mLogSession;
-
-    /**
-     * Sets the log session to be used for low level logging.
-     *
-     * @param session the session, or null, if nRF Logger is not installed.
-     */
-    public void setLogger(@Nullable final LogSession session) {
-        this.mLogSession = session;
-    }
-
-    @Override
-    public void log(final int priority, @NonNull final String message) {
-        // The priority is a Log.X constant, while the Logger accepts it's log levels.
-        Logger.log(mLogSession, LogContract.Log.Level.fromPriority(priority), message);
-    }
-
     private NpBleCallback npBleCallback = new NpBleCallback() {
         @Override
         public void onDeviceConnecting(@NonNull BluetoothDevice device) {
-            ycBleLog.e("onDeviceConnecting : " + device.getAddress());
+            NpLog.eAndSave("onDeviceConnecting : " + device.getAddress());
             withBleConnState(NpBleConnState.CONNECTING);
         }
 
         @Override
         public void onDeviceConnected(@NonNull BluetoothDevice device) {
-            ycBleLog.e("onDeviceConnected : " + device.getAddress());
+            NpLog.eAndSave("onDeviceConnected : " + device.getAddress());
             withBleConnState(NpBleConnState.CONNECTED);
         }
 
         @Override
         public void onDeviceDisconnecting(@NonNull BluetoothDevice device) {
-            ycBleLog.e("onDeviceDisconnecting : " + device.getAddress());
+            NpLog.eAndSave("onDeviceDisconnecting : " + device.getAddress());
         }
 
         @Override
         public void onDeviceDisconnected(@NonNull BluetoothDevice device) {
-            ycBleLog.e("onDeviceDisconnected : " + device.getAddress());
+            NpLog.eAndSave("onDeviceDisconnected : " + device.getAddress());
             if (isHandDisConn) {
                 withBleConnState(NpBleConnState.HANDDISCONN);
             } else {
+                isConnectIng = false;
+                refreshDeviceCache().enqueue();
                 onConnException();
                 withBleConnState(NpBleConnState.CONNEXCEPTION);
             }
@@ -342,45 +480,43 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
 
         @Override
         public void onLinkLossOccurred(@NonNull BluetoothDevice device) {
-            ycBleLog.e("onLinkLossOccurred : " + device.getAddress());
+            NpLog.eAndSave("onLinkLossOccurred : " + device.getAddress());
         }
 
         @Override
         public void onServicesDiscovered(@NonNull BluetoothDevice device, boolean optionalServicesFound) {
-            ycBleLog.e("onServicesDiscovered : " + device.getAddress());
+            NpLog.eAndSave("onServicesDiscovered : " + device.getAddress());
         }
 
         @Override
         public void onDeviceReady(@NonNull BluetoothDevice device) {
-            ycBleLog.e("onDeviceReady : " + device.getAddress());
-            onBleDeviceReady();
+            NpLog.eAndSave("onDeviceReady : " + device.getAddress());
         }
 
 
         @Override
         public void onBondingRequired(@NonNull BluetoothDevice device) {
-            ycBleLog.e("onBondingRequired : " + device.getAddress());
+            NpLog.eAndSave("onBondingRequired : " + device.getAddress());
         }
 
         @Override
         public void onBonded(@NonNull BluetoothDevice device) {
-            ycBleLog.e("onBonded : " + device.getAddress());
+            NpLog.eAndSave("onBonded : " + device.getAddress());
         }
 
         @Override
         public void onBondingFailed(@NonNull BluetoothDevice device) {
-            ycBleLog.e("onBondingFailed : " + device.getAddress());
+            NpLog.eAndSave("onBondingFailed : " + device.getAddress());
         }
 
         @Override
         public void onError(@NonNull BluetoothDevice device, @NonNull String message, int errorCode) {
-            ycBleLog.e("onError : " + device.getAddress());
-//            withBleConnState(NpBleConnState.CONNEXCEPTION);
+            NpLog.eAndSave("onError : " + device.getAddress());
         }
 
         @Override
         public void onDeviceNotSupported(@NonNull BluetoothDevice device) {
-            ycBleLog.e("onDeviceNotSupported : " + device.getAddress());
+            NpLog.eAndSave("onDeviceNotSupported : " + device.getAddress());
         }
 
     };
@@ -391,10 +527,6 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      */
     protected abstract void loadCfg();
 
-    /**
-     * 设备在连接时序后完成了，可自定义交互数据了
-     */
-    protected abstract void onBleDeviceReady();
 
     /**
      * 处理具体的接收到的数据的逻辑，交给具体的实现类去完成
@@ -428,25 +560,25 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * @param uuid
      * @throws BleUUIDNullException
      */
-    public WriteRequest writeCharacteristic(UUID serviceUUId, UUID uuid, byte[] data) throws BleUUIDNullException {
-        return writeCharacteristic(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid), data).with(new NpDataSentCallback(uuid) {
-            @Override
-            public void onDataSent(@NonNull BluetoothDevice device, @NonNull Data data, UUID uuid) {
-                ycBleLog.e("onDataSent : " + uuid.toString() + "{ " + BleUtil.byte2HexStr(data.getValue()) + " }");
-            }
-        }).done(new NpSuccessCallback(uuid, data) {
-            @Override
-            public void onRequestCompleted(UUID uuid, byte[] data) {
-                ycBleLog.e("写数据成功" + BleUtil.byte2HexStr(data));
-                onDataWriteSuccess(uuid, data);
-            }
-        }).fail(new NpFailCallback(uuid, data) {
-            @Override
-            public void onRequestFailed(UUID uuid, byte[] data, int status) {
-                ycBleLog.e("写数据失败" + BleUtil.byte2HexStr(data));
-                onDataWriteFail(uuid, data, status);
-            }
-        });
+    protected void writeCharacteristic(UUID serviceUUId, UUID uuid, byte[] data) throws BleUUIDNullException {
+        BluetoothGattCharacteristic bluetoothGattCharacteristic = BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid);
+        bluetoothGattCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
+        bluetoothGattCharacteristic.setValue(data);
+        writeCharacteristic(bluetoothGattCharacteristic);
+    }
+
+    /**
+     * 写特征数据 无响应写
+     *
+     * @param serviceUUId
+     * @param uuid
+     * @throws BleUUIDNullException
+     */
+    protected void writeCharacteristicWithOutResponse(UUID serviceUUId, UUID uuid, byte[] data) throws BleUUIDNullException {
+        BluetoothGattCharacteristic bluetoothGattCharacteristic = BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid);
+        bluetoothGattCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
+        bluetoothGattCharacteristic.setValue(data);
+        writeCharacteristic(bluetoothGattCharacteristic);
     }
 
 
@@ -457,7 +589,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * @param uuid
      * @throws BleUUIDNullException
      */
-    public WriteRequest writeCharacteristicWithMostPack(UUID serviceUUId, UUID uuid, byte[] data, int offset, final int length, WriteProgressCallback writeProgressCallback) throws BleUUIDNullException {
+    protected WriteRequest writeCharacteristicWithMostPack(UUID serviceUUId, UUID uuid, byte[] data, int offset, final int length, WriteProgressCallback writeProgressCallback) throws BleUUIDNullException {
         return writeCharacteristic(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid), data, offset, length).split(writeProgressCallback);
     }
 
@@ -488,11 +620,37 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         enableNotifications(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid)).with(new NpDataSentCallback(uuid) {
             @Override
             public void onDataSent(@NonNull BluetoothDevice device, @NonNull Data data, UUID uuid) {
-                ycBleLog.e("onDataSent : " + uuid.toString() + "{ enableNotifications }");
+                NpLog.eAndSave("onDataSent : " + uuid.toString() + "{ enableNotifications }");
             }
         }).enqueue();
     }
 
+
+    private void writeCharacteristic(final BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+        UUID uuid = bluetoothGattCharacteristic.getUuid();
+        byte[] data = bluetoothGattCharacteristic.getValue();
+        writeCharacteristic(bluetoothGattCharacteristic, data).with(new NpDataSentCallback(uuid) {
+            @Override
+            public void onDataSent(@NonNull BluetoothDevice device, @NonNull Data data, UUID uuid) {
+                NpLog.eAndSave("当前发送的数据内容 : " + uuid.toString() + "{ " + BleUtil.byte2HexStr(data.getValue()) + " }");
+            }
+        }).before(new BeforeCallback() {
+            @Override
+            public void onRequestStarted(@NonNull BluetoothDevice device) {
+                onBeforeWriteData(uuid, data);
+            }
+        }).done(new NpSuccessCallback(uuid, data) {
+            @Override
+            public void onRequestCompleted(UUID uuid, byte[] data) {
+                onDataWriteSuccess(uuid, data);
+            }
+        }).fail(new NpFailCallback(uuid, data) {
+            @Override
+            public void onRequestFailed(UUID uuid, byte[] data, int status) {
+                onDataWriteFail(uuid, data, status);
+            }
+        }).enqueue();
+    }
 
     /**
      * 创建一个使能通知请求，但是不会执行（等待调用），用于里连接后的时序
@@ -501,11 +659,11 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * @param uuid
      * @throws BleUUIDNullException
      */
-    public BleTask createEnableNotificationsTask(UUID serviceUUId, UUID uuid) throws BleUUIDNullException {
+    public NpBleTask createEnableNotificationsTask(UUID serviceUUId, UUID uuid) throws BleUUIDNullException {
         WriteRequest writeRequest = null;
         try {
             writeRequest = enableNotifications(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid));
-            return BleTask.createEnableNotifyTask(writeRequest, uuid);
+            return NpBleTask.createEnableNotifyTask(writeRequest, uuid);
         } catch (BleUUIDNullException e) {
             e.printStackTrace();
             return null;
@@ -521,11 +679,32 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * @param data
      * @return
      */
-    protected BleTask createWriteTask(UUID serviceUUId, UUID uuid, byte data[]) {
+    protected NpBleTask createWriteTask(UUID serviceUUId, UUID uuid, byte data[]) {
         WriteRequest writeRequest = null;
         try {
             writeRequest = writeCharacteristic(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid), data);
-            return BleTask.createWriteTask(writeRequest, uuid, data);
+            return NpBleTask.createWriteTask(writeRequest, uuid, data);
+        } catch (BleUUIDNullException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * 创建一个写任务的请求，并不会写数据（等待调用），用于里连接后的时序
+     *
+     * @param serviceUUId
+     * @param uuid
+     * @param data
+     * @return
+     */
+    protected NpBleTask createWriteTaskWithOutResp(UUID serviceUUId, UUID uuid, byte data[]) {
+        WriteRequest writeRequest = null;
+        try {
+            BluetoothGattCharacteristic bluetoothGattCharacteristic = BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid);
+            bluetoothGattCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
+            writeRequest = writeCharacteristic(bluetoothGattCharacteristic, data);
+            return NpBleTask.createWriteTask(writeRequest, uuid, data);
         } catch (BleUUIDNullException e) {
             e.printStackTrace();
             return null;
@@ -567,5 +746,146 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      */
     protected abstract void onFinishTaskAfterConn();
 
+
+    /**
+     * 系统的蓝牙打开
+     */
+    public void onBleOpen() {
+
+    }
+
+    /**
+     * 系统蓝牙关闭
+     */
+    public void onBleClose() {
+        isHandDisConn = true;
+        isConnectIng = false;
+        refreshDeviceCache().enqueue();
+        BleScanner.getInstance().stopScan();
+    }
+
+
+    public class BleStateReceiver extends BroadcastReceiver {
+
+        private BleStateReceiver() {
+        }
+
+
+        /**
+         * 创建一个蓝牙状态的过滤器
+         *
+         * @return
+         */
+        private IntentFilter createSateFilter() {
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+            intentFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+            intentFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+            return intentFilter;
+        }
+
+        /**
+         * 开始监听mac地址
+         *
+         * @param context
+         */
+        public void startListen(Context context) {
+            try {
+                if (context != null) {
+                    context.registerReceiver(this, createSateFilter());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        /**
+         * 停止监听
+         *
+         * @param context
+         */
+        public void stopListen(Context context) {
+            try {
+                if (context != null) {
+                    context.unregisterReceiver(this);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onReceive(final Context context, Intent intent) {
+
+
+            String action = intent.getAction();
+
+            NpLog.eAndSave("BleStateReceiver 广播的action:===>" + action);
+
+            if (action.equals(ACTION_STATE_CHANGED)) {
+                int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+                switch (state) {
+                    case BluetoothAdapter.STATE_TURNING_ON:
+                        NpLog.eAndSave("蓝牙正在打开......");
+                        break;
+                    case BluetoothAdapter.STATE_ON:
+                        NpLog.eAndSave("手机蓝牙开启状态");
+                        onBleOpen();
+                        break;
+                    case BluetoothAdapter.STATE_TURNING_OFF:
+                        NpLog.eAndSave("蓝牙正在关闭......");
+                        break;
+                    case BluetoothAdapter.STATE_OFF:
+                        NpLog.eAndSave("手机蓝牙关闭状态");
+                        onBleClose();
+                        break;
+                }
+            } else {
+
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                if (device == null) {
+                    NpLog.eAndSave("设备为空，不需要往后执行......");
+                    return;
+                }
+
+                NpLog.eAndSave("相关的设备===>" + device.getName() + "/" + device.getAddress());
+
+                if (action == ACTION_ACL_DISCONNECTED) {
+
+                }
+            }
+        }
+    }
+
+
+    /**
+     * 验证是否可以连接
+     *
+     * @return
+     */
+    private boolean verifyConnBefore(String mac) {
+        //1.判断蓝牙状态
+        if (!BleUtil.isBLeEnabled()) {
+            NpLog.eAndSave("蓝牙没有打开呢！");
+            return false;
+        }
+        //2.判断连接状态
+        if (isConnected()) {
+            NpLog.eAndSave("已经是连接的，，不需要花里胡哨的了");
+            return false;
+        }
+        //3.判断mac地址的正确性
+        if (!BleUtil.isRightBleMacAddress(mac)) {
+            NpLog.eAndSave("mac地址都不对,地址要注意大写,且不能为空！！！！！");
+            return false;
+        }
+        //4.判断当前的连接是否已经回应了
+        if (isConnectIng) {
+            NpLog.eAndSave("ble-当前已经发出了连接请求，还没响应，不需要再发送这次请求");
+//            withBleConnState(NpBleConnState.CONNECTING);
+            return false;
+        }
+        return true;
+    }
 
 }

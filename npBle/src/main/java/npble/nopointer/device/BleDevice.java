@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import npble.nopointer.log.ycBleLog;
+import npble.nopointer.log.NpBleLog;
 import npble.nopointer.util.BleUtil;
 
 /**
@@ -112,7 +112,7 @@ public class BleDevice implements Serializable {
         if (scanHexStr.length() < 1 || scanHexStr.length() > 124) {
             return null;
         }
-        ycBleLog.w(mac + "==>原始广播数据:" + scanHexStr);
+        NpBleLog.w(mac + "==>原始广播数据:" + scanHexStr);
         int totalLen = scanHexStr.length();
         HashMap<String, String> advData = new HashMap<>();
         String str = scanHexStr;

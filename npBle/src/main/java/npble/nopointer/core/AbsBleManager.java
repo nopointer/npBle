@@ -16,10 +16,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
-import npble.nopointer.ble.scan.BleScanner;
 import npble.nopointer.ble.conn.NpBleConnCallback;
+import npble.nopointer.ble.conn.NpBleConnState;
+import npble.nopointer.ble.scan.BleScanner;
 import npble.nopointer.exception.BleUUIDNullException;
-import npble.nopointer.log.ycBleLog;
+import npble.nopointer.log.NpBleLog;
 import npble.nopointer.util.BleUtil;
 
 import static android.bluetooth.BluetoothAdapter.ACTION_STATE_CHANGED;
@@ -160,11 +161,11 @@ public abstract class AbsBleManager {
             return;
         }
         connMac = mac;
-        ycBleLog.reCreateLogFile(mac);
-        ycBleLog.e("debug===先判断 当前蓝牙设备是不是在其他的app中连接了");
+        NpBleLog.reCreateLogFile(mac);
+        NpBleLog.e("debug===先判断 当前蓝牙设备是不是在其他的app中连接了");
         BluetoothDevice bluetoothDevice = AbsBleConnManger.isInConnList(mac, mContext);
         if (bluetoothDevice != null) {
-            ycBleLog.e("debug===还真被其他应用连接了,那就简单了,直接去拿连接过来就是了");
+            NpBleLog.e("debug===还真被其他应用连接了,那就简单了,直接去拿连接过来就是了");
             connWithSysConn(bluetoothDevice);
             return;
         } else {
@@ -187,7 +188,7 @@ public abstract class AbsBleManager {
         if (absBleConnManger != null) {
             absBleConnManger.disConnect();
         } else {
-            ycBleLog.e("==absBleConnManger 为 null");
+            NpBleLog.e("==absBleConnManger 为 null");
         }
     }
 
@@ -438,51 +439,51 @@ public abstract class AbsBleManager {
         bleTaskSize = bleUnitTaskList.size();
         bleUnitTaskIndex++;
         if (bleUnitTaskIndex < bleTaskSize) {
-            ycBleLog.e("ble===task====>" + (bleUnitTaskIndex + 1) + "/" + bleTaskSize);
+            NpBleLog.e("ble===task====>" + (bleUnitTaskIndex + 1) + "/" + bleTaskSize);
             if (bleUnitTaskIndex < 0) {
-                ycBleLog.e("bleUnitTaskIndex 异常====>" + bleUnitTaskIndex);
+                NpBleLog.e("bleUnitTaskIndex 异常====>" + bleUnitTaskIndex);
                 return;
             }
             BleUnitTask unitTask = bleUnitTaskList.get(bleUnitTaskIndex);
             if (unitTask == null) {
-                ycBleLog.e("unitTask 异常====>" + bleUnitTaskIndex);
+                NpBleLog.e("unitTask 异常====>" + bleUnitTaskIndex);
                 return;
             }
             try {
                 switch (unitTask.getOptionType()) {
                     case BleUnitTask.TYPE_READ: {
-                        ycBleLog.d(npBleTag + "读数据<<<< " + unitTask.msg);
+                        NpBleLog.d(npBleTag + "读数据<<<< " + unitTask.msg);
                         readData(unitTask.getU_service(), unitTask.getU_chara());
                     }
                     break;
                     case BleUnitTask.TYPE_WRITE: {
-                        ycBleLog.d(npBleTag + "写数据<<<< " + unitTask.msg);
+                        NpBleLog.d(npBleTag + "写数据<<<< " + unitTask.msg);
                         writeData(unitTask.getU_service(), unitTask.getU_chara(), unitTask.getData());
                     }
                     break;
                     case BleUnitTask.TYPE_WRITE_WITHOUT_RESP: {
-                        ycBleLog.d(npBleTag + "无响应写数据<<<< " + unitTask.msg);
+                        NpBleLog.d(npBleTag + "无响应写数据<<<< " + unitTask.msg);
                         writeDataWithoutResp(unitTask.getU_service(), unitTask.getU_chara(), unitTask.getData());
                     }
                     break;
                     case BleUnitTask.TYPE_ENABLE_NOTIFY: {
-                        ycBleLog.d(npBleTag + "打开通知<<<< " + unitTask.msg);
+                        NpBleLog.d(npBleTag + "打开通知<<<< " + unitTask.msg);
                         enableNotity(unitTask.getU_service(), unitTask.getU_chara());
                     }
                     break;
                     case BleUnitTask.TYPE_ENABLE_INDICATE: {
-                        ycBleLog.d(npBleTag + "打开指示<<<< " + unitTask.msg);
+                        NpBleLog.d(npBleTag + "打开指示<<<< " + unitTask.msg);
                         unitTask.setData(new byte[]{0x02, 0x00});
                         enableIndication(unitTask.getU_service(), unitTask.getU_chara());
                     }
                     break;
                     case BleUnitTask.TYPE_DISABLE_NOTIFY_OR_INDICATE: {
-                        ycBleLog.d(npBleTag + " 关闭通知或者指示<<<< " + unitTask.msg);
+                        NpBleLog.d(npBleTag + " 关闭通知或者指示<<<< " + unitTask.msg);
                         disAbleNotityOrIndication(unitTask.getU_service(), unitTask.getU_chara());
                     }
                     break;
                     case BleUnitTask.TYPE_SET_LISTEN: {
-                        ycBleLog.d(npBleTag + " 设置监听与否<<<< " + unitTask.msg);
+                        NpBleLog.d(npBleTag + " 设置监听与否<<<< " + unitTask.msg);
                         setNotifyListen(unitTask.getU_service(), unitTask.getU_chara(), unitTask.isEnableNotifyListen());
                         taskSuccess();
                     }
@@ -491,7 +492,7 @@ public abstract class AbsBleManager {
 
             } catch (BleUUIDNullException e) {
                 e.printStackTrace();
-                ycBleLog.e("debug===如果没有找到设备的相关通道,继续执行，不能中断在这里");
+                NpBleLog.e("debug===如果没有找到设备的相关通道,继续执行，不能中断在这里");
                 toNextTask();
             }
         } else {
@@ -507,7 +508,7 @@ public abstract class AbsBleManager {
     private final void setTaskFinish() {
         if (!isTaskFinish) {
             clearSomeFlag();
-            ycBleLog.e("连接后的时序指令下发完成，可以自由交互数据了");
+            NpBleLog.e("连接后的时序指令下发完成，可以自由交互数据了");
             onFinishTaskAfterConn();
             isTaskFinish = true;
         }
@@ -516,7 +517,7 @@ public abstract class AbsBleManager {
     //内部连接
     private void privateConnnect(String mac) {
         if (isConnectIng) {
-            ycBleLog.e("ble-当前已经发出了连接请求，还没响应，不需要再发送这次请求");
+            NpBleLog.e("ble-当前已经发出了连接请求，还没响应，不需要再发送这次请求");
             return;
         }
         withBleConnState(NpBleConnState.CONNECTING);
@@ -531,7 +532,7 @@ public abstract class AbsBleManager {
         protected void connResult(NpBleConnState connResult) {
             isConnectIng = false;
             isConn = connResult == NpBleConnState.CONNECTED;
-            ycBleLog.e("连接结果==>connResult==>" + connResult + "=isConn=>" + isConn);
+            NpBleLog.e("连接结果==>connResult==>" + connResult + "=isConn=>" + isConn);
 
             //连接上的情况
             if (connResult == NpBleConnState.CONNECTED) {
@@ -644,7 +645,7 @@ public abstract class AbsBleManager {
          * @param context
          */
         public void startListen(Context context, String listenerMac) {
-            ycBleLog.e("监听此设备相关的蓝牙广播==>" + listenerMac);
+            NpBleLog.e("监听此设备相关的蓝牙广播==>" + listenerMac);
             this.listenerMac = listenerMac;
             try {
                 if (context != null) {
@@ -676,23 +677,23 @@ public abstract class AbsBleManager {
 
             String action = intent.getAction();
 
-            ycBleLog.e("BleStateReceiver 广播的action:===>" + action);
+            NpBleLog.e("BleStateReceiver 广播的action:===>" + action);
 
             if (action.equals(ACTION_STATE_CHANGED)) {
                 int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
                 switch (state) {
                     case BluetoothAdapter.STATE_TURNING_ON:
-                        ycBleLog.e("蓝牙正在打开......");
+                        NpBleLog.e("蓝牙正在打开......");
                         break;
                     case BluetoothAdapter.STATE_ON:
-                        ycBleLog.e("手机蓝牙开启状态");
+                        NpBleLog.e("手机蓝牙开启状态");
                         onBleOpen();
                         break;
                     case BluetoothAdapter.STATE_TURNING_OFF:
-                        ycBleLog.e("蓝牙正在关闭......");
+                        NpBleLog.e("蓝牙正在关闭......");
                         break;
                     case BluetoothAdapter.STATE_OFF:
-                        ycBleLog.e("手机蓝牙关闭状态");
+                        NpBleLog.e("手机蓝牙关闭状态");
                         onBleClose();
                         break;
                 }
@@ -700,11 +701,11 @@ public abstract class AbsBleManager {
 
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 if (device == null) {
-                    ycBleLog.e("设备为空，不需要往后执行......");
+                    NpBleLog.e("设备为空，不需要往后执行......");
                     return;
                 }
 
-                ycBleLog.e("相关的设备===>" + device.getName() + "/" + device.getAddress());
+                NpBleLog.e("相关的设备===>" + device.getName() + "/" + device.getAddress());
 
                 if (action == ACTION_ACL_DISCONNECTED) {
 
@@ -735,7 +736,7 @@ public abstract class AbsBleManager {
      */
     private synchronized void collectData(boolean isMultiPkgResponse, final BleUnitTask unitTask) {
         final byte[] writeData = unitTask.getData();
-        ycBleLog.e("debug===准备超时的数据>" + BleUtil.byte2HexStr(writeData) + "===>isMultiPgResponse:" + isMultiPkgResponse);
+        NpBleLog.e("debug===准备超时的数据>" + BleUtil.byte2HexStr(writeData) + "===>isMultiPgResponse:" + isMultiPkgResponse);
         final String key = BleUtil.byte2HexStr(writeData);
         if (!timeOutHelperHashMap.containsKey(key)) {
             TimeOutHelper timeOutHelper = new TimeOutHelper(key, isMultiPkgResponse ? cfgTimeOutMultiPkgMilli : cfgTimeOutSinglePkgMilli);
@@ -747,7 +748,7 @@ public abstract class AbsBleManager {
             timeOutHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    ycBleLog.e("debug====" + BleUtil.byte2HexStr(writeData) + "指令失败，重新下发");
+                    NpBleLog.e("debug====" + BleUtil.byte2HexStr(writeData) + "指令失败，重新下发");
                     try {
                         boolean result = true;
                         if (unitTask.getOptionType() == BleUnitTask.TYPE_ENABLE_NOTIFY) {
@@ -794,9 +795,9 @@ public abstract class AbsBleManager {
     //清除超时机制的处理
     private void clearTimeOutHandler(boolean isTimeOut) {
         if (!isTimeOut) {
-            ycBleLog.e("收到了数据，移除超时延时处理==>");
+            NpBleLog.e("收到了数据，移除超时延时处理==>");
         } else {
-            ycBleLog.e("没有收到响应指令,说明已经超时了==>");
+            NpBleLog.e("没有收到响应指令,说明已经超时了==>");
         }
         timeOutHandler.removeCallbacksAndMessages(null);
     }
@@ -824,31 +825,31 @@ public abstract class AbsBleManager {
      */
     private boolean verifyConnBefore(String mac) {
         if (!isBLeEnabled()) {
-            ycBleLog.e("蓝牙没有打开呢！");
+            NpBleLog.e("蓝牙没有打开呢！");
             return false;
         }
         if (isConn) {
-            ycBleLog.e("已经是连接的，，不需要花里胡哨的了");
+            NpBleLog.e("已经是连接的，，不需要花里胡哨的了");
             return false;
         }
         if (TextUtils.isEmpty(mac) || !mac.matches(strMacRule)) {
-            ycBleLog.e("mac地址都不对,地址要注意大写,且不能为空！！！！！");
+            NpBleLog.e("mac地址都不对,地址要注意大写,且不能为空！！！！！");
             return false;
         }
 
         if (isConnectIng) {
-            ycBleLog.e("ble-当前已经发出了连接请求，还没响应，不需要再发送这次请求");
+            NpBleLog.e("ble-当前已经发出了连接请求，还没响应，不需要再发送这次请求");
             withBleConnState(NpBleConnState.CONNECTING);
             return false;
         }
 
         if (!TextUtils.isEmpty(connMac) && !mac.equals(connMac)) {
-            ycBleLog.e("连接新的设备之前，需先调用断开指令");
+            NpBleLog.e("连接新的设备之前，需先调用断开指令");
             return false;
         }
 
         if (isOTAMode) {
-            ycBleLog.e("醒醒吧 现在是在OTA模式下");
+            NpBleLog.e("醒醒吧 现在是在OTA模式下");
             return false;
         }
         return true;

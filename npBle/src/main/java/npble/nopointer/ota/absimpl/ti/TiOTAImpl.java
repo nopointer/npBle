@@ -11,7 +11,7 @@ import java.util.UUID;
 
 import npble.nopointer.core.AbsBleManager;
 import npble.nopointer.exception.BleUUIDNullException;
-import npble.nopointer.log.ycBleLog;
+import npble.nopointer.log.NpBleLog;
 import npble.nopointer.ota.callback.OTACallback;
 import npble.nopointer.util.BleUtil;
 
@@ -189,9 +189,9 @@ class TiOTAImpl extends AbsBleManager implements TIBleCfg {
                 if (otaCallback != null) {
                     otaCallback.onProgress((int) progress);
                 }
-                ycBleLog.e("progress===>" + progress);
+                NpBleLog.e("progress===>" + progress);
                 if (mProgInfo.iBlocks == mProgInfo.nBlocks) {
-                    ycBleLog.e("OTA 完成 Programming finished");
+                    NpBleLog.e("OTA 完成 Programming finished");
                     isSuccess = true;
                     if (otaCallback != null) {
                         otaCallback.onSuccess();
@@ -205,7 +205,7 @@ class TiOTAImpl extends AbsBleManager implements TIBleCfg {
                 }
             }
             if (!success) {
-                ycBleLog.e(msg);
+                NpBleLog.e(msg);
             }
         } else {
             mProgramming = false;
@@ -239,7 +239,7 @@ class TiOTAImpl extends AbsBleManager implements TIBleCfg {
                 stream.close();
             } catch (IOException e) {
                 // Handle exceptions here
-                ycBleLog.e("File open failed: " + filePath + "\n");
+                NpBleLog.e("File open failed: " + filePath + "\n");
             }
         }
         // Show image info

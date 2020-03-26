@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import npble.nopointer.device.BleDevice;
-import npble.nopointer.log.ycBleLog;
+import npble.nopointer.log.NpBleLog;
 import npble.nopointer.ota.OTAErrCode;
 import npble.nopointer.ota.callback.OTACallback;
 import npble.nopointer.util.BleUtil;
@@ -63,9 +63,9 @@ public class TeLinkOTAHelper {
                         }
                         break;
                     case Device.STATE_SUCCESS:
-                        ycBleLog.e("成功");
+                        NpBleLog.e("成功");
                         endTime = System.currentTimeMillis();
-                        ycBleLog.e("time:" + (endTime - startTime) / 1000L / 60.0f);
+                        NpBleLog.e("time:" + (endTime - startTime) / 1000L / 60.0f);
                         if (otaCallback != null) {
                             otaCallback.onSuccess();
                         }
