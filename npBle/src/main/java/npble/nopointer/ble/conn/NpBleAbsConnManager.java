@@ -95,7 +95,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             return;
         }
         taskIndex++;
-        ycBleLog.e("task:" + taskIndex + "/" + taskCount);
+        ycBleLog.e("task:" + taskIndex + "/" + taskCount+"、、、"+this);
         if (taskIndex < taskCount) {
             BleTask bleTask = requestTaskList.get(taskIndex);
             if (bleTask.getRequest() instanceof WriteRequest) {

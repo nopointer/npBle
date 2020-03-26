@@ -2,6 +2,7 @@ package lib.ycble;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -57,7 +58,7 @@ public class MainActivity extends Activity implements ScanListener {
             }
         });
 
-//        startActivity(new Intent(MainActivity.this,BleActivity.class));
+        startActivity(new Intent(MainActivity.this,BleActivity.class));
 //        BleScanner.getInstance().registerScanListener(this);
 //        BleScanner.getInstance().startScan();
 

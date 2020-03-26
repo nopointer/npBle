@@ -2,14 +2,12 @@ package lib.ycble.ble;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import no.nordicsemi.android.ble.callback.WriteProgressCallback;
+import lib.ycble.BleActivity;
 import npble.nopointer.ble.conn.NpBleAbsConnManager;
 import npble.nopointer.exception.BleUUIDNullException;
 import npble.nopointer.log.ycBleLog;
@@ -37,6 +35,12 @@ public class NpBleManager extends NpBleAbsConnManager implements BleUUIDCfg {
         try {
             setNotificationCallback(U_SER, U_notify);
             enableNotifications(U_SER, U_notify);
+            addTask(createWriteTask(U_SER, U_write, new byte[]{0x14}));
+            addTask(createWriteTask(U_SER, U_write, new byte[]{0x51, 0x01}));
+//
+            addTask(createWriteTask(U_SER, U_write, new byte[]{0x13, 19, 12, 15}));
+            addTask(createWriteTask(U_SER, U_write, new byte[]{0x51, 0x01}));
+
 //            writeCharacteristic(U_SER,U_write,new byte[]{0x51,0x01});
 //            writeCharacteristic(U_SER,U_write,new byte[]{0x51,0x01});
 //            writeCharacteristic(U_SER,U_write,new byte[]{0x51,0x01});
@@ -47,21 +51,19 @@ public class NpBleManager extends NpBleAbsConnManager implements BleUUIDCfg {
 //            writeCharacteristic(U_SER,U_write,new byte[]{0x51,0x01});
 //            writeCharacteristic(U_SER,U_write,new byte[]{0x51,0x01});
 //            writeCharacteristic(U_SER,U_write,new byte[]{0x51,0x01});
-//            writeCharacteristic(U_SER,U_write,new byte[]{0x51,0x01});
-//            writeCharacteristic(U_SER,U_write,new byte[]{0x51,0x01});
-//            writeCharacteristic(U_SER,U_write,new byte[]{0x13,19,12,15});
-            byte[] data = createPushMsgContent("哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哦嗯嗯嗯123你好你好任务我偶然和维护费艾特内容给如果以隔热清入关前二个偶尔end", 2);
-            writeCharacteristicWithMostPack(U_SER, U_write, data, 0, data.length, new WriteProgressCallback() {
-                @Override
-                public void onPacketSent(@NonNull BluetoothDevice device, @Nullable byte[] data, int index) {
-                    try {
-                        ycBleLog.e("onPacketSent ： " + BleUtil.byte2HexStr(data) + "///" + index);
-                        writeCharacteristicWithMostPack(U_SER, U_write, data, (index + 1) * 20, 4, this);
-                    } catch (BleUUIDNullException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
+//            addTask(createWriteTask(U_SER, U_write, new byte[]{0x13, 19, 12, 15}));
+//            byte[] data = createPushMsgContent("哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哦嗯嗯嗯123你好你好任务我偶然和维护费艾特内容给如果以隔热清入关前二个偶尔end", 2);
+//            writeCharacteristicWithMostPack(U_SER, U_write, data, 0, data.length, new WriteProgressCallback() {
+//                @Override
+//                public void onPacketSent(@NonNull BluetoothDevice device, @Nullable byte[] data, int index) {
+//                    try {
+//                        ycBleLog.e("onPacketSent ： " + BleUtil.byte2HexStr(data) + "///" + index);
+//                        writeCharacteristicWithMostPack(U_SER, U_write, data, (index + 1) * 20, 4, this);
+//                    } catch (BleUUIDNullException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            });
 //            writeCharacteristic(U_SER,U_write,new byte[]{0x13,19,12,14});
 //            writeCharacteristic(U_SER,U_write,new byte[]{0x13,19,12,13});
 //            writeCharacteristic(U_SER,U_write,new byte[]{0x13,19,12,12});
@@ -75,8 +77,33 @@ public class NpBleManager extends NpBleAbsConnManager implements BleUUIDCfg {
     }
 
     @Override
-    protected void onDataReceive(byte[] data, UUID uuid) {
+    protected void onBleDeviceReady() {
 
+    }
+
+    @Override
+    protected void onDataReceive(byte[] data, UUID uuid) {
+        taskSuccess();
+    }
+
+    @Override
+    protected void onConnException() {
+        connDevice(BleActivity.macForXinCore);
+    }
+
+    @Override
+    protected void onDataWriteSuccess(UUID uuid, byte[] data) {
+        ycBleLog.e("onDataWriteSuccess===>" + BleUtil.byte2HexStr(data));
+    }
+
+    @Override
+    protected void onDataWriteFail(UUID uuid, byte[] data, int status) {
+        ycBleLog.e("onDataWriteFail===>" + BleUtil.byte2HexStr(data));
+    }
+
+    @Override
+    protected void onFinishTaskAfterConn() {
+        ycBleLog.e("onFinishTaskAfterConn===>时序任务完成");
     }
 
 
@@ -117,8 +144,20 @@ public class NpBleManager extends NpBleAbsConnManager implements BleUUIDCfg {
             stringBuilder.append(npble.nopointer.util.BleUtil.byte2HexStr(bytes));
         }
         return BleUtil.hexStr2Byte(stringBuilder.toString());
-
     }
+
+
+    public void taskSuccess() {
+        try {
+            Thread.sleep(20);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        nextTask();
+    }
+
+
+
 
 
 }
