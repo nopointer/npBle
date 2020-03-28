@@ -45,7 +45,8 @@ dependencies {
     api fileTree(include: '*.jar', dir: 'libs')
     api(name: 'otalib', ext: 'aar')
     api 'no.nordicsemi.android.support.v18:scanner:1.4.2'
-    api project(':nordicBle')
+//    api project(':nordicBle')
+    implementation 'no.nordicsemi.android:ble:2.1.1'
     //np日志收集管理工具
     implementation 'com.github.nopointer:npLog:1.0.2'
 

@@ -594,6 +594,19 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     }
 
     /**
+     * 写特征数据，可以写多包数据
+     *
+     * @param serviceUUId
+     * @param uuid
+     * @throws BleUUIDNullException
+     */
+    protected WriteRequest writeCharacteristicWithMostPackWithOutResp(UUID serviceUUId, UUID uuid, byte[] data, int offset, final int length, WriteProgressCallback writeProgressCallback) throws BleUUIDNullException {
+        BluetoothGattCharacteristic bluetoothGattCharacteristic = BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid);
+        bluetoothGattCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
+        return writeCharacteristic(bluetoothGattCharacteristic, data, offset, length).split(writeProgressCallback);
+    }
+
+    /**
      * 设置监听
      *
      * @param serviceUUId
