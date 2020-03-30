@@ -2,9 +2,10 @@ package demo.nopointer.ble.bleModule;
 
 
 
+import android.text.TextUtils;
+
 import npble.nopointer.ble.scan.BleDeviceFilter;
 import npble.nopointer.device.BleDevice;
-import npble.nopointer.util.BleUtil;
 
 
 /**
@@ -32,13 +33,13 @@ public class MyDeviceFilter extends BleDeviceFilter<BleDevice> {
 
     @Override
     public boolean filter(BleDevice bleDevice) {
-        if (bleDevice == null || bleDevice.getScanBytes() == null) return false;
-        String string = BleUtil.byte2HexStr(bleDevice.getScanBytes());
-        if (string.length() < 36) return false;
-        if (string.contains(filterStr)) {
-            return true;
-        }
-        return false;
+        if (bleDevice == null || TextUtils.isEmpty(bleDevice.getName())||"null".equalsIgnoreCase(bleDevice.getName())) return false;
+//        String string = BleUtil.byte2HexStr(bleDevice.getScanBytes());
+//        if (string.length() < 36) return false;
+//        if (string.contains(filterStr)) {
+//            return true;
+//        }
+        return true;
     }
 
 

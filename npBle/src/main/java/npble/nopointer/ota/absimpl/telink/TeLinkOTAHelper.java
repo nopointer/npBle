@@ -7,10 +7,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import npLog.nopointer.core.NpLog;
 import npble.nopointer.device.BleDevice;
-import npble.nopointer.log.NpBleLog;
-import npble.nopointer.ota.OTAErrCode;
-import npble.nopointer.ota.callback.OTACallback;
+import npble.nopointer.ota.NpOtaErrCode;
+import npble.nopointer.ota.callback.NpOtaCallback;
 import npble.nopointer.util.BleUtil;
 
 public class TeLinkOTAHelper {
@@ -28,7 +28,7 @@ public class TeLinkOTAHelper {
     private long endTime = 0;
 
 
-    public void startOTA(Context context, String mac, final String filePath, final OTACallback otaCallback) {
+    public void startOTA(Context context, String mac, final String filePath, final NpOtaCallback otaCallback) {
         BleDevice bleDevice = new BleDevice("", mac);
         Device device = new Device(bleDevice);
         device.setCallback(new Device.Callback() {
@@ -63,16 +63,16 @@ public class TeLinkOTAHelper {
                         }
                         break;
                     case Device.STATE_SUCCESS:
-                        NpBleLog.e("成功");
+                        NpLog.eAndSave("成功");
                         endTime = System.currentTimeMillis();
-                        NpBleLog.e("time:" + (endTime - startTime) / 1000L / 60.0f);
+                        NpLog.eAndSave("time:" + (endTime - startTime) / 1000L / 60.0f);
                         if (otaCallback != null) {
                             otaCallback.onSuccess();
                         }
                         break;
                     case Device.STATE_FAILURE:
                         if (otaCallback != null) {
-                            otaCallback.onFailure(OTAErrCode.TELINK_ERROR, "failure");
+                            otaCallback.onFailure(NpOtaErrCode.TELINK_ERROR, "failure");
                         }
                         break;
                 }

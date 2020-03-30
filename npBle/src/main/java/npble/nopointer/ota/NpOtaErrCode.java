@@ -1,6 +1,6 @@
 package npble.nopointer.ota;
 
-public class OTAErrCode {
+public class NpOtaErrCode {
 
     /**
      * 连接异常断开了

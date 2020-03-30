@@ -6,7 +6,7 @@ import android.content.Context;
 
 import java.util.List;
 
-import npble.nopointer.log.NpBleLog;
+import npLog.nopointer.core.NpLog;
 
 public class ServiceUtils {
 
@@ -20,7 +20,7 @@ public class ServiceUtils {
      */
     public static boolean isServiceExisted(Context context, Class clazz) {
         String className = clazz.getName();
-        NpBleLog.e("class名称:"+ className);
+        NpLog.eAndSave("class名称:"+ className);
         ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.RunningServiceInfo> serviceList = activityManager.getRunningServices(Integer.MAX_VALUE);
 

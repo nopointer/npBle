@@ -1,5 +1,6 @@
 package npble.nopointer.ota.absimpl.freqchip;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 
@@ -11,21 +12,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
-import npble.nopointer.core.AbsBleManager;
-import npble.nopointer.core.BleUnitTask;
-import npble.nopointer.exception.BleUUIDNullException;
-import npble.nopointer.log.NpBleLog;
-import npble.nopointer.ota.OTAErrCode;
-import npble.nopointer.ota.callback.OTACallback;
+import npLog.nopointer.core.NpLog;
+import npble.nopointer.ble.conn.NpBleAbsConnManager;
+import npble.nopointer.exception.NpBleUUIDNullException;
+import npble.nopointer.ota.NpOtaErrCode;
+import npble.nopointer.ota.callback.NpOtaCallback;
 import npble.nopointer.util.BleUtil;
 
 import static npble.nopointer.ota.absimpl.freqchip.FreqchipUtils.OTA_CMD_WRITE_DATA;
 
-class FreqOTAImpl extends AbsBleManager implements FreqBleCfg {
+class FreqOTAImpl extends NpBleAbsConnManager implements FreqBleCfg {
 
     private String filePath = null;
 
-    private OTACallback otaCallback;
+    private NpOtaCallback otaCallback;
 
 
     private long leng;
@@ -43,15 +43,16 @@ class FreqOTAImpl extends AbsBleManager implements FreqBleCfg {
 
     private MyHandler myHandler = new MyHandler();
 
-    public FreqOTAImpl() {
-        init(UUID_OTA_SEND_DATA);
+    public FreqOTAImpl(Context context) {
+        super(context);
+        setMustUUID(UUID_OTA_SEND_DATA);
     }
 
     public void setFilePath(String filePath) {
         this.filePath = filePath;
     }
 
-    public void setOtaCallback(OTACallback otaCallback) {
+    public void setOtaCallback(NpOtaCallback otaCallback) {
         this.otaCallback = otaCallback;
     }
 
@@ -66,7 +67,7 @@ class FreqOTAImpl extends AbsBleManager implements FreqBleCfg {
                         myHandler.sendEmptyMessage(1);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
-                    } catch (BleUUIDNullException e) {
+                    } catch (NpBleUUIDNullException e) {
                         e.printStackTrace();
                     }
                 }
@@ -76,24 +77,24 @@ class FreqOTAImpl extends AbsBleManager implements FreqBleCfg {
 
     @Override
     public void onDataReceive(byte[] data, UUID uuid) {
-        NpBleLog.e("接收到数据" + BleUtil.byte2HexStr(data));
+        NpLog.eAndSave("接收到数据" + BleUtil.byte2HexStr(data));
         baseaddr = data;
         setRecv_data(1);
     }
 
     @Override
-    public void onConnectSuccess() {
-
-    }
-
-    @Override
-    public void onHandDisConn() {
+    protected void onBeforeWriteData(UUID uuid, byte[] data) {
 
     }
 
     @Override
     public void loadCfg() {
-        addBleUnitTask(BleUnitTask.createEnableNotify(UUID_OTA_SERVICE, UUID_OTA_RECV_DATA, "打开通知"));
+        try {
+            setNotificationCallback(UUID_OTA_SERVICE, UUID_OTA_RECV_DATA);
+            enableNotifications(UUID_OTA_SERVICE, UUID_OTA_RECV_DATA);
+        } catch (NpBleUUIDNullException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -102,28 +103,15 @@ class FreqOTAImpl extends AbsBleManager implements FreqBleCfg {
     }
 
     @Override
-    public void onDataWrite(byte[] data, boolean isChara, UUID... uuid) {
-        super.onDataWrite(data, isChara, uuid);
-        if (isChara) {
-            writeStatus = true;
-        }
-        hanWithTask();
-//        if (!isChara) {
-//            打开通知成功
-//            if (BleUtil.byte2HexStr(data).equalsIgnoreCase("0100")) {
-//                通知打开了，移除这个指令
-//                hanWithTask();
-//            }
-//        }
+    protected void onDataWriteSuccess(UUID uuid, byte[] data) {
+
     }
 
+    @Override
+    protected void onDataWriteFail(UUID uuid, byte[] data, int status) {
 
-    /**
-     * 处理超时数据
-     */
-    private void hanWithTask() {
-        taskSuccess(5);
     }
+
 
 
     /**
@@ -157,13 +145,13 @@ class FreqOTAImpl extends AbsBleManager implements FreqBleCfg {
         System.out.println("buffer: " + Buffer[0] + " " + Buffer[1]);
         if ((Buffer[0] != 0x52) || (Buffer[1] != 0x51) || (Buffer[2] != 0x51) || (Buffer[3] != 0x52)) {
             if (otaCallback != null) {
-                otaCallback.onFailure(OTAErrCode.FWK_FILE_INVALIDE, "文件校验不通过");
+                otaCallback.onFailure(NpOtaErrCode.FWK_FILE_INVALIDE, "文件校验不通过");
             }
             return false;
         }
         if (file.length() < 100) {
             if (otaCallback != null) {
-                otaCallback.onFailure(OTAErrCode.FWK_FILE_INVALIDE, "文件校验不通过");
+                otaCallback.onFailure(NpOtaErrCode.FWK_FILE_INVALIDE, "文件校验不通过");
             }
             return false;
         }
@@ -172,7 +160,7 @@ class FreqOTAImpl extends AbsBleManager implements FreqBleCfg {
 
 
     public void doSendFileByBluetooth(String filePath)
-            throws FileNotFoundException, BleUUIDNullException {
+            throws FileNotFoundException, NpBleUUIDNullException {
         if (!filePath.equals(null)) {
             int read_count;
             int i = 0;
@@ -240,11 +228,11 @@ class FreqOTAImpl extends AbsBleManager implements FreqBleCfg {
             }
 
         } else {
-            NpBleLog.e("请选择要发送的文件");
+            NpLog.eAndSave("请选择要发送的文件");
         }
     }
 
-    private boolean send_data(int type, int addr, byte[] buffer, int length) throws BleUUIDNullException {
+    private boolean send_data(int type, int addr, byte[] buffer, int length) throws NpBleUUIDNullException {
         byte[] cmd_write = null;
         byte[] result_cmd = null;
         byte[] cmd = new byte[1];
@@ -257,8 +245,19 @@ class FreqOTAImpl extends AbsBleManager implements FreqBleCfg {
         } else {
             result_cmd = FreqchipUtils.byteMerger(cmd_write, buffer);
         }
-        return writeDataWithoutResp(UUID_OTA_SERVICE, UUID_OTA_SEND_DATA, result_cmd);
+        return writeData(result_cmd);
 
+    }
+
+
+    private boolean writeData(byte[] data) {
+        try {
+            writeCharacteristicWithOutResponse(UUID_OTA_SERVICE, UUID_OTA_SEND_DATA, data);
+            return true;
+        } catch (NpBleUUIDNullException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
 
@@ -270,7 +269,7 @@ class FreqOTAImpl extends AbsBleManager implements FreqBleCfg {
         this.recv_data = recv_data;
     }
 
-    private int page_erase(int addr, long length) throws BleUUIDNullException {
+    private int page_erase(int addr, long length) throws NpBleUUIDNullException {
 
         long count = length / 0x1000;
         if ((length % 0x1000) != 0) {
@@ -286,7 +285,7 @@ class FreqOTAImpl extends AbsBleManager implements FreqBleCfg {
     }
 
     boolean checkDisconnect() {
-        if (!isConn()) {
+        if (!isConnected()) {
             myHandler.sendEmptyMessage(2);
             return true;
         }
@@ -310,7 +309,7 @@ class FreqOTAImpl extends AbsBleManager implements FreqBleCfg {
                     break;
                 case 2:
                     if (otaCallback != null) {
-                        otaCallback.onFailure(OTAErrCode.LOST_CONN, "disconnected");
+                        otaCallback.onFailure(NpOtaErrCode.LOST_CONN, "disconnected");
                     }
                     break;
                 default:

@@ -7,9 +7,9 @@ import java.util.UUID;
 
 import demo.nopointer.ble.MainApplication;
 import demo.nopointer.ble.activity.BleActivity;
+import npLog.nopointer.core.NpLog;
 import npble.nopointer.ble.conn.NpBleAbsConnManager;
-import npble.nopointer.exception.BleUUIDNullException;
-import npble.nopointer.log.NpBleLog;
+import npble.nopointer.exception.NpBleUUIDNullException;
 import npble.nopointer.ota.absimpl.xc.no.nordicsemi.android.BleManagerCallbacks;
 import npble.nopointer.util.BleUtil;
 
@@ -29,6 +29,9 @@ public class NpBleManager extends NpBleAbsConnManager implements BleUUIDCfg {
         bleDataProcessingUtils = new BleDataProcessingUtils(this);
     }
 
+    /**
+     * 数据解析工具
+     */
     BleDataProcessingUtils bleDataProcessingUtils = null;
 
     @Override
@@ -71,7 +74,7 @@ public class NpBleManager extends NpBleAbsConnManager implements BleUUIDCfg {
 //            writeCharacteristic(U_SER,U_write,new byte[]{0x51,0x01});
 //            writeCharacteristic(U_SER,U_write,new byte[]{0x51,0x01});
 //            writeCharacteristic(U_SER,U_write,new byte[]{0x51,0x01});
-        } catch (BleUUIDNullException e) {
+        } catch (NpBleUUIDNullException e) {
             e.printStackTrace();
             disconnect();
         }
@@ -86,14 +89,14 @@ public class NpBleManager extends NpBleAbsConnManager implements BleUUIDCfg {
     public void writeData(byte[] data) {
         try {
             writeCharacteristic(U_SER, U_write, data);
-        } catch (BleUUIDNullException e) {
+        } catch (NpBleUUIDNullException e) {
             e.printStackTrace();
         }
     }
 
     @Override
     protected void onDataReceive(byte[] data, UUID uuid) {
-        NpBleLog.e("onDataReceive====>" + BleUtil.byte2HexStr(data));
+        NpLog.eAndSave("onDataReceive====>" + BleUtil.byte2HexStr(data));
         bleDataProcessingUtils.handResponseData(uuid, data);
     }
 
@@ -103,26 +106,26 @@ public class NpBleManager extends NpBleAbsConnManager implements BleUUIDCfg {
     @Override
     protected void onConnException() {
         if (isHandDisConn()) {
-            NpBleLog.e("这是手动断开的，不处理");
+            NpLog.eAndSave("这是手动断开的，不处理");
         } else {
-            NpBleLog.e("连接异常，重连");
+            NpLog.eAndSave("连接异常，重连");
             connDevice(BleActivity.macForXinCore);
         }
     }
 
     @Override
     protected void onDataWriteSuccess(UUID uuid, byte[] data) {
-        NpBleLog.e("onDataWriteSuccess===>" + BleUtil.byte2HexStr(data));
+        NpLog.eAndSave("onDataWriteSuccess===>" + BleUtil.byte2HexStr(data));
     }
 
     @Override
     protected void onDataWriteFail(UUID uuid, byte[] data, int status) {
-        NpBleLog.e("onDataWriteFail===>" + BleUtil.byte2HexStr(data));
+        NpLog.eAndSave("onDataWriteFail===>" + BleUtil.byte2HexStr(data));
     }
 
     @Override
     protected void onFinishTaskAfterConn() {
-        NpBleLog.e("onFinishTaskAfterConn===>时序任务完成");
+        NpLog.eAndSave("onFinishTaskAfterConn===>时序任务完成");
     }
 
 
@@ -154,7 +157,7 @@ public class NpBleManager extends NpBleAbsConnManager implements BleUUIDCfg {
 
     @Override
     protected void onBeforeWriteData(UUID uuid, byte[] data) {
-        NpBleLog.e("写指令之前:" + BleUtil.byte2HexStr(data));
+        NpLog.eAndSave("写指令之前:" + BleUtil.byte2HexStr(data));
         bleDataProcessingUtils.onBeforeWriteData(uuid, data);
     }
 }

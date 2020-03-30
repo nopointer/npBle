@@ -1,5 +1,6 @@
 package npble.nopointer.ota.absimpl.ti;
 
+import android.content.Context;
 import android.os.Handler;
 import android.text.TextUtils;
 
@@ -9,16 +10,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
-import npble.nopointer.core.AbsBleManager;
-import npble.nopointer.exception.BleUUIDNullException;
-import npble.nopointer.log.NpBleLog;
-import npble.nopointer.ota.callback.OTACallback;
+import npLog.nopointer.core.NpLog;
+import npble.nopointer.ble.conn.NpBleAbsConnManager;
+import npble.nopointer.exception.NpBleUUIDNullException;
+import npble.nopointer.ota.callback.NpOtaCallback;
 import npble.nopointer.util.BleUtil;
 
-import static npble.nopointer.ota.OTAErrCode.TI_FAILURE;
+import static npble.nopointer.ota.NpOtaErrCode.TI_FAILURE;
 
 
-class TiOTAImpl extends AbsBleManager implements TIBleCfg {
+class TiOTAImpl extends NpBleAbsConnManager implements TIBleCfg {
 
 
     private static final int OAD_IMG_HDR_SIZE = 8;
@@ -30,15 +31,16 @@ class TiOTAImpl extends AbsBleManager implements TIBleCfg {
 
     private String filePath = null;
 
-    private OTACallback otaCallback;
+    private NpOtaCallback otaCallback;
     private ImgHdr mFileImgHdr = new ImgHdr();
 
     private byte[] mFileBuffer = new byte[FILE_BUFFER_SIZE];
 
     private final byte[] mOadBuffer = new byte[OAD_BUFFER_SIZE];
 
-    public TiOTAImpl() {
-        init(UUID_OTA_SEND_DATA);
+    public TiOTAImpl(Context context) {
+        super(context);
+        setMustUUID(UUID_OTA_SEND_DATA);
     }
 
     private boolean mProgramming = false;
@@ -59,7 +61,7 @@ class TiOTAImpl extends AbsBleManager implements TIBleCfg {
         this.filePath = filePath;
     }
 
-    public void setOtaCallback(OTACallback otaCallback) {
+    public void setOtaCallback(NpOtaCallback otaCallback) {
         this.otaCallback = otaCallback;
     }
 
@@ -87,16 +89,10 @@ class TiOTAImpl extends AbsBleManager implements TIBleCfg {
 //        }
     }
 
-    @Override
-    public void onConnectSuccess() {
-
-    }
 
     @Override
-    public void onHandDisConn() {
-        if (!isSuccess) {
-            otaCallback.onFailure(TI_FAILURE, "connException");
-        }
+    protected void onBeforeWriteData(UUID uuid, byte[] data) {
+
     }
 
     @Override
@@ -115,23 +111,21 @@ class TiOTAImpl extends AbsBleManager implements TIBleCfg {
                 otaCallback.onFailure(TI_FAILURE, "connException");
             }
         }
+
     }
 
     @Override
-    public void onDataWrite(byte[] data, boolean isChara, UUID... uuid) {
-        hanWithTask();
+    protected void onDataWriteSuccess(UUID uuid, byte[] data) {
         if (mProgramming) {
             postDta(imageDataIndex++);
         }
     }
 
+    @Override
+    protected void onDataWriteFail(UUID uuid, byte[] data, int status) {
 
-    /**
-     * 处理超时数据
-     */
-    private void hanWithTask() {
-        taskSuccess(5);
     }
+
 
     public void startOTA(String mac) {
         connDevice(mac);
@@ -140,7 +134,7 @@ class TiOTAImpl extends AbsBleManager implements TIBleCfg {
     public void stopOTA() {
         mProgramming = false;
         isSuccess = false;
-        disConn();
+        disConnectDevice();
     }
 
     private void start() {
@@ -153,8 +147,8 @@ class TiOTAImpl extends AbsBleManager implements TIBleCfg {
         mProgramming = true;
         mProgInfo.reset();
         try {
-            writeDataWithoutResp(UUID_OTA_SERVICE, UUID_OTA_RECV_DATA, buf);
-        } catch (BleUUIDNullException e) {
+            writeCharacteristicWithOutResponse(UUID_OTA_SERVICE, UUID_OTA_RECV_DATA, buf);
+        } catch (NpBleUUIDNullException e) {
             e.printStackTrace();
         }
 
@@ -189,9 +183,9 @@ class TiOTAImpl extends AbsBleManager implements TIBleCfg {
                 if (otaCallback != null) {
                     otaCallback.onProgress((int) progress);
                 }
-                NpBleLog.e("progress===>" + progress);
+                NpLog.eAndSave("progress===>" + progress);
                 if (mProgInfo.iBlocks == mProgInfo.nBlocks) {
-                    NpBleLog.e("OTA 完成 Programming finished");
+                    NpLog.eAndSave("OTA 完成 Programming finished");
                     isSuccess = true;
                     if (otaCallback != null) {
                         otaCallback.onSuccess();
@@ -205,7 +199,7 @@ class TiOTAImpl extends AbsBleManager implements TIBleCfg {
                 }
             }
             if (!success) {
-                NpBleLog.e(msg);
+                NpLog.eAndSave(msg);
             }
         } else {
             mProgramming = false;
@@ -214,8 +208,9 @@ class TiOTAImpl extends AbsBleManager implements TIBleCfg {
 
     private boolean writeImageData(byte data[]) {
         try {
-            return writeDataWithoutResp(UUID_OTA_SERVICE, UUID_OTA_SEND_DATA, data);
-        } catch (BleUUIDNullException e) {
+            writeCharacteristicWithOutResponse(UUID_OTA_SERVICE, UUID_OTA_SEND_DATA, data);
+            return true;
+        } catch (NpBleUUIDNullException e) {
             e.printStackTrace();
             return false;
         }
@@ -239,7 +234,7 @@ class TiOTAImpl extends AbsBleManager implements TIBleCfg {
                 stream.close();
             } catch (IOException e) {
                 // Handle exceptions here
-                NpBleLog.e("File open failed: " + filePath + "\n");
+                NpLog.eAndSave("File open failed: " + filePath + "\n");
             }
         }
         // Show image info

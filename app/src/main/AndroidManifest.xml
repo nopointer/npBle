@@ -22,7 +22,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme.NoActionBar">
         <activity
             android:name=".activity.MainActivity"
             android:launchMode="singleTask">
@@ -33,6 +33,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".activity.BleActivity" />
+        <activity android:name=".activity.OTAActivity" />
+        <activity android:name=".activity.ble.scan.ScanActivity" />
 
     </application>
 

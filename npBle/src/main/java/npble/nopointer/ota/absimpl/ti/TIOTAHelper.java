@@ -2,7 +2,7 @@ package npble.nopointer.ota.absimpl.ti;
 
 import android.content.Context;
 
-import npble.nopointer.ota.callback.OTACallback;
+import npble.nopointer.ota.callback.NpOtaCallback;
 
 public class TIOTAHelper {
 
@@ -17,9 +17,9 @@ public class TIOTAHelper {
     }
 
 
-    public void startOTA(Context context, String mac, final String filePath, final OTACallback otaCallback) {
+    public void startOTA(Context context, String mac, final String filePath, final NpOtaCallback otaCallback) {
         if (tiOTA == null) {
-            tiOTA = new TiOTAImpl();
+            tiOTA = new TiOTAImpl(context);
         }
         tiOTA.setOtaCallback(otaCallback);
         tiOTA.setFilePath(filePath);
@@ -27,9 +27,9 @@ public class TIOTAHelper {
     }
 
 
-    public void startOTA(Context context, String mac, final byte imageByes[], final OTACallback otaCallback) {
+    public void startOTA(Context context, String mac, final byte imageByes[], final NpOtaCallback otaCallback) {
         if (tiOTA == null) {
-            tiOTA = new TiOTAImpl();
+            tiOTA = new TiOTAImpl(context);
         }
         tiOTA.setOtaCallback(otaCallback);
         tiOTA.setImageByes(imageByes);

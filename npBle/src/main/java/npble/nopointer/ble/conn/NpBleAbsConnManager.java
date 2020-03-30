@@ -38,7 +38,7 @@ import npble.nopointer.ble.conn.callbacks.NpSuccessCallback;
 import npble.nopointer.ble.scan.BleScanner;
 import npble.nopointer.ble.scan.ScanListener;
 import npble.nopointer.device.BleDevice;
-import npble.nopointer.exception.BleUUIDNullException;
+import npble.nopointer.exception.NpBleUUIDNullException;
 import npble.nopointer.util.BleUtil;
 
 import static android.bluetooth.BluetoothAdapter.ACTION_STATE_CHANGED;
@@ -119,7 +119,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     @Override
     public void log(int priority, @NonNull String message) {
 //        super.log(priority, message);
-        NpLog.eAndSave(priority + "," + message);
+        NpLog.i(priority + "," + message);
     }
 
     /**
@@ -171,9 +171,9 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         } else {
             hasAfterConnectedTaskEnd = true;
             NpLog.eAndSave("任务完成");
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                requestConnectionPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_BALANCED).enqueue();
-            }
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                requestConnectionPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_BALANCED).enqueue();
+//            }
             onFinishTaskAfterConn();
         }
     }
@@ -542,9 +542,9 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      *
      * @param serviceUUId
      * @param uuid
-     * @throws BleUUIDNullException
+     * @throws NpBleUUIDNullException
      */
-    public void readCharacteristic(UUID serviceUUId, UUID uuid) throws BleUUIDNullException {
+    public void readCharacteristic(UUID serviceUUId, UUID uuid) throws NpBleUUIDNullException {
         readCharacteristic(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid)).with(new NpDataReceivedCallback(uuid) {
             @Override
             public void onDataReceived(@NonNull BluetoothDevice device, @NonNull Data data, UUID uuid) {
@@ -558,9 +558,9 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      *
      * @param serviceUUId
      * @param uuid
-     * @throws BleUUIDNullException
+     * @throws NpBleUUIDNullException
      */
-    protected void writeCharacteristic(UUID serviceUUId, UUID uuid, byte[] data) throws BleUUIDNullException {
+    protected void writeCharacteristic(UUID serviceUUId, UUID uuid, byte[] data) throws NpBleUUIDNullException {
         BluetoothGattCharacteristic bluetoothGattCharacteristic = BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid);
         bluetoothGattCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
         bluetoothGattCharacteristic.setValue(data);
@@ -572,9 +572,9 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      *
      * @param serviceUUId
      * @param uuid
-     * @throws BleUUIDNullException
+     * @throws NpBleUUIDNullException
      */
-    protected void writeCharacteristicWithOutResponse(UUID serviceUUId, UUID uuid, byte[] data) throws BleUUIDNullException {
+    protected void writeCharacteristicWithOutResponse(UUID serviceUUId, UUID uuid, byte[] data) throws NpBleUUIDNullException {
         BluetoothGattCharacteristic bluetoothGattCharacteristic = BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid);
         bluetoothGattCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
         bluetoothGattCharacteristic.setValue(data);
@@ -587,9 +587,9 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      *
      * @param serviceUUId
      * @param uuid
-     * @throws BleUUIDNullException
+     * @throws NpBleUUIDNullException
      */
-    protected WriteRequest writeCharacteristicWithMostPack(UUID serviceUUId, UUID uuid, byte[] data, int offset, final int length, WriteProgressCallback writeProgressCallback) throws BleUUIDNullException {
+    protected WriteRequest writeCharacteristicWithMostPack(UUID serviceUUId, UUID uuid, byte[] data, int offset, final int length, WriteProgressCallback writeProgressCallback) throws NpBleUUIDNullException {
         return writeCharacteristic(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid), data, offset, length).split(writeProgressCallback);
     }
 
@@ -598,9 +598,9 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      *
      * @param serviceUUId
      * @param uuid
-     * @throws BleUUIDNullException
+     * @throws NpBleUUIDNullException
      */
-    protected WriteRequest writeCharacteristicWithMostPackWithOutResp(UUID serviceUUId, UUID uuid, byte[] data, int offset, final int length, WriteProgressCallback writeProgressCallback) throws BleUUIDNullException {
+    protected WriteRequest writeCharacteristicWithMostPackWithOutResp(UUID serviceUUId, UUID uuid, byte[] data, int offset, final int length, WriteProgressCallback writeProgressCallback) throws NpBleUUIDNullException {
         BluetoothGattCharacteristic bluetoothGattCharacteristic = BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid);
         bluetoothGattCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
         return writeCharacteristic(bluetoothGattCharacteristic, data, offset, length).split(writeProgressCallback);
@@ -611,9 +611,9 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      *
      * @param serviceUUId
      * @param uuid
-     * @throws BleUUIDNullException
+     * @throws NpBleUUIDNullException
      */
-    public void setNotificationCallback(UUID serviceUUId, UUID uuid) throws BleUUIDNullException {
+    public void setNotificationCallback(UUID serviceUUId, UUID uuid) throws NpBleUUIDNullException {
         setNotificationCallback(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid)).with(new NpDataReceivedCallback(uuid) {
             @Override
             public void onDataReceived(@NonNull BluetoothDevice device, @NonNull Data data, UUID uuid) {
@@ -627,9 +627,9 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      *
      * @param serviceUUId
      * @param uuid
-     * @throws BleUUIDNullException
+     * @throws NpBleUUIDNullException
      */
-    public void enableNotifications(UUID serviceUUId, UUID uuid) throws BleUUIDNullException {
+    public void enableNotifications(UUID serviceUUId, UUID uuid) throws NpBleUUIDNullException {
         enableNotifications(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid)).with(new NpDataSentCallback(uuid) {
             @Override
             public void onDataSent(@NonNull BluetoothDevice device, @NonNull Data data, UUID uuid) {
@@ -639,13 +639,18 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     }
 
 
+    /**
+     * 写特征数据
+     *
+     * @param bluetoothGattCharacteristic
+     */
     private void writeCharacteristic(final BluetoothGattCharacteristic bluetoothGattCharacteristic) {
         UUID uuid = bluetoothGattCharacteristic.getUuid();
         byte[] data = bluetoothGattCharacteristic.getValue();
         writeCharacteristic(bluetoothGattCharacteristic, data).with(new NpDataSentCallback(uuid) {
             @Override
             public void onDataSent(@NonNull BluetoothDevice device, @NonNull Data data, UUID uuid) {
-                NpLog.eAndSave("当前发送的数据内容 : " + uuid.toString() + "{ " + BleUtil.byte2HexStr(data.getValue()) + " }");
+                NpLog.eAndSave("Write : " + uuid.toString() + "{ " + BleUtil.byte2HexStr(data.getValue()) + " }");
             }
         }).before(new BeforeCallback() {
             @Override
@@ -670,14 +675,14 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      *
      * @param serviceUUId
      * @param uuid
-     * @throws BleUUIDNullException
+     * @throws NpBleUUIDNullException
      */
-    public NpBleTask createEnableNotificationsTask(UUID serviceUUId, UUID uuid) throws BleUUIDNullException {
+    public NpBleTask createEnableNotificationsTask(UUID serviceUUId, UUID uuid) throws NpBleUUIDNullException {
         WriteRequest writeRequest = null;
         try {
             writeRequest = enableNotifications(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid));
             return NpBleTask.createEnableNotifyTask(writeRequest, uuid);
-        } catch (BleUUIDNullException e) {
+        } catch (NpBleUUIDNullException e) {
             e.printStackTrace();
             return null;
         }
@@ -697,7 +702,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         try {
             writeRequest = writeCharacteristic(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid), data);
             return NpBleTask.createWriteTask(writeRequest, uuid, data);
-        } catch (BleUUIDNullException e) {
+        } catch (NpBleUUIDNullException e) {
             e.printStackTrace();
             return null;
         }
@@ -718,7 +723,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             bluetoothGattCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
             writeRequest = writeCharacteristic(bluetoothGattCharacteristic, data);
             return NpBleTask.createWriteTask(writeRequest, uuid, data);
-        } catch (BleUUIDNullException e) {
+        } catch (NpBleUUIDNullException e) {
             e.printStackTrace();
             return null;
         }

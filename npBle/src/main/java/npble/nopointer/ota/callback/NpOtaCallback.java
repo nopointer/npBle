@@ -1,11 +1,11 @@
 package npble.nopointer.ota.callback;
 
-import npble.nopointer.ota.OTAState;
+import npble.nopointer.ota.NpOtaState;
 
 /**
  * ota 回调
  */
-public abstract class OTACallback {
+public abstract class NpOtaCallback {
 
 
     /**
@@ -30,7 +30,7 @@ public abstract class OTACallback {
     /**
      * 当前状态
      */
-    public void onCurrentState(OTAState otaState) {
+    public void onCurrentState(NpOtaState otaState) {
 
     }
 

@@ -2,7 +2,7 @@ package npble.nopointer.ota.absimpl.htx;
 
 import android.content.Context;
 
-import npble.nopointer.ota.callback.OTACallback;
+import npble.nopointer.ota.callback.NpOtaCallback;
 
 public class HTXOTAHelper {
     private static final HTXOTAHelper ourInstance = new HTXOTAHelper();
@@ -20,15 +20,15 @@ public class HTXOTAHelper {
 
     private HTXAppOTA appOTA = null;
 
-    private OTACallback otaCallback = null;
+    private NpOtaCallback otaCallback = null;
 
-    public OTACallback getOtaCallback() {
+    public NpOtaCallback getOtaCallback() {
         return otaCallback;
     }
 
 
 
-    public void setOtaCallback(OTACallback otaCallback) {
+    public void setOtaCallback(NpOtaCallback otaCallback) {
         this.otaCallback = otaCallback;
     }
 
@@ -48,7 +48,7 @@ public class HTXOTAHelper {
 //        appOTA.setmDeviceAddress(deviceMac);
 //        appOTA.startOTA(context);
 ////
-        HTXOTAImpl htxotaImpl =new HTXOTAImpl();
+        HTXOTAImpl htxotaImpl =new HTXOTAImpl(context);
         htxotaImpl.setMac(deviceMac);
         htxotaImpl.setOtaCallback(otaCallback);
         htxotaImpl.setFilePath(appFilePath);

@@ -15,10 +15,8 @@ import no.nordicsemi.android.support.v18.scanner.ScanCallback;
 import no.nordicsemi.android.support.v18.scanner.ScanFilter;
 import no.nordicsemi.android.support.v18.scanner.ScanResult;
 import no.nordicsemi.android.support.v18.scanner.ScanSettings;
+import npLog.nopointer.core.NpLog;
 import npble.nopointer.device.BleDevice;
-import npble.nopointer.log.NpBleLog;
-
-import static npble.nopointer.BleCfg.npBleTag;
 
 /**
  * Created by nopointer on 2018/8/3.
@@ -121,20 +119,20 @@ public class BleScanner {
                 @Override
                 public void onScanResult(int callbackType, final ScanResult result) {
                     super.onScanResult(callbackType, result);
-                    NpBleLog.e("====onScanResult====>单个==>" + result.toString());
+                    NpLog.eAndSave("====onScanResult====>单个==>" + result.toString());
                 }
 
                 @Override
                 public void onBatchScanResults(@NonNull final List<ScanResult> results) {
                     super.onBatchScanResults(results);
-                    NpBleLog.i("====onScanResult====>批量==>" + results.size());
+                    NpLog.i("====onScanResult====>批量==>" + results.size());
                     cachedThreadPool.execute(new Runnable() {
                         @Override
                         public void run() {
                             for (ScanResult result : results) {
                                 BleDevice bleDevice = BleDevice.parserFromScanData(result.getDevice(), result.getScanRecord().getBytes(), result.getRssi());
                                 if (isShowScanLog) {
-                                    NpBleLog.i("====onScanResult====>" + bleDevice.toString() + (bleDeviceFilter == null));
+                                    NpLog.eAndSave("====onScanResult====>" + bleDevice.toString() + (bleDeviceFilter == null));
                                 }
                                 if (bleDeviceFilter != null) {
                                     if (bleDeviceFilter.filter(bleDevice)) {
@@ -151,7 +149,7 @@ public class BleScanner {
                 @Override
                 public void onScanFailed(int errorCode) {
                     super.onScanFailed(errorCode);
-                    NpBleLog.e("onScanFailed====>" + errorCode);
+                    NpLog.eAndSave("onScanFailed====>" + errorCode);
                     onFailure(errorCode);
                 }
             };
@@ -162,10 +160,10 @@ public class BleScanner {
     public void startScan() {
         init();
         if (!isEnabled()) {
-            NpBleLog.e(npBleTag + "蓝牙没有打开，请先打开手机蓝牙，再进行扫描");
+            NpLog.eAndSave("蓝牙没有打开，请先打开手机蓝牙，再进行扫描");
             return;
         }
-        NpBleLog.e("要求开始扫描设备,当前扫描状态:" + isScan);
+        NpLog.eAndSave("要求开始扫描设备,当前扫描状态:" + isScan);
         if (isScan) {
             return;
         }
@@ -177,7 +175,7 @@ public class BleScanner {
     public void stopScan() {
         init();
         if (!isEnabled()) {
-            NpBleLog.w(npBleTag + " 蓝牙没有打开--");
+            NpLog.eAndSave(" 蓝牙没有打开--");
             return;
         }
         if (!isScan) {

@@ -3,24 +3,23 @@ package npble.nopointer.ota;
 import android.content.Context;
 
 import no.nordicsemi.android.dfu.DfuBaseService;
-import npble.nopointer.device.BleDevice;
-import npble.nopointer.log.NpBleLog;
+import npLog.nopointer.core.NpLog;
 import npble.nopointer.ota.absimpl.freqchip.FreqchipOTAHelper;
 import npble.nopointer.ota.absimpl.htx.HTXOTAHelper;
 import npble.nopointer.ota.absimpl.nordic.DfuHelper;
 import npble.nopointer.ota.absimpl.telink.TeLinkOTAHelper;
 import npble.nopointer.ota.absimpl.ti.TIOTAHelper;
 import npble.nopointer.ota.absimpl.xc.XcOTAImpl;
-import npble.nopointer.ota.callback.OTACallback;
+import npble.nopointer.ota.callback.NpOtaCallback;
 
 /**
  * OTA 助手
  */
-public class OTAHelper {
+public class NpOtaHelper {
 
-    private static final OTAHelper ourInstance = new OTAHelper();
+    private static final NpOtaHelper ourInstance = new NpOtaHelper();
 
-    public static OTAHelper getInstance() {
+    public static NpOtaHelper getInstance() {
         return ourInstance;
     }
 
@@ -33,26 +32,25 @@ public class OTAHelper {
         this.dfuBaseService = dfuBaseService;
     }
 
-    private OTAHelper() {
+    private NpOtaHelper() {
     }
 
-    public void startOTA(Context context, String filePath, BleDevice bleDevice, FirmType firmType, OTACallback otaCallback) {
-        NpBleLog.e("startOTA======>");
-        NpBleLog.e("firmType======>" + firmType);
-        NpBleLog.e("filePath======>" + filePath);
-        NpBleLog.e("bleDevice======>" + bleDevice);
-        NpBleLog.e("otaCallback======>" + otaCallback);
-        startOTA(context, filePath, bleDevice.getMac(), bleDevice.getName(), firmType, otaCallback);
-    }
+//    public void startOTA(Context context, String filePath, String mac, NpFirmType firmType, OTACallback otaCallback) {
+//        NpLog.eAndSave("startOTA======>");
+//        NpLog.eAndSave("firmType======>" + firmType);
+//        NpLog.eAndSave("filePath======>" + filePath);
+//        NpLog.eAndSave("otaCallback======>" + otaCallback);
+//        startOTA(context, filePath, mac, firmType, otaCallback);
+//    }
 
-    public void startOTA(Context context, String filePath, String mac, String name, FirmType firmType, OTACallback otaCallback) {
+    public void startOTA(Context context, String filePath, String mac,  NpFirmType firmType, NpOtaCallback otaCallback) {
         switch (firmType) {
             //nordic的ota 也是默认的ota
             case NORDIC:
-                DfuHelper.getDfuHelper().start(context, filePath, mac, name, otaCallback, dfuBaseService);
+                DfuHelper.getDfuHelper().start(context, filePath, mac,"otaName", otaCallback, dfuBaseService);
                 break;
             case HTX://汉天下的OTA
-                NpBleLog.e("开始汉天下的ota======>");
+                NpLog.eAndSave("开始汉天下的ota======>");
                 HTXOTAHelper htxotaHelper = HTXOTAHelper.getInstance();
                 htxotaHelper.setAppFilePath(filePath);
                 htxotaHelper.setDeviceMac(mac);
@@ -68,17 +66,17 @@ public class OTAHelper {
             case TI:
                 TIOTAHelper.getInstance().startOTA(context, mac, filePath, otaCallback);
                 break;
-            case XC:
+            case XR:
                 new XcOTAImpl().startOTA(context, mac, filePath, otaCallback);
                 break;
             default:
-                NpBleLog.e("暂无合适的固件");
+                NpLog.eAndSave("暂无合适的固件");
                 break;
         }
     }
 
 
-    public void startOTAForTi(Context context, byte[] imageBytes, String mac, OTACallback otaCallback) {
+    public void startOTAForTi(Context context, byte[] imageBytes, String mac, NpOtaCallback otaCallback) {
         TIOTAHelper.getInstance().startOTA(context, mac, imageBytes, otaCallback);
     }
 

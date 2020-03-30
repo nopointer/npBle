@@ -10,8 +10,8 @@ android {
     defaultConfig {
         minSdkVersion var.minSdkVersion
         targetSdkVersion var.targetSdkVersion
-        versionCode 3
-        versionName "1.0.3"
+        versionCode 4
+        versionName "1.0.4"
         multiDexEnabled true
     }
 
@@ -38,7 +38,6 @@ android {
 
 dependencies {
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     //dfu nordic
     //    implementation 'no.nordicsemi.android:dfu:1.6.1'
     implementation 'no.nordicsemi.android:dfu:1.7.0'

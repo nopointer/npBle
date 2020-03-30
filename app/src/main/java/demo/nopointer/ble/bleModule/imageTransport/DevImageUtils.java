@@ -5,7 +5,7 @@ import android.graphics.Matrix;
 
 import java.nio.ByteBuffer;
 
-import npble.nopointer.log.NpBleLog;
+import npLog.nopointer.core.NpLog;
 import npble.nopointer.util.BleUtil;
 
 public class DevImageUtils {
@@ -76,7 +76,7 @@ public class DevImageUtils {
 
     private void transport() {
         if (isTransportIng) {
-            NpBleLog.e("当前正在传输图片的嘛");
+            NpLog.eAndSave("当前正在传输图片的嘛");
             return;
         } else {
             isTransportIng = true;
@@ -95,7 +95,7 @@ public class DevImageUtils {
             loadData(tmpIndex);
             transportIndex++;
         } else {
-            NpBleLog.e("加载完成了");
+            NpLog.eAndSave("加载完成了");
             if (receiveImageDataCallback != null) {
                 receiveImageDataCallback.onFinish();
             }
@@ -109,7 +109,7 @@ public class DevImageUtils {
             loadData(tmpIndex);
             transportIndex++;
         } else {
-            NpBleLog.e("加载完成了");
+            NpLog.eAndSave("加载完成了");
             if (receiveImageDataCallback != null) {
                 receiveImageDataCallback.onFinish();
             }
@@ -161,16 +161,16 @@ public class DevImageUtils {
         }
 
         int bytes = resultBmp.getByteCount();
-        NpBleLog.e("debug===分配的数据长度是:" + bytes);
+        NpLog.eAndSave("debug===分配的数据长度是:" + bytes);
 
         ByteBuffer buf = ByteBuffer.allocate(bytes);
         resultBmp.copyPixelsToBuffer(buf);
         imageByteArray = buf.array();
 
-        NpBleLog.e("=======================");
-        NpBleLog.e("imageByteArray:" + BleUtil.byte2HexStr(imageByteArray));
-        NpBleLog.e("=======================");
-        NpBleLog.e("debug===转换后的是:" + imageByteArray.length);
+        NpLog.eAndSave("=======================");
+        NpLog.eAndSave("imageByteArray:" + BleUtil.byte2HexStr(imageByteArray));
+        NpLog.eAndSave("=======================");
+        NpLog.eAndSave("debug===转换后的是:" + imageByteArray.length);
 
 
     }

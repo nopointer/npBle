@@ -19,10 +19,8 @@ import java.util.List;
 import java.util.UUID;
 
 import no.nordicsemi.android.dfu.internal.scanner.BootloaderScanner;
-import npble.nopointer.exception.BleUUIDNullException;
-import npble.nopointer.log.NpBleLog;
-
-import static npble.nopointer.BleCfg.npBleTag;
+import npLog.nopointer.core.NpLog;
+import npble.nopointer.exception.NpBleUUIDNullException;
 
 /**
  * Created by nopointer on 2017/6/12.
@@ -46,7 +44,7 @@ public class BleUtil {
     }
 
     public static void debug(String tag, byte[] data) {
-        NpBleLog.e(npBleTag + tag + debug(data));
+        NpLog.eAndSave(tag + debug(data));
     }
 
     /***
@@ -314,7 +312,7 @@ public class BleUtil {
      * @return
      */
     public static List<BluetoothDevice> connDeviceList(Context context) {
-        NpBleLog.e(npBleTag + "读取当前系统连接的蓝牙设备");
+        NpLog.eAndSave("读取当前系统连接的蓝牙设备");
         if (context == null) {
             return null;
         }
@@ -324,7 +322,7 @@ public class BleUtil {
         }
         final List<BluetoothDevice> devices = manager.getConnectedDevices(BluetoothProfile.GATT);
         for (BluetoothDevice device : devices) {
-            NpBleLog.e("debug==>device：===>" + device.getAddress() + "==" + device.getName());
+            NpLog.eAndSave("debug==>device：===>" + device.getAddress() + "==" + device.getName());
         }
         return devices;
     }
@@ -336,15 +334,15 @@ public class BleUtil {
      * @param bluetoothGatt
      * @param U_service
      * @return
-     * @throws BleUUIDNullException
+     * @throws NpBleUUIDNullException
      */
-    public static BluetoothGattService getService(BluetoothGatt bluetoothGatt, UUID U_service) throws BleUUIDNullException {
+    public static BluetoothGattService getService(BluetoothGatt bluetoothGatt, UUID U_service) throws NpBleUUIDNullException {
         if (bluetoothGatt == null) {
-            throw new BleUUIDNullException(String.format("not find this bluetoothGatt", U_service.toString()));
+            throw new NpBleUUIDNullException(String.format("not find this bluetoothGatt", U_service.toString()));
         }
         BluetoothGattService result = bluetoothGatt.getService(U_service);
         if (result == null) {
-            throw new BleUUIDNullException(String.format("not find this uuid %s for BluetoothGattService", U_service.toString()));
+            throw new NpBleUUIDNullException(String.format("not find this uuid %s for BluetoothGattService", U_service.toString()));
         }
         return result;
     }
@@ -356,9 +354,9 @@ public class BleUtil {
      * @param serviceUUId
      * @param characteristicUUId
      * @return
-     * @throws BleUUIDNullException
+     * @throws NpBleUUIDNullException
      */
-    public static BluetoothGattCharacteristic getCharacteristic(BluetoothGatt bluetoothGatt, UUID serviceUUId, UUID characteristicUUId) throws BleUUIDNullException {
+    public static BluetoothGattCharacteristic getCharacteristic(BluetoothGatt bluetoothGatt, UUID serviceUUId, UUID characteristicUUId) throws NpBleUUIDNullException {
         return getCharacteristic(getService(bluetoothGatt, serviceUUId), characteristicUUId);
     }
 
@@ -369,12 +367,12 @@ public class BleUtil {
      * @param service
      * @param U_chara
      * @return
-     * @throws BleUUIDNullException
+     * @throws NpBleUUIDNullException
      */
-    public static BluetoothGattCharacteristic getCharacteristic(BluetoothGattService service, UUID U_chara) throws BleUUIDNullException {
+    public static BluetoothGattCharacteristic getCharacteristic(BluetoothGattService service, UUID U_chara) throws NpBleUUIDNullException {
         BluetoothGattCharacteristic result = service.getCharacteristic(U_chara);
         if (result == null) {
-            throw new BleUUIDNullException(String.format("not find this uuid %s for BluetoothGattCharacteristic please check service  or charateristic uuid", U_chara.toString()));
+            throw new NpBleUUIDNullException(String.format("not find this uuid %s for BluetoothGattCharacteristic please check service  or charateristic uuid", U_chara.toString()));
         }
         return result;
     }
@@ -385,12 +383,12 @@ public class BleUtil {
      * @param characteristic
      * @param U_descriptor
      * @return
-     * @throws BleUUIDNullException
+     * @throws NpBleUUIDNullException
      */
-    public static BluetoothGattDescriptor getDescriptor(BluetoothGattCharacteristic characteristic, UUID U_descriptor) throws BleUUIDNullException {
+    public static BluetoothGattDescriptor getDescriptor(BluetoothGattCharacteristic characteristic, UUID U_descriptor) throws NpBleUUIDNullException {
         BluetoothGattDescriptor result = characteristic.getDescriptor(U_descriptor);
         if (result == null) {
-            throw new BleUUIDNullException(String.format("not find this uuid %s for BluetoothGattCharacteristic please check service  or charateristic or descriptor uuid", U_descriptor.toString()));
+            throw new NpBleUUIDNullException(String.format("not find this uuid %s for BluetoothGattCharacteristic please check service  or charateristic or descriptor uuid", U_descriptor.toString()));
         }
         return result;
     }

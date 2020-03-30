@@ -6,19 +6,12 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.TextView;
 
 import demo.nopointer.ble.R;
-import npble.nopointer.ble.scan.ScanListener;
-import npble.nopointer.device.BleDevice;
-import npble.nopointer.log.NpBleLog;
+import demo.nopointer.ble.activity.ble.scan.ScanActivity;
 
 
-public class MainActivity extends Activity implements ScanListener {
-
-        public static String mac = "0C:B2:B7:53:39:D2";
-
-    private TextView textBtn;
+public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,43 +27,24 @@ public class MainActivity extends Activity implements ScanListener {
                     Manifest.permission.READ_CALL_LOG
             }, 100);
         }
-        textBtn = findViewById(R.id.textBtn);
-        textBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                startActivity(new Intent(MainActivity.this,BleActivity.class));
-            }
-        });
-
-        startActivity(new Intent(MainActivity.this,BleActivity.class));
     }
 
-
-    @Override
-    protected void onDestroy() {
-        NpBleLog.e("清理掉了app");
-        super.onDestroy();
-//        BleScanner.getInstance().stopScan();
-//        PushAiderHelper.getAiderHelper().stop(this);
+    /**
+     * 普通点击
+     *
+     * @param view
+     */
+    public void normalFunction(View view) {
+        startActivity(new Intent(this, ScanActivity.class));
     }
 
-    @Override
-    public void onScan(BleDevice bleDevice) {
-//        ycBleLog.e(bleDevice.toString());
+    /**
+     * OTA功能
+     *
+     * @param view
+     */
+    public void otaFunction(View view) {
+        startActivity(new Intent(this, OTAActivity.class));
     }
-
-    @Override
-    public void onFailure(int code) {
-
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    //    adb shell dumpsys activity | grep -i run
-//    plugin.voip.ui.VideoActivity
-//    plugin.voip.ui.VideoActivity
 
 }

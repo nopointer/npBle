@@ -1,10 +1,10 @@
-package npble.nopointer.core;
+package npble.nopointer;
 
 import android.content.Context;
 
 import npble.nopointer.ble.scan.BleScanner;
 
-public class ycBleSDK {
+public class npBleSDK {
 
     /**
      * 初始化蓝牙
@@ -13,9 +13,7 @@ public class ycBleSDK {
      */
     public static void initSDK(Context context) {
         BleScanner.init(context);
-        AbsBleManager.initSDK(context);
     }
-
 
 
 

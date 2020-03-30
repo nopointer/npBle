@@ -11,9 +11,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import npble.nopointer.log.NpBleLog;
-import npble.nopointer.ota.OTAErrCode;
-import npble.nopointer.ota.callback.OTACallback;
+import npLog.nopointer.core.NpLog;
+import npble.nopointer.ota.NpOtaErrCode;
+import npble.nopointer.ota.callback.NpOtaCallback;
 
 public class XcOTAImpl {
 
@@ -24,7 +24,7 @@ public class XcOTAImpl {
     private String filePath = null;
     byte[] otaData;
 
-    private OTACallback otaCallback = null;
+    private NpOtaCallback otaCallback = null;
 
 
     public XcOTAImpl() {
@@ -32,7 +32,7 @@ public class XcOTAImpl {
     }
 
 
-    public void startOTA(Context context, String mac,final String filePath, final OTACallback otaCallback) {
+    public void startOTA(Context context, String mac,final String filePath, final NpOtaCallback otaCallback) {
         this.filePath = filePath;
         this.otaCallback = otaCallback;
         try {
@@ -98,14 +98,14 @@ public class XcOTAImpl {
                 updateStatusInfo("DeviceDisconnected :" + device.getAddress() + "\n");
 
                 if (manager.isSuccess()) {
-                    NpBleLog.e("OTA 成功了");
+                    NpLog.eAndSave("OTA 成功了");
                     if (otaCallback != null) {
                         otaCallback.onSuccess();
                     }
                 } else {
-                    NpBleLog.e("OTA 失败了");
+                    NpLog.eAndSave("OTA 失败了");
                     if (otaCallback != null) {
-                        otaCallback.onFailure(OTAErrCode.FAILURE, "failure");
+                        otaCallback.onFailure(NpOtaErrCode.FAILURE, "failure");
                     }
                 }
             }
@@ -185,7 +185,7 @@ public class XcOTAImpl {
 //                statusInfoTv.setText(buffer.toString());
 //            }
 //        });
-        NpBleLog.e(message);
+        NpLog.eAndSave(message);
 
     }
 

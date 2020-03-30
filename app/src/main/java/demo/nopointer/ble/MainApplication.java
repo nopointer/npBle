@@ -3,7 +3,7 @@ package demo.nopointer.ble;
 import android.app.Application;
 import android.os.Handler;
 
-import npble.nopointer.core.ycBleSDK;
+import npble.nopointer.npBleSDK;
 
 
 public class MainApplication extends Application {
@@ -20,7 +20,7 @@ public class MainApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        ycBleSDK.initSDK(this);
+        npBleSDK.initSDK(this);
         mainApplication = this;
     }
 

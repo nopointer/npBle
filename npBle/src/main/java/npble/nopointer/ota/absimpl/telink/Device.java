@@ -7,8 +7,8 @@ import android.content.Context;
 import java.util.List;
 import java.util.UUID;
 
+import npLog.nopointer.core.NpLog;
 import npble.nopointer.device.BleDevice;
-import npble.nopointer.log.NpBleLog;
 import npble.nopointer.util.BleUtil;
 
 class Device extends Peripheral {
@@ -95,7 +95,7 @@ class Device extends Peripheral {
     @Override
     protected void onNotify(byte[] data, UUID serviceUUID, UUID characteristicUUID, Object tag) {
         super.onNotify(data, serviceUUID, characteristicUUID, tag);
-        NpBleLog.e( " onNotify ==> " + BleUtil.byte2HexStr(data, ":"));
+        NpLog.eAndSave( " onNotify ==> " + BleUtil.byte2HexStr(data, ":"));
     }
 
 
@@ -123,7 +123,7 @@ class Device extends Peripheral {
 
     public void startOta(byte[] firmware) {
 
-        NpBleLog.d("Start OTA");
+        NpLog.eAndSave("Start OTA");
         this.resetOta();
         this.mOtaParser.set(firmware);
         //this.enableOtaNotification();
@@ -309,7 +309,7 @@ class Device extends Peripheral {
         @Override
         public void success(Peripheral peripheral, Command command, Object obj) {
             if (command.tag.equals(TAG_OTA_PRE_READ)) {
-                NpBleLog.d("read =========> " + BleUtil.byte2HexStr((byte[]) obj, "-"));
+                NpLog.eAndSave("read =========> " + BleUtil.byte2HexStr((byte[]) obj, "-"));
             } else if (command.tag.equals(TAG_OTA_START)) {
                 sendNextOtaPacketCommand(0);
             } else if (command.tag.equals(TAG_OTA_END)) {
@@ -356,7 +356,7 @@ class Device extends Peripheral {
 
         @Override
         public void error(Peripheral peripheral, Command command, String errorMsg) {
-            NpBleLog.d("error packet : " + command.tag + " errorMsg : " + errorMsg);
+            NpLog.eAndSave("error packet : " + command.tag + " errorMsg : " + errorMsg);
             if (command.tag.equals(TAG_OTA_END)) {
                 // ota success
                 resetOta();
@@ -370,7 +370,7 @@ class Device extends Peripheral {
 
         @Override
         public boolean timeout(Peripheral peripheral, Command command) {
-            NpBleLog.d("timeout : " + BleUtil.byte2HexStr(command.data, ":"));
+            NpLog.eAndSave("timeout : " + BleUtil.byte2HexStr(command.data, ":"));
             if (command.tag.equals(TAG_OTA_END)) {
                 // ota success
                 resetOta();

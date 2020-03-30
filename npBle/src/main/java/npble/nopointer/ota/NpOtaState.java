@@ -1,6 +1,6 @@
 package npble.nopointer.ota;
 
-public enum OTAState {
+public enum NpOtaState {
 
     /**
      * 连接
