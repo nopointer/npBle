@@ -215,7 +215,6 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         }
         isHandDisConn = false;
         BluetoothDevice bluetoothDevice = BleUtil.getBluetoothDevice(mac);
-        NpLog.eAndSave("bluetoothDevice : " + bluetoothDevice.getName() + "///" + bluetoothDevice.getAddress());
         if (bluetoothDevice != null) {
             isConnectIng = true;
             connectCode(bluetoothDevice);
@@ -261,7 +260,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
 //                refreshDeviceCache().enqueue();
             }
             connect(bluetoothDevice)
-                    .retry(3, 100)
+                    .retry(3, 300)
                     .useAutoConnect(false)
                     .enqueue();
         } else {
@@ -270,7 +269,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             BleScanner.getInstance().registerScanListener(new ScanListener() {
                 @Override
                 public void onScan(BleDevice bleDevice) {
-                    NpLog.i("hadScanDeviceFlag=====>" + hadScanDeviceFlag + "///扫描到的设备:" + new Gson().toJson(bleDevice));
+                    NpLog.eAndSave("hadScanDeviceFlag=====>" + hadScanDeviceFlag + "///扫描到的设备:" + new Gson().toJson(bleDevice));
                     if (hadScanDeviceFlag) {
                         if (bleDevice != null && bleDevice.getMac().equalsIgnoreCase(bluetoothDevice.getAddress())) {
                             BleScanner.getInstance().unRegisterScanListener(this);
@@ -426,7 +425,9 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             if (mustUUIDList == null || mustUUIDList.size() < 0) return true;
             int count = 0;
             for (BluetoothGattService bluetoothGattService : gatt.getServices()) {
+                NpLog.eAndSave("service UUID:" + bluetoothGattService.getUuid());
                 for (BluetoothGattCharacteristic bluetoothGattCharacteristic : bluetoothGattService.getCharacteristics()) {
+                    NpLog.eAndSave("chara UUID:" + bluetoothGattCharacteristic.getUuid());
                     for (UUID uuid : mustUUIDList) {
                         if (uuid.equals(bluetoothGattCharacteristic.getUuid())) {
                             count++;
@@ -438,6 +439,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                 return true;
             } else {
                 NpLog.eAndSave("uuid对不上，情况不对");
+                onNotSupportDevice();
                 isHandDisConn = true;
                 return false;
             }
@@ -764,6 +766,12 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      */
     protected abstract void onFinishTaskAfterConn();
 
+    /**
+     * 不是本项目所支持的设备
+     */
+    protected void onNotSupportDevice() {
+    }
+
 
     /**
      * 系统的蓝牙打开
@@ -835,7 +843,6 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         @Override
         public void onReceive(final Context context, Intent intent) {
 
-
             String action = intent.getAction();
 
             NpLog.eAndSave("BleStateReceiver 广播的action:===>" + action);
@@ -844,29 +851,27 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                 int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
                 switch (state) {
                     case BluetoothAdapter.STATE_TURNING_ON:
-                        NpLog.eAndSave("蓝牙正在打开......");
+                        NpLog.eAndSave("当前系统蓝牙正在打开......");
                         break;
                     case BluetoothAdapter.STATE_ON:
-                        NpLog.eAndSave("手机蓝牙开启状态");
+                        NpLog.eAndSave("当前系统蓝牙处于开启状态");
                         onBleOpen();
                         break;
                     case BluetoothAdapter.STATE_TURNING_OFF:
-                        NpLog.eAndSave("蓝牙正在关闭......");
+                        NpLog.eAndSave("当前系统蓝牙正在关闭......");
                         break;
                     case BluetoothAdapter.STATE_OFF:
-                        NpLog.eAndSave("手机蓝牙关闭状态");
+                        NpLog.eAndSave("当前系统蓝牙处于关闭状态");
                         onBleClose();
                         break;
                 }
             } else {
-
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 if (device == null) {
                     NpLog.eAndSave("设备为空，不需要往后执行......");
                     return;
                 }
-
-                NpLog.eAndSave("相关的设备===>" + device.getName() + "/" + device.getAddress());
+                NpLog.eAndSave("跟本次广播相关的设备===>" + device.getName() + "/" + device.getAddress());
 
                 if (action == ACTION_ACL_DISCONNECTED) {
 
@@ -884,22 +889,22 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     private boolean verifyConnBefore(String mac) {
         //1.判断蓝牙状态
         if (!BleUtil.isBLeEnabled()) {
-            NpLog.eAndSave("蓝牙没有打开呢！");
+            NpLog.eAndSave("verifyConnBefore，蓝牙没有打开呢！");
             return false;
         }
         //2.判断连接状态
         if (isConnected()) {
-            NpLog.eAndSave("已经是连接的，，不需要花里胡哨的了");
+            NpLog.eAndSave("verifyConnBefore，已经是连接的，，不需要花里胡哨的了");
             return false;
         }
         //3.判断mac地址的正确性
         if (!BleUtil.isRightBleMacAddress(mac)) {
-            NpLog.eAndSave("mac地址都不对,地址要注意大写,且不能为空！！！！！");
+            NpLog.eAndSave("verifyConnBefore，mac地址都不对,地址要注意大写,且不能为空！！！！！");
             return false;
         }
         //4.判断当前的连接是否已经回应了
         if (isConnectIng) {
-            NpLog.eAndSave("ble-当前已经发出了连接请求，还没响应，不需要再发送这次请求");
+            NpLog.eAndSave("verifyConnBefore，ble-当前已经发出了连接请求，还没响应，不需要再发送这次请求");
 //            withBleConnState(NpBleConnState.CONNECTING);
             return false;
         }

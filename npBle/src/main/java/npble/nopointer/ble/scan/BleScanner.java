@@ -125,7 +125,7 @@ public class BleScanner {
                 @Override
                 public void onBatchScanResults(@NonNull final List<ScanResult> results) {
                     super.onBatchScanResults(results);
-                    NpLog.i("====onScanResult====>批量==>" + results.size());
+                    NpLog.eAndSave("====onScanResult====>批量==>" + results.size());
                     cachedThreadPool.execute(new Runnable() {
                         @Override
                         public void run() {
@@ -234,7 +234,6 @@ public class BleScanner {
                 final List<ScanFilter> filters = new ArrayList<>();
                 filters.add(new ScanFilter.Builder().build());
                 scanner.startScan(filters, settings, scanCallback);
-
             } else {
                 final BluetoothLeScannerCompat scanner = BluetoothLeScannerCompat.getScanner();
                 scanner.stopScan(scanCallback);
