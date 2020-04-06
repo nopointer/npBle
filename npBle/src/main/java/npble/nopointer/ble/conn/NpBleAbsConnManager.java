@@ -274,6 +274,8 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                         if (bleDevice != null && bleDevice.getMac().equalsIgnoreCase(bluetoothDevice.getAddress())) {
                             BleScanner.getInstance().unRegisterScanListener(this);
                             hadScanDeviceFlag = false;
+                            //扫描到设备，移除扫描的超时处理
+                            handler.removeCallbacksAndMessages(null);
                             BleScanner.getInstance().stopScan();
                             NpLog.eAndSave("扫描到设备了，停止扫描，然后再连接");
                             handler.postDelayed(new Runnable() {
@@ -291,10 +293,30 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
 
                 @Override
                 public void onFailure(int code) {
-
+                    NpLog.eAndSave("onScanFailed====>" + code);
                 }
             });
             BleScanner.getInstance().startScan();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    //如果过了30秒后，还是没有扫描到设备的话，就采取直连的方式
+                    if (hadScanDeviceFlag) {
+                        hadScanDeviceFlag = false;
+                        BleScanner.getInstance().stopScan();
+                        NpLog.eAndSave("扫描设备超时，停止扫描，然后再连接");
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                connect(bluetoothDevice)
+                                        .retry(3, 100)
+                                        .useAutoConnect(false)
+                                        .enqueue();
+                            }
+                        }, 1200);
+                    }
+                }
+            }, 30 * 1000);
         }
     }
 
@@ -336,7 +358,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      *
      * @param uuids
      */
-    public void setMustUUID(UUID... uuids) {
+    protected void setMustUUID(UUID... uuids) {
         if (mustUUIDList == null) {
             mustUUIDList = new HashSet<>();
         }
@@ -421,7 +443,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         @Override
         public boolean isRequiredServiceSupported(@NonNull final BluetoothGatt gatt) {
             mBluetoothGatt = gatt;
-            NpLog.eAndSave("判断设备支持与否===>" + new Gson().toJson(mustUUIDList));
+            NpLog.eAndSave("验证设备所需的uuid列表===>" + new Gson().toJson(mustUUIDList));
             if (mustUUIDList == null || mustUUIDList.size() < 0) return true;
             int count = 0;
             for (BluetoothGattService bluetoothGattService : gatt.getServices()) {
@@ -439,11 +461,11 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                 return true;
             } else {
                 NpLog.eAndSave("uuid对不上，情况不对");
-                onNotSupportDevice();
                 isHandDisConn = true;
                 return false;
             }
         }
+
 
     };
 
@@ -488,6 +510,15 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         @Override
         public void onServicesDiscovered(@NonNull BluetoothDevice device, boolean optionalServicesFound) {
             NpLog.eAndSave("onServicesDiscovered : " + device.getAddress());
+            if (mBluetoothGatt != null) {
+                for (BluetoothGattService bluetoothGattService : mBluetoothGatt.getServices()) {
+                    NpLog.eAndSave("service UUID:" + bluetoothGattService.getUuid());
+                    for (BluetoothGattCharacteristic bluetoothGattCharacteristic : bluetoothGattService.getCharacteristics()) {
+                        NpLog.eAndSave("chara UUID:" + bluetoothGattCharacteristic.getUuid());
+                    }
+                }
+            }
+            onDiscoveredServices(mBluetoothGatt);
         }
 
         @Override
@@ -519,6 +550,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         @Override
         public void onDeviceNotSupported(@NonNull BluetoothDevice device) {
             NpLog.eAndSave("onDeviceNotSupported : " + device.getAddress());
+            onNotSupportDevice();
         }
 
     };
@@ -546,7 +578,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * @param uuid
      * @throws NpBleUUIDNullException
      */
-    public void readCharacteristic(UUID serviceUUId, UUID uuid) throws NpBleUUIDNullException {
+    protected void readCharacteristic(UUID serviceUUId, UUID uuid) throws NpBleUUIDNullException {
         readCharacteristic(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid)).with(new NpDataReceivedCallback(uuid) {
             @Override
             public void onDataReceived(@NonNull BluetoothDevice device, @NonNull Data data, UUID uuid) {
@@ -615,13 +647,25 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * @param uuid
      * @throws NpBleUUIDNullException
      */
-    public void setNotificationCallback(UUID serviceUUId, UUID uuid) throws NpBleUUIDNullException {
+    protected void setNotificationCallback(UUID serviceUUId, UUID uuid) throws NpBleUUIDNullException {
         setNotificationCallback(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid)).with(new NpDataReceivedCallback(uuid) {
             @Override
             public void onDataReceived(@NonNull BluetoothDevice device, @NonNull Data data, UUID uuid) {
                 onDataReceive(data.getValue(), uuid);
             }
         });
+    }
+
+
+    /**
+     * 设置监听
+     *
+     * @param serviceUUId
+     * @param uuid
+     * @throws NpBleUUIDNullException
+     */
+    protected void removeNotificationCallback(UUID serviceUUId, UUID uuid) throws NpBleUUIDNullException {
+        setNotificationCallback(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid)).with(null);
     }
 
     /**
@@ -631,11 +675,27 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * @param uuid
      * @throws NpBleUUIDNullException
      */
-    public void enableNotifications(UUID serviceUUId, UUID uuid) throws NpBleUUIDNullException {
+    protected void enableNotifications(UUID serviceUUId, UUID uuid) throws NpBleUUIDNullException {
         enableNotifications(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid)).with(new NpDataSentCallback(uuid) {
             @Override
             public void onDataSent(@NonNull BluetoothDevice device, @NonNull Data data, UUID uuid) {
                 NpLog.eAndSave("onDataSent : " + uuid.toString() + "{ enableNotifications }");
+            }
+        }).enqueue();
+    }
+
+    /**
+     * 使不能通知
+     *
+     * @param serviceUUId
+     * @param uuid
+     * @throws NpBleUUIDNullException
+     */
+    protected void disableNotifications(UUID serviceUUId, UUID uuid) throws NpBleUUIDNullException {
+        disableNotifications(BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid)).with(new NpDataSentCallback(uuid) {
+            @Override
+            public void onDataSent(@NonNull BluetoothDevice device, @NonNull Data data, UUID uuid) {
+                NpLog.eAndSave("onDataSent : " + uuid.toString() + "{ disableNotifications }");
             }
         }).enqueue();
     }
@@ -788,6 +848,15 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         isConnectIng = false;
         refreshDeviceCache().enqueue();
         BleScanner.getInstance().stopScan();
+    }
+
+    /**
+     * 设备的服务被检测到
+     *
+     * @param bluetoothGatt
+     */
+    public void onDiscoveredServices(BluetoothGatt bluetoothGatt) {
+
     }
 
 

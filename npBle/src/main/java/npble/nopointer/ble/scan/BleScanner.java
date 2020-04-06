@@ -220,12 +220,12 @@ public class BleScanner {
 
 
     private void judgeScanOrStop() {
+        final BluetoothLeScannerCompat scanner = BluetoothLeScannerCompat.getScanner();
         try {
             if (isScan) {
                 if (scanRefreshTime < 0) {
                     scanRefreshTime = 1500;
                 }
-                final BluetoothLeScannerCompat scanner = BluetoothLeScannerCompat.getScanner();
                 final ScanSettings settings = new ScanSettings.Builder()
                         .setLegacy(false)
                         .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
@@ -233,13 +233,16 @@ public class BleScanner {
                         .setUseHardwareBatchingIfSupported(false).build();
                 final List<ScanFilter> filters = new ArrayList<>();
                 filters.add(new ScanFilter.Builder().build());
+                NpLog.eAndSave("judgeScanOrStop，启动了扫描");
                 scanner.startScan(filters, settings, scanCallback);
             } else {
-                final BluetoothLeScannerCompat scanner = BluetoothLeScannerCompat.getScanner();
+                NpLog.eAndSave("judgeScanOrStop，停止了扫描");
                 scanner.stopScan(scanCallback);
             }
         } catch (Exception e) {
             e.printStackTrace();
+            NpLog.eAndSave("开启扫描失败");
+            NpLog.eAndSave(e.getMessage());
         }
     }
 
