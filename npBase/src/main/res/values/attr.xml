@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <attr name="text_size" format="dimension" />
+
+    <declare-styleable name="CircleCountDownProgress">
+        <!--开始弧度-->
+        <attr name="start_angle" format="integer" />
+        <!-- 默认圆实心的颜色 -->
+        <attr name="default_circle_solide_color" format="color" />
+        <!-- 默认圆边框的颜色 -->
+        <attr name="default_circle_stroke_color" format="color" />
+        <!-- 默认圆边框的宽度 -->
+        <attr name="default_circle_stroke_width" format="dimension" />
+        <!-- 默认圆的半径 -->
+        <attr name="default_circle_radius" format="dimension" />
+        <!-- 进度条的颜色 -->
+        <attr name="progress_color" format="color" />
+        <!-- 进度条的宽度 -->
+        <attr name="progress_width" format="dimension" />
+        <!-- 小圆的实心颜色 -->
+        <attr name="small_circle_solide_color" format="color" />
+        <!-- 小圆的边框颜色 -->
+        <attr name="small_circle_stroke_color" format="color" />
+        <!-- 小圆的边框宽度 -->
+        <attr name="small_circle_stroke_width" format="dimension" />
+        <!-- 小圆的半径 -->
+        <attr name="small_circle_radius" format="dimension" />
+        <!-- 文字的颜色 -->
+        <attr name="text_color" format="color" />
+        <!-- 文字的字体大小 -->
+        <attr name="text_size" />
+    </declare-styleable>
+
+
+
+
+
+    <declare-styleable name="TasksCompletedView">
+        <attr name="radius" format="dimension" />
+        <attr name="strokeWidth" format="dimension" />
+        <attr name="circleColor" format="color" />
+        <attr name="ringColor" format="color" />
+    </declare-styleable>
+
+
+    <!-- YCIndicator  指示器属性-->
+    <declare-styleable name="YCIndicator">
+        <attr name="text_color_normal" format="color" />
+        <attr name="text_color_selected" format="color" />
+        <attr name="text_size" />
+        <!--指示器可见数量-->
+        <attr name="indicator_visible_count" format="integer" />
+        <attr name="indicator_color" format="color" />
+        <attr name="indicator_style">
+            <enum name="bitmap" value="0" />
+            <enum name="line" value="1" />
+            <enum name="triangle" value="2" />
+        </attr>
+        <!--指示器bitmap资源,style=bitmap有效-->
+        <attr name="style_bitmap_src" format="reference" />
+        <!--线性指示器左右padding，默认根据数量均分屏幕-->
+        <attr name="style_line_padding" format="dimension" />
+        <!--指示器高度-->
+        <attr name="indicator_height" format="dimension" />
+    </declare-styleable>
+
+
+    <!--带滚动监听的scrollview-->
+    <declare-styleable name="MaterialIndicator">
+        <attr name="mi_indicatorRadius" format="dimension|reference" />
+        <attr name="mi_indicatorPadding" format="dimension|reference" />
+        <attr name="mi_indicatorColor" format="color|reference" />
+    </declare-styleable>
+
+</resources>

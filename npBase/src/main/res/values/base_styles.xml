@@ -1,0 +1,39 @@
+<resources>
+
+    <!--基础样式
+
+        -->
+
+    <style name="wrap">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="wrap_v" parent="@style/wrap">
+        <item name="android:orientation">vertical</item>
+    </style>
+
+    <style name="wrap_h" parent="@style/wrap">
+        <item name="android:orientation">horizontal</item>
+    </style>
+
+    <style name="match">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+    </style>
+
+    <style name="match_v" parent="@style/match">
+        <item name="android:orientation">vertical</item>
+    </style>
+
+    <style name="match_h" parent="@style/match">
+        <item name="android:orientation">horizontal</item>
+    </style>
+
+
+    <style name="MaterialIndicator">
+        <item name="mi_indicatorRadius">4dp</item>
+        <item name="mi_indicatorColor">#ff009688</item>
+    </style>
+
+</resources>

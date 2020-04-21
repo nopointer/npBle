@@ -11,14 +11,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import butterknife.BindView;
 import demo.nopointer.ble.R;
+import demo.nopointer.ble.activity.BleActivity;
 import demo.nopointer.ble.activity.OTAActivity;
-import demo.nopointer.ble.base.TitleBar;
 import demo.nopointer.ble.base.activity.TitleActivity;
 import demo.nopointer.ble.bleModule.MyDeviceFilter;
 import demo.nopointer.ble.bleModule.NpBleManager;
@@ -31,64 +29,102 @@ import npble.nopointer.ble.scan.BleScanner;
 import npble.nopointer.ble.scan.ScanListener;
 import npble.nopointer.device.BleDevice;
 
-
 public class ScanActivity extends TitleActivity implements ScanListener {
 
-    @BindView(R.id.titleBar)
-    TitleBar titleBar;
-
-    @BindView(R.id.deviceList)
+    NpBleConnCallback bleConnCallback = new NpBleConnCallback() {
+        public void onConnState(final NpBleConnState npBleConnState) {
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    switch (npBleConnState) {
+                        case CONNEXCEPTION:
+                        case HANDDISCONN:
+                        case PHONEBLEANR:
+                            ToastHelper.getToastHelper().show("连接失败");
+                            dismissLoadingDialog();
+                            return;
+                    }
+                    handler.postDelayed(new Runnable() {
+                        public void run() {
+                            dismissLoadingDialog();
+                            if (bluetoothDevice != null) {
+                                BleScanner.getInstance().stopScan();
+                                Intent localIntent = new Intent(ScanActivity.this, BleActivity.class);
+                                localIntent.putExtra("bleDevice", new BleDevice(bluetoothDevice.getName(), bluetoothDevice.getAddress()));
+                                startActivity(localIntent);
+                            }
+                        }
+                    }, 1000);
+                }
+            });
+        }
+    };
+    private BluetoothDevice bluetoothDevice;
+    private List<BleDevice> bluetoothDeviceList = new ArrayList();
+    private DeviceListAdapter deviceListAdapter = null;
+    @BindView(R.id.deviceListView)
     RecyclerView deviceListView;
 
+    private Handler handler = new Handler() {
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
 
-    private List<BleDevice> bluetoothDeviceList = new ArrayList<>();
-    private DeviceListAdapter deviceListAdapter = null;
-    private List<String> scanMacList = new ArrayList<>();
 
-    private BluetoothDevice bluetoothDevice;
+            if (msg == null || msg.obj == null) return;
+            BleDevice bluetoothDevice = (BleDevice) msg.obj;
+            if (bluetoothDevice == null) return;
 
-    /**
-     * 操作企图 类型，可能是连接可能是ota
-     */
+            if ("HTX_DFU".equals(bluetoothDevice.getName())) {
+                return;
+            }
+            if (!scanMacList.contains(bluetoothDevice.getMac())) {
+                scanMacList.add(bluetoothDevice.getMac());
+                bluetoothDeviceList.add(bluetoothDevice);
+                deviceListAdapter.notifyDataSetChanged();
+                return;
+            }
+            int i = scanMacList.indexOf(bluetoothDevice.getMac());
+            if (i != -1) {
+                bluetoothDeviceList.set(i, bluetoothDevice);
+                deviceListAdapter.notifyItemChanged(i);
+            }
+            return;
+
+        }
+    };
+    private NpBleManager npBleManager = NpBleManager.getInstance();
+    private List<String> scanMacList = new ArrayList();
     private int type;
 
-
-    private NpBleManager npBleManager = NpBleManager.getInstance();
-
-    @Override
-    public int loadLayout() {
-        return R.layout.activity_scan;
+    private void jump2OpenBleSetting() {
+        startActivityForResult(new Intent("android.bluetooth.adapter.action.REQUEST_ENABLE"), 111);
     }
 
-    @Override
+    private void setConnCallback() {
+        npBleManager.registerConnCallback(bleConnCallback);
+    }
+
     public void initView() {
         super.initView();
         titleBar.setTitle("设备列表");
         titleBar.setRightText("扫描");
         type = getIntent().getIntExtra("type", 1);
-
         BleScanner.getInstance().setBleDeviceFilter(MyDeviceFilter.getInstance());
         BleScanner.getInstance().registerScanListener(this);
-
         titleBar.setRightViewOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            public void onClick(View paramAnonymousView) {
                 if (!BleScanner.getInstance().isScan()) {
                     BleScanner.getInstance().registerScanListener(ScanActivity.this);
                     BleScanner.getInstance().startScan();
                     titleBar.setRightText("停止");
-                } else {
-                    BleScanner.getInstance().unRegisterScanListener(ScanActivity.this);
-                    BleScanner.getInstance().stopScan();
-                    titleBar.setRightText("扫描");
-
+                    return;
                 }
+                BleScanner.getInstance().unRegisterScanListener(ScanActivity.this);
+                BleScanner.getInstance().stopScan();
+                titleBar.setRightText("扫描");
             }
         });
         deviceListAdapter = new DeviceListAdapter(this, bluetoothDeviceList) {
-            @Override
             protected void onItemConnClick(BleDevice bleDevice) {
-
                 if (type == 2) {
                     Intent intent = new Intent(ScanActivity.this, OTAActivity.class);
                     intent.putExtra("name", bleDevice.getName());
@@ -97,15 +133,14 @@ public class ScanActivity extends TitleActivity implements ScanListener {
                     return;
                 }
                 runOnUiThread(new Runnable() {
-                    @Override
                     public void run() {
                         showLoadingDialog("连接中");
                     }
                 });
-
                 setConnCallback();
                 BleScanner.getInstance().stopScan();
                 titleBar.setRightText("扫描");
+
                 BluetoothDevice bluetoothDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(bleDevice.getMac());
                 ScanActivity.this.bluetoothDevice = bluetoothDevice;
 
@@ -114,11 +149,13 @@ public class ScanActivity extends TitleActivity implements ScanListener {
         };
         deviceListView.setLayoutManager(new LinearLayoutManager(this));
         deviceListView.setAdapter(deviceListAdapter);
-
         requestPermission(loadPermissionsConfig());
     }
 
-    @Override
+    public int loadLayout() {
+        return R.layout.activity_scan;
+    }
+
     protected RequestPermissionInfo loadPermissionsConfig() {
         RequestPermissionInfo requestPermissionInfo = new RequestPermissionInfo();
         requestPermissionInfo.setPermissionTitle(getResources().getString(R.string.request_permission_title));
@@ -137,115 +174,32 @@ public class ScanActivity extends TitleActivity implements ScanListener {
         return requestPermissionInfo;
     }
 
-    NpBleConnCallback bleConnCallback = new NpBleConnCallback() {
-        @Override
-        public void onConnState(final NpBleConnState bleConnState) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    switch (bleConnState) {
-                        case CONNECTED:
-                            dismissLoadingDialog();
-                            if (bluetoothDevice != null) {
-//                                BleScanner.getInstance().stopScan();
-//                                Intent intent = new Intent(ScanActivity.this, DeviceFindMoreDialActivity.class);
-//                                intent.putExtra("name", bluetoothDevice.getName());
-//                                intent.putExtra("mac", bluetoothDevice.getAddress());
-//                                startActivity(intent);
-                            }
-                            break;
-                        case CONNEXCEPTION:
-                        case HANDDISCONN:
-                        case PHONEBLEANR:
-                            ToastHelper.getToastHelper().show("连接失败");
-                            dismissLoadingDialog();
-                            break;
-                    }
-                }
-            });
-        }
-
-
-    };
-
-    private void setConnCallback() {
-        //连接状态回调
-        npBleManager.registerConnCallback(bleConnCallback);
+    public void onFailure(int paramInt) {
     }
 
-    @Override
-    public void onScan(BleDevice bluetoothDevice) {
-        NpLog.eAndSave(bluetoothDevice.getMac());
-        Message message = handler.obtainMessage();
-        message.obj = bluetoothDevice;
-        handler.sendMessage(message);
+    protected void onPause() {
+        super.onPause();
+        BleScanner.getInstance().unRegisterScanListener(this);
+        npBleManager.unRegisterConnCallback(bleConnCallback);
     }
 
-    @Override
-    public void onFailure(int code) {
-
-    }
-
-    private Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            if (msg == null || msg.obj == null) return;
-            BleDevice bluetoothDevice = (BleDevice) msg.obj;
-            if (bluetoothDevice == null) return;
-
-//            if ("CZWHTX_DFU".equals(bluetoothDevice.getName())) {
-            if ("HTX_DFU".equals(bluetoothDevice.getName())) {
-                //扫描到已经进入OTA模式的设备
-//                BleScanner.getInstance().stopScan();
-//                Intent intent = new Intent(ScanActivity.this, DeviceFindMoreDialActivity.class);
-//                intent.putExtra("name", bluetoothDevice.getName());
-//                intent.putExtra("mac", bluetoothDevice.getMac());
-//                intent.putExtra("isOtaMode", true);
-//                startActivity(intent);
-            } else {
-                //扫描到设备
-                if (!scanMacList.contains(bluetoothDevice.getMac())) {
-                    scanMacList.add(bluetoothDevice.getMac());
-                    bluetoothDeviceList.add(bluetoothDevice);
-
-                    Collections.sort(bluetoothDeviceList, new Comparator<BleDevice>() {
-                        @Override
-                        public int compare(BleDevice o1, BleDevice o2) {
-                            return o2.getRssi() - o1.getRssi();
-                        }
-                    });
-
-                    deviceListAdapter.notifyDataSetChanged();
-                } else {
-                    int index = scanMacList.indexOf(bluetoothDevice.getMac());
-                    if (index != -1) {
-                        bluetoothDeviceList.set(index, bluetoothDevice);
-                        deviceListAdapter.notifyItemChanged(index);
-                    }
-                }
-            }
-        }
-    };
-
-
-    @Override
     protected void onResume() {
         super.onResume();
         if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
             jump2OpenBleSetting();
+            return;
+        }
+        if (!BleScanner.getInstance().isScan()) {
+            BleScanner.getInstance().registerScanListener(this);
+            BleScanner.getInstance().startScan();
+            titleBar.setRightText("停止");
         }
     }
 
-    private void jump2OpenBleSetting() {
-        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        startActivityForResult(enableBtIntent, 111);
-    }
-
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        BleScanner.getInstance().unRegisterScanListener(this);
+    public void onScan(BleDevice paramBleDevice) {
+        NpLog.eAndSave(paramBleDevice.getMac());
+        Message localMessage = handler.obtainMessage();
+        localMessage.obj = paramBleDevice;
+        handler.sendMessage(localMessage);
     }
 }

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:minHeight="40.0dip"
+    android:orientation="vertical">
+
+    <CheckBox
+        android:id="@+id/hex_select_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true" />
+
+    <EditText
+        android:id="@+id/hex_string_edit"
+        android:layout_width="fill_parent"
+        android:layout_height="30.0dip"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@+id/hex_send_btn"
+        android:layout_toRightOf="@+id/hex_select_checkbox"
+        android:background="@drawable/edit_box"
+        android:digits="1234567890ABCDEFabcdef"
+        android:paddingLeft="4.0dip"
+        android:textSize="13.0sp" />
+
+    <Button
+        android:id="@+id/hex_send_btn"
+        style="@style/button_style"
+        android:layout_width="50.0dip"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="3.0dip"
+        android:text="发送" />
+</RelativeLayout>

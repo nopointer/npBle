@@ -13,151 +13,226 @@ import npble.nopointer.exception.NpBleUUIDNullException;
 import npble.nopointer.ota.absimpl.xc.no.nordicsemi.android.BleManagerCallbacks;
 import npble.nopointer.util.BleUtil;
 
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
+import android.content.Context;
+
+import demo.nopointer.ble.MainApplication;
+import demo.nopointer.ble.bleModule.bean.CharaBean;
+import demo.nopointer.ble.dialog.bleservice.BleServiceBean;
+import demo.nopointer.ble.utils.ToastHelper;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
+
+import npLog.nopointer.core.NpLog;
+import npble.nopointer.ble.conn.NpBleAbsConnManager;
+import npble.nopointer.exception.NpBleUUIDNullException;
+import npble.nopointer.util.BleUtil;
+
 public class NpBleManager extends NpBleAbsConnManager implements BleUUIDCfg {
-    /**
-     * The manager constructor.
-     * <p>
-     * After constructing the manager, the callbacks object must be set with
-     * {@link #setGattCallbacks(BleManagerCallbacks)}.
-     * <p>
-     * To connect a device, call {@link #connect(BluetoothDevice)}.
-     *
-     * @param context the context.
-     */
-    private NpBleManager(Context context) {
-        super(context);
-        bleDataProcessingUtils = new BleDataProcessingUtils(this);
-    }
-
-    /**
-     * 数据解析工具
-     */
+    private static NpBleManager instance = null;
     BleDataProcessingUtils bleDataProcessingUtils = null;
+    private List<BleServiceBean> bleServiceBeanList = new ArrayList();
+    private BleDataReceiveListener dataReceiveListener;
+    private HashSet<String> deviceAllUuids = new HashSet();
+    private CharaBean readNotifyUuid;
+    private CharaBean writeUuid;
 
-    @Override
+
+    private NpBleManager(Context paramContext) {
+        super(paramContext);
+        this.bleServiceBeanList.clear();
+    }
+
+    public static NpBleManager getInstance() {
+        try {
+            if (instance == null) {
+                try {
+                    if (instance == null) {
+                        instance = new NpBleManager(MainApplication.getMainApplication());
+                    }
+                } finally {
+                }
+            }
+            return instance;
+        } finally {
+        }
+    }
+
+    public List<BleServiceBean> getBleServiceBeanList() {
+        return this.bleServiceBeanList;
+    }
+
+    public boolean isSelectReadOrNotifyUUID() {
+        if ((this.readNotifyUuid != null) && (this.readNotifyUuid.getServiceUUId() != null) && (this.readNotifyUuid.getCharaUUid() != null)) {
+            return true;
+        }
+        ToastHelper.getToastHelper().show("请先选择需要监听或者读取的uuid");
+        return false;
+    }
+
     public void loadCfg() {
-        try {
-            setNotificationCallback(U_SER, U_notify);
-            enableNotifications(U_SER, U_notify);
-//            addTask(createWriteTask(U_SER, U_write, new byte[]{0x14}));
-//            addTask(createWriteTask(U_SER, U_write, new byte[]{0x51, 0x01}));
-
-            addTask(createWriteTask(U_SER, U_write, new byte[]{0x13, 20, 2, 29}));
-//            addTask(createWriteTask(U_SER, U_write, new byte[]{0x51, 0x01}));
-
-            addTask(createWriteTaskWithOutResp(U_SER, U_write, new byte[]{0x13, 20, 2, 29}));
-            addTask(createWriteTaskWithOutResp(U_SER, U_write, new byte[]{0x14}));
-            addTask(createWriteTaskWithOutResp(U_SER, U_write, new byte[]{0x51, 0x01}));
-//            writeCharacteristic(U_SER, U_write, new byte[]{0x51, 0x01});
-//            writeCharacteristic(U_SER,U_write,new byte[]{0x51,0x01});
-//            writeCharacteristic(U_SER,U_write,new byte[]{0x51,0x01});
-//            writeCharacteristic(U_SER,U_write,new byte[]{0x51,0x01});
-//            writeCharacteristic(U_SER,U_write,new byte[]{0x51,0x01});
-//            writeCharacteristic(U_SER,U_write,new byte[]{0x51,0x01});
-//            writeCharacteristic(U_SER,U_write,new byte[]{0x51,0x01});
-//            addTask(createWriteTask(U_SER, U_write, new byte[]{0x13, 19, 12, 15}));
-//            byte[] data = createPushMsgContent("哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哦嗯嗯嗯123你好你好任务我偶然和维护费艾特内容给如果以隔热清入关前二个偶尔end", 2);
-//            writeCharacteristicWithMostPack(U_SER, U_write, data, 0, data.length, new WriteProgressCallback() {
-//                @Override
-//                public void onPacketSent(@NonNull BluetoothDevice device, @Nullable byte[] data, int index) {
-//                    try {
-//                        ycBleLog.e("onPacketSent ： " + BleUtil.byte2HexStr(data) + "///" + index);
-//                        writeCharacteristicWithMostPack(U_SER, U_write, data, (index + 1) * 20, 4, this);
-//                    } catch (BleUUIDNullException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            });
-//            writeCharacteristic(U_SER,U_write,new byte[]{0x13,19,12,14});
-//            writeCharacteristic(U_SER,U_write,new byte[]{0x13,19,12,13});
-//            writeCharacteristic(U_SER,U_write,new byte[]{0x13,19,12,12});
-//            writeCharacteristic(U_SER,U_write,new byte[]{0x51,0x01});
-//            writeCharacteristic(U_SER,U_write,new byte[]{0x51,0x01});
-//            writeCharacteristic(U_SER,U_write,new byte[]{0x51,0x01});
-        } catch (NpBleUUIDNullException e) {
-            e.printStackTrace();
-            disconnect();
-        }
     }
 
-
-    /**
-     * 写数据
-     *
-     * @param data
-     */
-    public void writeData(byte[] data) {
-        try {
-            writeCharacteristic(U_SER, U_write, data);
-        } catch (NpBleUUIDNullException e) {
-            e.printStackTrace();
-        }
+    protected void onBeforeWriteData(UUID uuid, byte[] data) {
+        NpLog.eAndSave(uuid.toString() + "写指令之前:" + BleUtil.byte2HexStr(data));
     }
 
-    @Override
-    protected void onDataReceive(byte[] data, UUID uuid) {
-        NpLog.eAndSave("onDataReceive====>" + BleUtil.byte2HexStr(data));
-        bleDataProcessingUtils.handResponseData(uuid, data);
-    }
-
-    /**
-     * 连接异常
-     */
-    @Override
     protected void onConnException() {
         if (isHandDisConn()) {
             NpLog.eAndSave("这是手动断开的，不处理");
-        } else {
-            NpLog.eAndSave("连接异常，重连");
-            connDevice(BleActivity.macForXinCore);
+            return;
         }
+        NpLog.eAndSave("连接异常，重连");
     }
 
-    @Override
+    protected void onDataReceive(byte[] paramArrayOfByte, UUID paramUUID) {
+        StringBuilder localStringBuilder = new StringBuilder();
+        localStringBuilder.append("onDataReceive====>");
+        localStringBuilder.append(BleUtil.byte2HexStr(paramArrayOfByte));
+        NpLog.eAndSave(localStringBuilder.toString());
+        if (this.dataReceiveListener != null) {
+            this.dataReceiveListener.onReceiveData(paramUUID.toString(), paramArrayOfByte);
+        }
+        this.bleDataProcessingUtils.handResponseData(paramUUID, paramArrayOfByte);
+    }
+
+    protected void onDataWriteFail(UUID uuid, byte[] data, int code) {
+        NpLog.eAndSave(uuid.toString() + "onDataWriteFail:" + BleUtil.byte2HexStr(data) + "///" + code);
+    }
+
     protected void onDataWriteSuccess(UUID uuid, byte[] data) {
-        NpLog.eAndSave("onDataWriteSuccess===>" + BleUtil.byte2HexStr(data));
+        NpLog.eAndSave(uuid.toString() + "onDataWriteSuccess:" + BleUtil.byte2HexStr(data));
     }
 
-    @Override
-    protected void onDataWriteFail(UUID uuid, byte[] data, int status) {
-        NpLog.eAndSave("onDataWriteFail===>" + BleUtil.byte2HexStr(data));
+    public void onDiscoveredServices(BluetoothGatt paramBluetoothGatt) {
+        super.onDiscoveredServices(paramBluetoothGatt);
+        this.bleServiceBeanList.clear();
+        this.deviceAllUuids.clear();
+        if (paramBluetoothGatt != null) {
+            List<BluetoothGattService> bluetoothGattServiceList = paramBluetoothGatt.getServices();
+
+            for (BluetoothGattService service : bluetoothGattServiceList) {
+                BleServiceBean serviceBean = new BleServiceBean(service.getUuid().toString());
+                deviceAllUuids.add(serviceBean.getUuid());
+
+                List<BluetoothGattCharacteristic> characteristicList = service.getCharacteristics();
+                ArrayList charaList = new ArrayList();
+
+                for (BluetoothGattCharacteristic characteristic : characteristicList) {
+                    BleServiceBean charaBean = new BleServiceBean(characteristic.getUuid().toString());
+                    this.deviceAllUuids.add(charaBean.getUuid());
+                    charaBean.setType(characteristic.getProperties());
+                    charaList.add(charaBean);
+                }
+                serviceBean.setCharaBeanList(charaList);
+                this.bleServiceBeanList.add(serviceBean);
+            }
+        }
+        NpLog.eAndSave("获取到了设备的uuid");
     }
 
-    @Override
     protected void onFinishTaskAfterConn() {
         NpLog.eAndSave("onFinishTaskAfterConn===>时序任务完成");
     }
 
-
-    private static NpBleManager instance = null;
-
-    public static NpBleManager getInstance() {
-        synchronized (Void.class) {
-            if (instance == null) {
-                synchronized (Void.class) {
-                    if (instance == null) {
-                        instance = new NpBleManager(MainApplication.getMainApplication());
-                        instance.setMustUUID(U_write);
-                    }
-                }
+    public void readCharaData() {
+        if ((this.readNotifyUuid != null) && (this.readNotifyUuid.getServiceUUId() != null) && (this.readNotifyUuid.getCharaUUid() != null)) {
+            try {
+                readCharacteristic(this.readNotifyUuid.getServiceUUId(), this.readNotifyUuid.getCharaUUid());
+                return;
+            } catch (NpBleUUIDNullException localNpBleUUIDNullException) {
+                localNpBleUUIDNullException.printStackTrace();
+                return;
             }
         }
-        return instance;
+        ToastHelper.getToastHelper().show("请先选择需要监听或者读取的uuid");
     }
 
+    public void setDataReceiveListener(BleDataReceiveListener paramBleDataReceiveListener) {
+        this.dataReceiveListener = paramBleDataReceiveListener;
+    }
+
+    public void setReadNotifyUuid(CharaBean paramCharaBean) {
+        if ((paramCharaBean != null) && (this.deviceAllUuids.contains(paramCharaBean.getServiceUUId().toString())) && (this.deviceAllUuids.contains(paramCharaBean.getCharaUUid().toString()))) {
+            this.readNotifyUuid = paramCharaBean;
+            return;
+        }
+        StringBuilder localStringBuilder = new StringBuilder();
+        localStringBuilder.append("自动设置上次的读或者通知uuid");
+        localStringBuilder.append(paramCharaBean.toString());
+        NpLog.e(localStringBuilder.toString());
+        NpLog.e("应该是遇到了同名称的别家设备");
+    }
+
+    public void setWriteUuid(CharaBean paramCharaBean) {
+        if ((paramCharaBean != null) && (this.deviceAllUuids.contains(paramCharaBean.getServiceUUId().toString())) && (this.deviceAllUuids.contains(paramCharaBean.getCharaUUid().toString()))) {
+            this.writeUuid = paramCharaBean;
+            StringBuilder localStringBuilder = new StringBuilder();
+            localStringBuilder.append("自动设置上次的写uuid");
+            localStringBuilder.append(paramCharaBean.toString());
+            NpLog.e(localStringBuilder.toString());
+            return;
+        }
+        NpLog.e("应该是遇到了同名称的别家设备");
+    }
+
+    public void startReadNotifyUuid() {
+        if ((this.readNotifyUuid != null) && (this.readNotifyUuid.getServiceUUId() != null) && (this.readNotifyUuid.getCharaUUid() != null)) {
+            try {
+                setNotificationCallback(this.readNotifyUuid.getServiceUUId(), this.readNotifyUuid.getCharaUUid());
+                enableNotifications(this.readNotifyUuid.getServiceUUId(), this.readNotifyUuid.getCharaUUid());
+                return;
+            } catch (NpBleUUIDNullException localNpBleUUIDNullException) {
+                localNpBleUUIDNullException.printStackTrace();
+                return;
+            }
+        }
+        ToastHelper.getToastHelper().show("请先选择需要监听或者读取的uuid");
+    }
+
+    public void stopReadNotifyUuid() {
+        if ((this.readNotifyUuid != null) && (this.readNotifyUuid.getServiceUUId() != null) && (this.readNotifyUuid.getCharaUUid() != null)) {
+            try {
+                removeNotificationCallback(this.readNotifyUuid.getServiceUUId(), this.readNotifyUuid.getCharaUUid());
+                disableNotifications(this.readNotifyUuid.getServiceUUId(), this.readNotifyUuid.getCharaUUid());
+                return;
+            } catch (NpBleUUIDNullException localNpBleUUIDNullException) {
+                localNpBleUUIDNullException.printStackTrace();
+                return;
+            }
+        }
+        ToastHelper.getToastHelper().show("请先选择需要监听或者读取的uuid");
+    }
 
     public void taskSuccess() {
         try {
-            Thread.sleep(20);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            Thread.sleep(20L);
+        } catch (InterruptedException localInterruptedException) {
+            localInterruptedException.printStackTrace();
         }
         nextTask();
     }
 
-    @Override
-    protected void onBeforeWriteData(UUID uuid, byte[] data) {
-        NpLog.eAndSave("写指令之前:" + BleUtil.byte2HexStr(data));
-        bleDataProcessingUtils.onBeforeWriteData(uuid, data);
+    public void writeData(byte[] paramArrayOfByte) {
+        if ((this.writeUuid != null) && (this.writeUuid.getServiceUUId() != null) && (this.writeUuid.getCharaUUid() != null)) {
+            try {
+                writeCharacteristicWithOutResponse(this.writeUuid.getServiceUUId(), this.writeUuid.getCharaUUid(), paramArrayOfByte);
+                return;
+            } catch (NpBleUUIDNullException e) {
+                e.printStackTrace();
+                return;
+            }
+        }
+        ToastHelper.getToastHelper().show("请先选择需要写数据的蓝牙特征uuid");
+    }
+
+    public static abstract interface BleDataReceiveListener {
+        public abstract void onReceiveData(String paramString, byte[] paramArrayOfByte);
     }
 }

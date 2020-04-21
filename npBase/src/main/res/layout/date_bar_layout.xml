@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp">
+
+        <ImageView
+            android:id="@+id/date_bar_left_imgView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:clickable="true"
+            android:gravity="center"
+            android:scaleType="center"
+            android:src="@mipmap/icon_date_left" />
+
+        <TextView
+            android:id="@+id/date_bar_title_txtView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:background="@color/transparent"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:textSize="12sp" />
+
+        <ImageView
+            android:id="@+id/date_bar_right_imgView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:clickable="true"
+            android:gravity="center"
+            android:scaleType="center"
+            android:src="@mipmap/icon_date_right" />
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -190,6 +190,12 @@ public abstract class BaseActivity extends FragmentActivity {
         }
     }
 
+    public void setCancelable(boolean argFlag){
+        if (loadingDialog != null) {
+            loadingDialog.setCancelable(argFlag);
+        }
+    }
+
     /**
      * 设置loading框取消回调事件
      *

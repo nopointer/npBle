@@ -1,0 +1,24 @@
+apply plugin: "com.android.library"
+
+android {
+
+    compileSdkVersion var.compileSdkVersion
+
+    defaultConfig {
+        minSdkVersion var.minSdkVersion
+        targetSdkVersion var.targetSdkVersion
+
+    }
+//    resourcePrefix 'x_recycler'
+}
+
+dependencies {
+//    api rootProject.ext.dependencies.xRecyclerView
+
+    implementation "com.android.support:support-v4:${var.supportLibraryVersion}"
+    implementation "com.android.support:appcompat-v7:${var.supportLibraryVersion}"
+    implementation "com.android.support:recyclerview-v7:${var.supportLibraryVersion}"
+    implementation "com.android.support:design:${var.supportLibraryVersion}"
+    //高级list控件，可以上拉/下拉/分组/滑动移除
+    api 'com.yanzhenjie:recyclerview-swipe:1.1.4'
+}

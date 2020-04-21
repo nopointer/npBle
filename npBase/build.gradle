@@ -1,0 +1,86 @@
+apply plugin: "com.android.library"
+
+android {
+
+    compileSdkVersion var.compileSdkVersion
+
+    defaultConfig {
+        minSdkVersion var.minSdkVersion
+        targetSdkVersion var.targetSdkVersion
+
+        versionCode 1
+        versionName "1.0.0"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                includeCompileClasspath true
+            }
+        }
+
+    }
+
+    buildTypes {
+        release {
+
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+        }
+    }
+
+}
+
+dependencies {
+
+    //自带的依赖
+    api fileTree(include: ['*.jar'], dir: 'libs')
+    //QMUI腾讯UI框架
+    api 'com.qmuiteam:qmui:1.1.7'
+    //注解
+    api 'com.jakewharton:butterknife:8.8.1'
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////         v4,v7              ///////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    //这几个包最好一起用吧，不然动不动就闪退了
+    api "com.android.support:support-v4:${var.supportLibraryVersion}"
+    api "com.android.support:appcompat-v7:${var.supportLibraryVersion}"
+    api "com.android.support:recyclerview-v7:${var.supportLibraryVersion}"
+    api "com.android.support:design:${var.supportLibraryVersion}"
+    api 'com.android.support:multidex:1.0.3'
+
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////        工具包              /////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+
+    implementation "com.google.code.gson:gson:2.8.1"
+
+    //
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////        第三方view控件              /////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+
+    //图片加载工具（可以单独使用）
+//    api 'me.panpf:sketch:2.6.0'
+    //action sheet 弹出框
+    api 'com.baoyz.actionsheet:library:1.1.7'
+    //非弹框选择器
+//    api 'cn.carbswang.android:NumberPickerView:1.0.2'
+    //PickerView选择器
+//    api 'com.contrarywind:Android-PickerView:4.1.8'
+    //图片选择工具/剪切
+    api 'com.github.LuckSiege.PictureSelector:picture_library:v2.2.0'
+    //np 权限管理工具
+    api 'com.github.nopointer:npPermission:1.0.0'
+
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////        根据需要可选              /////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    //嵌套滑动view
+//    implementation 'com.lzy.widget:view-core:0.2.2'
+    //pdf控件
+//    implementation 'com.github.barteksc:android-pdf-viewer:3.1.0-beta.1'
+
+
+}

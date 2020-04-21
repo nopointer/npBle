@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="300.0dip"
+    android:layout_height="230.0dip"
+    android:background="@drawable/dialog_bg"
+    android:orientation="vertical"
+    android:paddingLeft="6.0dip"
+    android:paddingRight="6.0dip">
+
+    <TextView
+        android:id="@+id/ref_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center"
+        android:minHeight="54.0dip"
+        android:text="日志选项"
+        android:textColor="@color/black"
+        android:textSize="16.0sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ref_title"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/log_name_edit"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入文件名"
+            android:textSize="14.0sp" />
+
+        <TextView
+            android:id="@+id/log_path_tv"
+            style="@style/wrap"
+            android:layout_marginTop="3.0dip"
+            android:text="日志保存路径：/npBle/Logs/"
+            android:textColor="#ff999999"
+            android:textSize="12.0sp" />
+
+        <android.support.v7.widget.AppCompatCheckBox
+            android:id="@+id/show_time_ck"
+            style="@style/wrap"
+            android:layout_marginTop="12.0dip"
+            android:text="是否显示时间戳"
+            android:textColor="#ff666666" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginTop="10.0dip"
+        android:layout_marginRight="30.0dip">
+
+        <TextView
+            android:id="@+id/cancel_btn"
+            style="@style/wrap"
+            android:text="取消"
+            android:textColor="@color/colorPrimary"
+            android:textSize="15.0sp" />
+
+        <TextView
+            android:id="@+id/sure_btn"
+            style="@style/wrap"
+            android:layout_marginLeft="30.0dip"
+            android:text="确定"
+            android:textColor="@color/colorPrimary"
+            android:textSize="15.0sp" />
+    </LinearLayout>
+</LinearLayout>

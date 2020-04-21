@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">npBle</string>
+    <string name="app_name_main">npBle</string>
 
 
     <string name="request_permission_title">温馨提示</string>
