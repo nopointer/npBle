@@ -6,7 +6,7 @@ import android.os.Build;
 import android.view.View;
 
 import butterknife.OnClick;
-import demo.np.deviceuicustom.activity.scan.ScanActivity;
+import demo.np.deviceuicustom.activity.scan.MultiChoiceScanActivity;
 import demo.np.deviceuicustom.base.TitleActivity;
 import npBase.BaseCommon.util.NpAppBaseUtils;
 
@@ -44,11 +44,11 @@ public class MainActivity extends TitleActivity {
                 }
                 break;
             case R.id.ota:
-                startActivity(new Intent(MainActivity.this, ScanActivity.class).putExtra("type", 1));
+                startActivity(new Intent(MainActivity.this, MultiChoiceScanActivity.class).putExtra("type", 1));
                 break;
 
             case R.id.start:
-                startActivity(new Intent(MainActivity.this, ScanActivity.class).putExtra("type", 2));
+                startActivity(new Intent(MainActivity.this, MultiChoiceScanActivity.class).putExtra("type", 2));
                 break;
         }
     }

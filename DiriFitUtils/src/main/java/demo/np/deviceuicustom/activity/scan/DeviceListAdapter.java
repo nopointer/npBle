@@ -2,8 +2,11 @@ package demo.np.deviceuicustom.activity.scan;
 
 import android.content.Context;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
+import java.util.HashMap;
 import java.util.List;
 
 import butterknife.BindView;
@@ -17,6 +20,31 @@ import npble.nopointer.device.BleDevice;
  */
 public class DeviceListAdapter extends BaseRecycleAdapter<BleDevice, DeviceListAdapter.ViewHolder> {
 
+    private HashMap<String, BleDevice> bleDeviceHashMap = new HashMap<>();
+
+
+    /**
+     * 全选
+     */
+    public void allChoice() {
+        if (bleDeviceHashMap == null) {
+            bleDeviceHashMap = new HashMap<>();
+        }
+        for (BleDevice bleDevice : dataList) {
+            bleDeviceHashMap.put(bleDevice.getMac(), bleDevice);
+        }
+        notifyDataSetChanged();
+    }
+
+    /**
+     * 全不选
+     */
+    public void allNotChoice() {
+        if (bleDeviceHashMap != null) {
+            bleDeviceHashMap.clear();
+        }
+        notifyDataSetChanged();
+    }
 
     public DeviceListAdapter(Context context, List<BleDevice> dataList) {
         super(context, dataList);
@@ -37,6 +65,18 @@ public class DeviceListAdapter extends BaseRecycleAdapter<BleDevice, DeviceListA
         holder.deviceNameTv.setText(data.getName());
         holder.deviceMacTv.setText(data.getMac());
         holder.deviceRssiTv.setText(data.getRssi() + "db");
+        holder.device_checkbox.setChecked(bleDeviceHashMap.containsKey(data.getMac()));
+
+        holder.device_checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    bleDeviceHashMap.put(data.getMac(), data);
+                } else {
+                    bleDeviceHashMap.remove(data.getMac());
+                }
+            }
+        });
     }
 
 
@@ -49,7 +89,7 @@ public class DeviceListAdapter extends BaseRecycleAdapter<BleDevice, DeviceListA
         TextView deviceMacTv;
 
         @BindView(R.id.device_checkbox)
-        TextView device_checkbox;
+        CheckBox device_checkbox;
 
         @BindView(R.id.device_rssi_tv)
         TextView deviceRssiTv;

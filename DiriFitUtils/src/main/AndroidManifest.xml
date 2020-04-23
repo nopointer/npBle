@@ -27,7 +27,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.scan.ScanActivity" />
+        <activity android:name=".activity.scan.MultiChoiceScanActivity" />
         <activity android:name=".activity.firmware.FirmwarelistActivity" />
         <activity android:name=".activity.ota.BatchOTAActivity" />
     </application>

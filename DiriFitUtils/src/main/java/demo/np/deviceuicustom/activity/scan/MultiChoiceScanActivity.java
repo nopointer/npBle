@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 
 import java.util.ArrayList;
@@ -32,9 +33,9 @@ import npble.nopointer.ble.scan.ScanListener;
 import npble.nopointer.device.BleDevice;
 
 /**
- * 设备扫描界面
+ * 设备扫描界面(可以多选设备)
  */
-public class ScanActivity extends TitleActivity implements ScanListener {
+public class MultiChoiceScanActivity extends TitleActivity implements ScanListener {
 
     private List<BleDevice> bluetoothDeviceList = new ArrayList();
     private DeviceListAdapter deviceListAdapter = null;
@@ -55,7 +56,7 @@ public class ScanActivity extends TitleActivity implements ScanListener {
 
 
     public int loadLayout() {
-        return R.layout.activity_scan;
+        return R.layout.activity_scan_multi;
     }
 
 
@@ -78,7 +79,7 @@ public class ScanActivity extends TitleActivity implements ScanListener {
             int i = scanMacList.indexOf(bluetoothDevice.getMac());
             if (i != -1) {
                 bluetoothDeviceList.set(i, bluetoothDevice);
-                deviceListAdapter.notifyItemChanged(i);
+                deviceListAdapter.notifyDataSetChanged();
             }
             return;
 
@@ -102,12 +103,12 @@ public class ScanActivity extends TitleActivity implements ScanListener {
         titleBar.setRightViewOnClickListener(new View.OnClickListener() {
             public void onClick(View paramAnonymousView) {
                 if (!BleScanner.getInstance().isScan()) {
-                    BleScanner.getInstance().registerScanListener(ScanActivity.this);
+                    BleScanner.getInstance().registerScanListener(MultiChoiceScanActivity.this);
                     BleScanner.getInstance().startScan();
                     titleBar.setRightText("停止");
                     return;
                 }
-                BleScanner.getInstance().unRegisterScanListener(ScanActivity.this);
+                BleScanner.getInstance().unRegisterScanListener(MultiChoiceScanActivity.this);
                 BleScanner.getInstance().stopScan();
                 titleBar.setRightText("扫描");
             }
@@ -119,6 +120,17 @@ public class ScanActivity extends TitleActivity implements ScanListener {
         requestPermission(loadPermissionsConfig());
 
         loadFilter();
+
+        all_choice_checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    deviceListAdapter.allChoice();
+                } else {
+                    deviceListAdapter.allNotChoice();
+                }
+            }
+        });
     }
 
 
