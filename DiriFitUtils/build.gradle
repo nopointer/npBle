@@ -6,7 +6,7 @@ android {
 
 
     defaultConfig {
-        applicationId "utils.dirifit.base"
+        applicationId "demo.np.deviceuicustom.new"
         minSdkVersion var.minSdkVersion
         targetSdkVersion var.targetSdkVersion
         versionCode 1
@@ -23,9 +23,35 @@ android {
         }
     }
 
+    repositories {
+        flatDir {
+            dirs 'libs', 'libs'
+        }
+    }
+
+    compileOptions {
+        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_8
+    }
+
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+
+    //注解框架
+    annotationProcessor "com.jakewharton:butterknife-compiler:8.8.1"
+
+    //np日志收集管理工具
+    implementation 'com.github.nopointer:npLog:1.0.2'
+
     implementation project(':npBase')
+
+    implementation project(':npBle')
+
+    // Retrofit库、
+    implementation 'com.squareup.retrofit2:retrofit:2.0.2'
+    implementation 'com.squareup.retrofit2:converter-gson:2.0.2'
+
+
 }

@@ -67,7 +67,7 @@ public abstract class HexCommandAdapter extends BaseRecycleAdapter<HexCommandBea
     }
 
     public int loadItemView() {
-        return 2131427383;
+        return R.layout.item_hex_command;
     }
 
     protected abstract void onHexCommandChange(HexCommandBean paramHexCommandBean, int paramInt);

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="demo.np.deviceuicustom.MainActivity">
+
+    <include layout="@layout/include_titlebar" />
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:padding="4dp">
+
+        <EditText
+            android:id="@+id/bin_name"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/download_btn"
+            android:background="@drawable/edit_box"
+            android:focusable="true"
+            android:hint="输入固件名查询并下载固件"
+            android:minHeight="40dp"
+            android:paddingLeft="10dp"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/download_btn"
+            style="@style/button_style"
+            android:layout_marginLeft="4dp"
+            android:layout_marginStart="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="40dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerInParent="true"
+            android:enabled="false"
+            android:text="下载" />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/bin_file_tv"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12.0dip"
+        android:gravity="center"
+        android:minHeight="44.0dip"
+        android:text="当前选择的固件:无"
+        android:textColor="@color/black" />
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <TextView
+            android:id="@+id/tips"
+            style="@style/wrap"
+            android:layout_marginLeft="10dp"
+            android:text="以下是所有的固件列表"
+            android:textColor="#999"
+            android:textSize="12sp" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/binListView"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_below="@+id/tips" />
+
+        <Button
+            android:id="@+id/sure_btn"
+            style="@style/button_style"
+            android:layout_width="fill_parent"
+            android:layout_height="50.0dip"
+            android:layout_alignParentBottom="true"
+            android:text="确 定"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+    </RelativeLayout>
+
+</LinearLayout>
