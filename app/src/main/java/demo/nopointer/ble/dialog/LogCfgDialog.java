@@ -6,17 +6,16 @@ import android.os.Bundle;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+
 import demo.nopointer.ble.R;
 import demo.nopointer.ble.utils.ToastHelper;
 import npBase.BaseCommon.absimpl.NpEditTextWatchImpl;
 
-public abstract class LogCfgDialog
-        extends Dialog {
+public abstract class LogCfgDialog extends Dialog {
     private EditText log_name_edit;
     private TextView log_path_tv;
     private AppCompatCheckBox show_time_ck;

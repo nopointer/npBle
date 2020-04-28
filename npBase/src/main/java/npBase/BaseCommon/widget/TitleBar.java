@@ -149,9 +149,6 @@ public class TitleBar extends RelativeLayout {
         leftTxtView.setText(argText);
     }
 
-    public void setLeftTxtColor(int colorId){
-        leftTxtView.setTextColor(getContext().getColor(colorId));
-    }
 
     /**
      * 设置左边文字

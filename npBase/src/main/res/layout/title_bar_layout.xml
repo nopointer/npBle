@@ -10,9 +10,12 @@
         android:layout_weight="3">
 
         <ImageView
+            android:layout_marginLeft="@dimen/dp_3"
+            android:layout_marginStart="@dimen/dp_3"
             android:id="@+id/left_icon_view"
-            android:layout_width="@dimen/dp_40"
-            android:layout_height="@dimen/dp_40"
+            android:layout_width="@dimen/dp_36"
+            android:layout_height="@dimen/dp_36"
+            android:padding="@dimen/dp_3"
             android:layout_centerVertical="true"
             android:clickable="false" />
 
@@ -26,7 +29,6 @@
             android:layout_toEndOf="@+id/left_icon_view"
             android:layout_toRightOf="@+id/left_icon_view"
             android:clickable="false"
-            android:text="left|start"
             android:textColor="@color/white"
             android:textSize="15sp"
             android:visibility="gone" />

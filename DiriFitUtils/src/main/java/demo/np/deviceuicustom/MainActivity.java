@@ -7,6 +7,7 @@ import android.view.View;
 
 import butterknife.OnClick;
 import demo.np.deviceuicustom.activity.scan.MultiChoiceScanActivity;
+import demo.np.deviceuicustom.activity.scan.ScanActivity;
 import demo.np.deviceuicustom.base.TitleActivity;
 import npBase.BaseCommon.util.NpAppBaseUtils;
 
@@ -32,6 +33,8 @@ public class MainActivity extends TitleActivity {
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
             }, 100);
         }
+
+//        startActivity(BatchOTAActivity.class);
     }
 
     @OnClick({R.id.version_tv, R.id.ota, R.id.start})
@@ -48,7 +51,7 @@ public class MainActivity extends TitleActivity {
                 break;
 
             case R.id.start:
-                startActivity(new Intent(MainActivity.this, MultiChoiceScanActivity.class).putExtra("type", 2));
+                startActivity(new Intent(MainActivity.this, ScanActivity.class).putExtra("type", 2));
                 break;
         }
     }

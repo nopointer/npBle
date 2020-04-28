@@ -48,12 +48,19 @@ dependencies {
     implementation project(':npBase')
 
     implementation project(':npBle')
+    implementation 'no.nordicsemi.android:ble:2.1.1'
+
+    //图片加载工具（可以单独使用）
+    api "me.panpf:sketch:2.6.0"
 
     // Retrofit库、
     implementation 'com.squareup.retrofit2:retrofit:2.0.2'
     implementation 'com.squareup.retrofit2:converter-gson:2.0.2'
 
-    implementation 'com.github.nopointer:npWidget:beta_0.0.26'
+    implementation 'com.github.nopointer:npWidget:beta_0.0.30'
+
+    //文件选择器
+    implementation 'com.leon:lfilepickerlibrary:1.8.0'
 
 
 }

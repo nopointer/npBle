@@ -47,12 +47,21 @@ class Device extends Peripheral {
     private boolean isReadSupport = true;
     private long delay = 20;
 
+    //是否成功
+    private boolean isOTASuccess =false;
+
+    public boolean isOTASuccess() {
+        return isOTASuccess;
+    }
+
     public Device(BluetoothDevice device, byte[] scanRecord, int rssi) {
         super(device, scanRecord, rssi);
+        isOTASuccess =false;
     }
 
     public Device(BleDevice device) {
         super(device);
+        isOTASuccess =false;
     }
 
     @Override
@@ -100,6 +109,7 @@ class Device extends Peripheral {
 
 
     protected void onOtaSuccess() {
+        isOTASuccess =true;
         if (mCallback != null) {
             mCallback.onOtaStateChanged(this, STATE_SUCCESS);
         }

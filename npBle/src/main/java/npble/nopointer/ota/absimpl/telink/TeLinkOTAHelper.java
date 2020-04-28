@@ -34,12 +34,17 @@ public class TeLinkOTAHelper {
         device.setCallback(new Device.Callback() {
             @Override
             public void onConnected(final Device device) {
-
+                NpLog.eAndSave("onConnected=="+device.getMacAddress());
             }
 
             @Override
             public void onDisconnected(final Device device) {
-
+                NpLog.eAndSave("onDisconnected=="+device.getMacAddress());
+                if (!device.isOTASuccess()){
+                    if (otaCallback != null) {
+                        otaCallback.onFailure(NpOtaErrCode.TELINK_ERROR, "failure");
+                    }
+                }
             }
 
             @Override

@@ -23,7 +23,6 @@ public class MainApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        npBleSDK.initSDK(this);
         mainApplication = this;
 
         npBleSDK.initSDK(this);
@@ -31,6 +30,7 @@ public class MainApplication extends Application {
         DbCfgUtil.getDbCfgUtil().init(this);
         SaveObjectUtils.init(this);
         NpLog.setLogFileMaxSizeByM(0.5F);
+        NpLog.setEnableShowCurrentLogFileSize(false);
         NpLog.setEnableShowCurrentLogFileSize(true);
 
     }

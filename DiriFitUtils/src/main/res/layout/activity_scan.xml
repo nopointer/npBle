@@ -1,71 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
     android:orientation="vertical">
 
     <include layout="@layout/include_titlebar" />
 
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:orientation="horizontal"
-        android:padding="4dp">
-
-        <EditText
-            android:id="@+id/name_filter_ed"
-            android:layout_width="fill_parent"
-            android:layout_height="36.0dip"
-            android:layout_margin="3dp"
-            android:layout_weight="3"
-            android:background="@drawable/edit_box"
-            android:hint="名称过滤"
-            android:paddingLeft="8dip"
-            android:textSize="13.0sp" />
-
-        <EditText
-            android:id="@+id/mac_filter_ed"
-            android:layout_width="fill_parent"
-            android:layout_height="36.0dip"
-            android:layout_margin="3dp"
-            android:layout_weight="2"
-            android:background="@drawable/edit_box"
-            android:digits="1234567890ABCDEFabcdef"
-            android:hint="mac地址过滤"
-            android:paddingLeft="8dip"
-            android:textSize="13.0sp" />
-
-        <CheckBox
-            android:id="@+id/all_choice_checkbox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="全选" />
-
-    </LinearLayout>
-
-
-    <RelativeLayout style="@style/match">
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/deviceListView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_above="@+id/start_btn" />
-
-        <Button
-            android:id="@+id/start_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:text="开始" />
-
-    </RelativeLayout>
-
-
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/deviceListView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
 </LinearLayout>

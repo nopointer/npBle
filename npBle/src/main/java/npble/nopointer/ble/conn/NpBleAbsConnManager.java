@@ -447,9 +447,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             if (mustUUIDList == null || mustUUIDList.size() < 0) return true;
             int count = 0;
             for (BluetoothGattService bluetoothGattService : gatt.getServices()) {
-                NpLog.eAndSave("service UUID:" + bluetoothGattService.getUuid());
                 for (BluetoothGattCharacteristic bluetoothGattCharacteristic : bluetoothGattService.getCharacteristics()) {
-                    NpLog.eAndSave("chara UUID:" + bluetoothGattCharacteristic.getUuid());
                     for (UUID uuid : mustUUIDList) {
                         if (uuid.equals(bluetoothGattCharacteristic.getUuid())) {
                             count++;
@@ -512,9 +510,9 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             NpLog.eAndSave("onServicesDiscovered : " + device.getAddress());
             if (mBluetoothGatt != null) {
                 for (BluetoothGattService bluetoothGattService : mBluetoothGatt.getServices()) {
-                    NpLog.eAndSave("service UUID:" + bluetoothGattService.getUuid());
+                    NpLog.dAndSave("service UUID:" + bluetoothGattService.getUuid());
                     for (BluetoothGattCharacteristic bluetoothGattCharacteristic : bluetoothGattService.getCharacteristics()) {
-                        NpLog.eAndSave("chara UUID:" + bluetoothGattCharacteristic.getUuid());
+                        NpLog.dAndSave("chara UUID:" + bluetoothGattCharacteristic.getUuid());
                     }
                 }
             }

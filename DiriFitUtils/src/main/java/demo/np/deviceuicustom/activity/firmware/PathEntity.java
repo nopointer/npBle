@@ -30,13 +30,3 @@ public class PathEntity implements Serializable {
                 '}';
     }
 }
-
-
-
-/* Location:           C:\Users\Administrator\Desktop\AndroidKiller_v1.3.1\bin\dex2jar\classes-dex2jar.jar
-
- * Qualified Name:     demo.np.deviceuicustom.device.PathEntity
-
- * JD-Core Version:    0.7.0.1
-
- */

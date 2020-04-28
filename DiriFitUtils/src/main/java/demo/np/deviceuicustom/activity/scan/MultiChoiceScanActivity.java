@@ -38,7 +38,7 @@ import npble.nopointer.device.BleDevice;
 public class MultiChoiceScanActivity extends TitleActivity implements ScanListener {
 
     private List<BleDevice> bluetoothDeviceList = new ArrayList();
-    private DeviceListAdapter deviceListAdapter = null;
+    private MultiChoiceDeviceListAdapter deviceListAdapter = null;
     @BindView(R.id.deviceListView)
     RecyclerView deviceListView;
 
@@ -64,21 +64,23 @@ public class MultiChoiceScanActivity extends TitleActivity implements ScanListen
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             if (msg == null || msg.obj == null) return;
-            BleDevice bluetoothDevice = (BleDevice) msg.obj;
-            if (bluetoothDevice == null) return;
+            BleDevice bleDevice = (BleDevice) msg.obj;
+            if (bleDevice == null) return;
 
-            if ("HTX_DFU".equals(bluetoothDevice.getName())) {
+            if ("HTX_DFU".equals(bleDevice.getName())) {
                 return;
             }
-            if (!scanMacList.contains(bluetoothDevice.getMac())) {
-                scanMacList.add(bluetoothDevice.getMac());
-                bluetoothDeviceList.add(bluetoothDevice);
+
+
+            if (!scanMacList.contains(bleDevice.getMac())) {
+                scanMacList.add(bleDevice.getMac());
+                bluetoothDeviceList.add(bleDevice);
                 deviceListAdapter.notifyDataSetChanged();
                 return;
             }
-            int i = scanMacList.indexOf(bluetoothDevice.getMac());
+            int i = scanMacList.indexOf(bleDevice.getMac());
             if (i != -1) {
-                bluetoothDeviceList.set(i, bluetoothDevice);
+                bluetoothDeviceList.get(i).setRssi(bleDevice.getRssi());
                 deviceListAdapter.notifyDataSetChanged();
             }
             return;
@@ -113,7 +115,7 @@ public class MultiChoiceScanActivity extends TitleActivity implements ScanListen
                 titleBar.setRightText("扫描");
             }
         });
-        deviceListAdapter = new DeviceListAdapter(this, bluetoothDeviceList);
+        deviceListAdapter = new MultiChoiceDeviceListAdapter(this, bluetoothDeviceList);
 
         deviceListView.setLayoutManager(new LinearLayoutManager(this));
         deviceListView.setAdapter(deviceListAdapter);
@@ -124,6 +126,8 @@ public class MultiChoiceScanActivity extends TitleActivity implements ScanListen
         all_choice_checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                BleScanner.getInstance().stopScan();
+                titleBar.setRightText("扫描");
                 if (isChecked) {
                     deviceListAdapter.allChoice();
                 } else {
@@ -158,6 +162,7 @@ public class MultiChoiceScanActivity extends TitleActivity implements ScanListen
     protected void onPause() {
         super.onPause();
         BleScanner.getInstance().unRegisterScanListener(this);
+        BleScanner.getInstance().stopScan();
     }
 
     protected void onResume() {

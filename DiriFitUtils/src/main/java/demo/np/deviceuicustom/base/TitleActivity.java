@@ -24,7 +24,8 @@ public abstract class TitleActivity extends BasePermissionCheckActivity {
         titleBar.setTitleColor(this.getResources().getColor(R.color.black));
         //默认左边为返回
         titleBar.setLeftImage(R.mipmap.icon_back);
-        titleBar.setLeftTxtColor(R.color.black);
+        titleBar.setLeftTextColor(0xFF000000);
+        titleBar.setRightTextColor(0xFF000000);
         titleBar.setLeftViewOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

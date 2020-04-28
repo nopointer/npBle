@@ -1,40 +1,25 @@
 package demo.nopointer.ble.bleModule;
 
-import android.bluetooth.BluetoothDevice;
-import android.content.Context;
-
-import java.util.UUID;
-
-import demo.nopointer.ble.MainApplication;
-import demo.nopointer.ble.activity.BleActivity;
-import npLog.nopointer.core.NpLog;
-import npble.nopointer.ble.conn.NpBleAbsConnManager;
-import npble.nopointer.exception.NpBleUUIDNullException;
-import npble.nopointer.ota.absimpl.xc.no.nordicsemi.android.BleManagerCallbacks;
-import npble.nopointer.util.BleUtil;
-
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.UUID;
+
 import demo.nopointer.ble.MainApplication;
 import demo.nopointer.ble.bleModule.bean.CharaBean;
 import demo.nopointer.ble.dialog.bleservice.BleServiceBean;
 import demo.nopointer.ble.utils.ToastHelper;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
-
 import npLog.nopointer.core.NpLog;
 import npble.nopointer.ble.conn.NpBleAbsConnManager;
 import npble.nopointer.exception.NpBleUUIDNullException;
 import npble.nopointer.util.BleUtil;
 
-public class NpBleManager extends NpBleAbsConnManager implements BleUUIDCfg {
+public class NpBleManager extends NpBleAbsConnManager {
     private static NpBleManager instance = null;
     BleDataProcessingUtils bleDataProcessingUtils = null;
     private List<BleServiceBean> bleServiceBeanList = new ArrayList();

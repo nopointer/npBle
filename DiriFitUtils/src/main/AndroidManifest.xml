@@ -30,6 +30,8 @@
         <activity android:name=".activity.scan.MultiChoiceScanActivity" />
         <activity android:name=".activity.firmware.FirmwarelistActivity" />
         <activity android:name=".activity.ota.BatchOTAActivity" />
+        <activity android:name=".activity.dial.DeviceFindMoreDialActivity" />
+        <activity android:name=".activity.scan.ScanActivity" />
     </application>
 
 </manifest>

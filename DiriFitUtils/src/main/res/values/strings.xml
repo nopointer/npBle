@@ -8,4 +8,13 @@
     <string name="ok">确定</string>
 
 
+
+    <string name="image_trasport">图片传输</string>
+    <string name="about_5_minute">图片传输至设备大约耗时3-5分钟</string>
+    <string name="give_up_upload_image">放弃上传图片？</string>
+    <string name="give_up">放弃</string>
+    <string name="continue_upload">继续传输</string>
+    <string name="transport_image_success">更新图片完成</string>
+
+
 </resources>
