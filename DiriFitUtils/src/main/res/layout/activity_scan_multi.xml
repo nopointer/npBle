@@ -13,6 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:focusable="true"
+        android:gravity="center_vertical"
         android:focusableInTouchMode="true"
         android:orientation="horizontal"
         android:padding="4dp">
@@ -26,7 +27,7 @@
             android:background="@drawable/edit_box"
             android:hint="名称过滤"
             android:paddingLeft="8dip"
-            android:textSize="13.0sp" />
+            android:textSize="12.5sp" />
 
         <EditText
             android:id="@+id/mac_filter_ed"
@@ -35,16 +36,19 @@
             android:layout_margin="3dp"
             android:layout_weight="2"
             android:background="@drawable/edit_box"
-            android:digits="1234567890ABCDEFabcdef"
+            android:digits="1234567890ABCDEFabcdef:"
             android:hint="mac地址过滤"
             android:paddingLeft="8dip"
-            android:textSize="13.0sp" />
+            android:textSize="12.5sp" />
 
-        <CheckBox
-            android:id="@+id/all_choice_checkbox"
+        <Button
+            style="@style/button_style"
+            android:textSize="12.5sp"
+            android:id="@+id/all_select_btn"
             android:layout_width="wrap_content"
+            android:minHeight="36dp"
+            android:minWidth="@dimen/dp_64"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
             android:text="全选" />
 
     </LinearLayout>
@@ -60,9 +64,11 @@
 
         <Button
             android:id="@+id/start_btn"
+            style="@style/button_style"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
+            android:enabled="false"
             android:text="开始" />
 
     </RelativeLayout>

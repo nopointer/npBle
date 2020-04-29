@@ -18,7 +18,7 @@ import npble.nopointer.device.BleDevice;
 /**
  * 多选设备列表
  */
-public class MultiChoiceDeviceListAdapter extends BaseRecycleAdapter<BleDevice, MultiChoiceDeviceListAdapter.ViewHolder> {
+public abstract class MultiChoiceDeviceListAdapter extends BaseRecycleAdapter<BleDevice, MultiChoiceDeviceListAdapter.ViewHolder> {
 
 
     //解决holder复用问题
@@ -27,7 +27,20 @@ public class MultiChoiceDeviceListAdapter extends BaseRecycleAdapter<BleDevice, 
 
     public MultiChoiceDeviceListAdapter(Context context, List<BleDevice> dataList) {
         super(context, dataList);
+    }
 
+
+    public List<Integer> getSelectIndexList() {
+        return selectIndexList;
+    }
+
+    /**
+     * 是否是全选模式
+     *
+     * @return
+     */
+    public boolean isAllChoiceMode() {
+        return dataList.size() == selectIndexList.size();
     }
 
 
@@ -84,6 +97,7 @@ public class MultiChoiceDeviceListAdapter extends BaseRecycleAdapter<BleDevice, 
                         selectIndexList.remove(tag);
                     }
                 }
+
             }
         });
 
@@ -92,6 +106,12 @@ public class MultiChoiceDeviceListAdapter extends BaseRecycleAdapter<BleDevice, 
         else {
             holder.device_checkbox.setChecked(false);
         }
+        holder.device_checkbox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onSelectStateChange(position);
+            }
+        });
     }
 
 
@@ -115,5 +135,7 @@ public class MultiChoiceDeviceListAdapter extends BaseRecycleAdapter<BleDevice, 
         }
     }
 
+
+    protected abstract void onSelectStateChange(int position);
 
 }

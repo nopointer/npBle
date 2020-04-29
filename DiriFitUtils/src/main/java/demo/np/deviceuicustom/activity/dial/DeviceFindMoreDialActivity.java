@@ -43,6 +43,8 @@ public class DeviceFindMoreDialActivity extends TitleActivity implements NpBleCo
     //是否显示传输对话框
     private boolean isShowTrainDialog = true;
 
+    private boolean isTraining =false;
+
     public int loadLayout() {
         return R.layout.activity_device_find_more_layout;
     }
@@ -51,6 +53,15 @@ public class DeviceFindMoreDialActivity extends TitleActivity implements NpBleCo
     public void initView() {
         super.initView();
         titleBar.setTitle("自定义表盘");
+
+        titleBar.setLeftViewOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isTraining){
+                    sureEndTransportImageProgress();
+                }
+            }
+        });
 
         PathEntity localPathEntity2 = SharedPreferecelastPath.read();
         PathEntity localPathEntity1 = localPathEntity2;
@@ -152,7 +163,8 @@ public class DeviceFindMoreDialActivity extends TitleActivity implements NpBleCo
 
 
     private void loadFile() {
-        new LFilePicker().withActivity(this).withRequestCode(1000).withStartPath("/storage/emulated/0/DiriFit Test/dials").withMaxNum(1).withMutilyMode(false).withIsGreater(true).start();
+//        new LFilePicker().withActivity(this).withRequestCode(1000).withStartPath("/storage/emulated/0/DiriFit Test/dials").withMaxNum(1).withMutilyMode(false).withIsGreater(true).start();
+        new LFilePicker().withActivity(this).withRequestCode(1000).withStartPath("/storage/emulated/0").withMaxNum(1).withMutilyMode(false).withIsGreater(true).start();
     }
 
     private void start() {
@@ -176,6 +188,7 @@ public class DeviceFindMoreDialActivity extends TitleActivity implements NpBleCo
         dialImageBean.setColorCfg(ColorCfg.BIN_FILE);
         dialImageBean.setImagePath(imagePath);
         DevImageUtils.getInstance().setDialImageBean(dialImageBean);
+        isTraining =true;
 
         DevImageUtils.getInstance().setReceiveImageDataCallback(new DevImageTransportCallback() {
             @Override
@@ -195,6 +208,7 @@ public class DeviceFindMoreDialActivity extends TitleActivity implements NpBleCo
                             transportImageDialog.dismiss();
                         }
                         showSuccessDialog("传输完成");
+                        isTraining =false;
                     }
                 });
                 NpBleManager.getInstance().writeData(DevDataUtils.updateImageMode(0, 1));

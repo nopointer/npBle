@@ -2,11 +2,16 @@ package demo.np.deviceuicustom.activity.ota;
 
 import android.content.Intent;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
+import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import butterknife.BindView;
@@ -47,8 +52,30 @@ public class BatchOTAActivity extends TitleActivity {
     @BindView(R.id.text_info_tv)
     TextView text_info_tv;//显示文本进度
 
+    @BindView(R.id.device_ota_result_tv)
+    TextView device_ota_result_tv;
+
     //OTA管理器
     private OTAManager otaManager = OTAManager.getInstance();
+
+    public static List<BleDevice> otaList = new ArrayList<>();
+
+    /**
+     * 成功列表
+     */
+    private List<BleDevice> successList = new ArrayList<>();
+    /**
+     * 失败列表
+     */
+    private List<BleDevice> failureList = new ArrayList<>();
+    /**
+     * 疑似成功列表（OTA成功，但为正常关机）
+     */
+    private List<BleDevice> suspectedSuccessList = new ArrayList<>();
+
+    private StringBuilder stringBuilder = new StringBuilder();
+
+    private boolean isOTA = false;
 
 
     @Override
@@ -61,6 +88,14 @@ public class BatchOTAActivity extends TitleActivity {
         super.initView();
         titleBar.setTitle("OTA");
 
+        titleBar.setLeftViewOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isOTA) {
+                    sureExitOTA();
+                }
+            }
+        });
         npRectProgressView.setUseRoundMode(true);
         npRectProgressView.setBgColor(0xFFCCCCCC);
         npRectProgressView.setProgressColor(getResources().getColor(R.color.colorPrimary));
@@ -91,29 +126,19 @@ public class BatchOTAActivity extends TitleActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        npRectProgressView.setProgress(totalProgress);
+                        npRectProgressView.setProgress(singleProgress);
                     }
                 });
             }
 
             @Override
             public void onDeviceSuccess(BleDevice bleDevice) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                    }
-                });
+                successList.add(bleDevice);
             }
 
             @Override
             public void onDeviceFailure(BleDevice bleDevice) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                    }
-                });
+                failureList.add(bleDevice);
             }
 
             @Override
@@ -121,11 +146,52 @@ public class BatchOTAActivity extends TitleActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        isOTA = false;
+                        npRectProgressView.setProgress(1);
+                        start_ota_btn.setEnabled(true);
+                        stop_ota_btn.setEnabled(false);
+                        text_info_tv.setText("OTA 完成");
 
+                        showOTAResult();
                     }
                 });
             }
         });
+    }
+
+    /**
+     * OTA结果
+     */
+    private void showOTAResult() {
+        HashSet<String> macList = new HashSet<>();
+        stringBuilder = new StringBuilder();
+        stringBuilder.append("成功的设备:").append("[" + successList.size() + "]").append("\n ");
+        for (BleDevice bleDevice : successList) {
+            macList.add(bleDevice.getMac());
+            stringBuilder.append(bleDevice.getName()).append(" : ").append(bleDevice.getMac()).append("\n");
+        }
+        stringBuilder.append("\n");
+        stringBuilder.append("失败的设备:").append("[" + failureList.size() + "]").append("\n");
+        for (BleDevice bleDevice : failureList) {
+            macList.add(bleDevice.getMac());
+            stringBuilder.append(bleDevice.getName()).append(" : ").append(bleDevice.getMac()).append("\n");
+        }
+
+        //收集疑似成功的设备
+        for (BleDevice bleDevice : otaList) {
+            if (macList.contains(bleDevice.getMac())) continue;
+            suspectedSuccessList.add(bleDevice);
+
+        }
+
+        stringBuilder.append("\n");
+        stringBuilder.append("疑似成功的设备（OTA完成，但未成功关机）:").append("[" + suspectedSuccessList.size() + "]").append("\n");
+        for (BleDevice bleDevice : suspectedSuccessList) {
+            stringBuilder.append(bleDevice.getName()).append(" : ").append(bleDevice.getMac()).append("\n");
+        }
+
+        device_ota_result_tv.setText(stringBuilder.toString());
+
     }
 
 
@@ -143,7 +209,6 @@ public class BatchOTAActivity extends TitleActivity {
             case R.id.start_ota_btn:
                 start_ota_btn.setEnabled(false);
                 stop_ota_btn.setEnabled(true);
-
                 startOTA();
                 break;
 
@@ -182,14 +247,56 @@ public class BatchOTAActivity extends TitleActivity {
 
 
     private void startOTA() {
+        isOTA = true;
+        count_progress_tv.setText((1) + "/" + otaList.size());
+        npRectProgressView.setProgress(0);
+        text_info_tv.setText("正在OTA....");
+        device_ota_result_tv.setText("");
+        failureList.clear();
+        successList.clear();
+        suspectedSuccessList.clear();
+
         List<BleDevice> bleDevices = new ArrayList<>();
-        bleDevices.add(new BleDevice("", "12:AB:68:01:93:50"));
-        bleDevices.add(new BleDevice("", "12:AB:68:01:93:50"));
-        bleDevices.add(new BleDevice("", "12:AB:68:01:93:50"));
-        bleDevices.add(new BleDevice("", "12:AB:68:01:93:50"));
+        bleDevices.addAll(otaList);
+//        bleDevices.add(new BleDevice("MM39", "12:AB:68:01:93:50"));
+//        bleDevices.add(new BleDevice("", "12:AB:68:01:93:50"));
+//        bleDevices.add(new BleDevice("", "12:AB:68:01:93:50"));
+//        bleDevices.add(new BleDevice("", "12:AB:68:01:93:50"));
         otaManager.setOtaList(bleDevices);
         otaManager.setBinPath(selectBinPath);
         otaManager.startOTA(this);
+    }
+
+    void sureExitOTA() {
+        new QMUIDialog.MessageDialogBuilder(this)
+                .setCancelable(false)
+                .setCanceledOnTouchOutside(false)
+                .setMessage("确定要停止OTA吗？")
+                .addAction(getString(R.string.continue_upload), new QMUIDialogAction.ActionListener() {
+                    @Override
+                    public void onClick(QMUIDialog dialog, int index) {
+                        dialog.dismiss();
+                    }
+                })
+                .addAction(0, getString(R.string.give_up), QMUIDialogAction.ACTION_PROP_NEGATIVE, new QMUIDialogAction.ActionListener() {
+                    @Override
+                    public void onClick(QMUIDialog dialog, int index) {
+                        dialog.dismiss();
+                        OTAManager.getInstance().stopOTA();
+                        finish();
+                    }
+                })
+                .create(com.qmuiteam.qmui.R.style.QMUI_Dialog).show();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (isOTA) {
+                sureExitOTA();
+            }
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
 }

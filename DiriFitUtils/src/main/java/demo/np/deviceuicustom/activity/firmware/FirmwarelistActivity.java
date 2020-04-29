@@ -74,6 +74,7 @@ public class FirmwarelistActivity extends TitleActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            dismissLoadingDialog();
                             ToastHelper.getToastHelper().show("没有找到相关固件，请重试");
                         }
                     });
@@ -115,8 +116,8 @@ public class FirmwarelistActivity extends TitleActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                showToast("下载失败，请重试");
                                 dismissLoadingDialog();
+                                showToast("下载失败，请重试");
                             }
                         });
                     }
@@ -210,7 +211,7 @@ public class FirmwarelistActivity extends TitleActivity {
                 }
             }
         });
-        bin_name.setText("OTA_M33_181");
+//        bin_name.setText("OTA_M33_181");
     }
 
 

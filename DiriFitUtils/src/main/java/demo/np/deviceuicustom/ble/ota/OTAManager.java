@@ -58,6 +58,8 @@ public class OTAManager {
      */
     private int currentOTADeviceIndex = 0;
 
+    private boolean isOTA = false;
+
 
     public void setOtaList(List<BleDevice> otaList) {
         this.otaList = otaList;
@@ -80,36 +82,38 @@ public class OTAManager {
      */
     public void startOTA(Context context) {
         this.context = context;
-        npBleManager.setOtaMode(true);
-
-        next(false);
+        if (!isOTA) {
+            isOTA = true;
+            currentOTADeviceIndex = 0;
+            npBleManager.setOtaMode(true);
+            next();
+        }
     }
 
 
     /**
      * 下一个设备
-     *
-     * @param isNeedPowerOff 是否需要关机上一个设备
      */
-    private void next(boolean isNeedPowerOff) {
+    private void next() {
         if (otaList == null || otaList.size() < 1) {
             LogUtil.e("设备列表为空");
             return;
         }
         if (currentOTADeviceIndex >= otaList.size()) {
-            LogUtil.e("任务完成");
+            NpLog.eAndSave("任务完成");
+            isOTA = false;
+            currentOTADeviceIndex = 0;
+            if (otaTaskCallback != null) {
+                otaTaskCallback.onOTATaskFinish();
+            }
             return;
         }
-        NpLog.e("========currentOTADeviceIndex================");
+        NpLog.e("============================================");
         NpLog.e("||                                          ");
-        NpLog.e("||     上一个设备需要关机与否:" + isNeedPowerOff + "///" + currentOTADeviceIndex);
+        NpLog.e("||      " + currentOTADeviceIndex);
         NpLog.e("||                                          ");
-        NpLog.e("========currentOTADeviceIndex================");
-        if (isNeedPowerOff) {
-            powerOff();
-        } else {
-            ota();
-        }
+        NpLog.e("============================================");
+        ota();
     }
 
     /**
@@ -123,12 +127,15 @@ public class OTAManager {
         TeLinkOTAHelper.getInstance().startOTA(context, bleDevice.getMac(), binPath, new NpOtaCallback() {
             @Override
             public void onFailure(int code, String message) {
-                delayedNext(false);
+                if (otaTaskCallback != null) {
+                    otaTaskCallback.onDeviceFailure(otaList.get(currentOTADeviceIndex));
+                }
+                delayedNextOta();
             }
 
             @Override
             public void onSuccess() {
-                delayedNext(true);
+                delayedPowerOff();
             }
 
             @Override
@@ -145,52 +152,46 @@ public class OTAManager {
     }
 
     /**
-     * 关机
+     * 延时关机
      */
-    private void powerOff() {
+    private void delayedPowerOff() {
         npBleManager.setOnWriteCallback(new NpBleManager.OnWriteCallback() {
             @Override
             public void onDataWriteSuccess(byte[] data) {
-                delayedOta();
+                if (otaTaskCallback != null) {
+                    otaTaskCallback.onDeviceSuccess(otaList.get(currentOTADeviceIndex));
+                }
+                delayedNextOta();
             }
 
             @Override
             public void onDataWriteFail(byte[] data) {
-                delayedOta();
+                delayedNextOta();
             }
         });
-        BleDevice bleDevice = otaList.get(currentOTADeviceIndex);
-        npBleManager.connDevice(bleDevice.getMac());
+        handler.removeCallbacksAndMessages(null);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                BleDevice bleDevice = otaList.get(currentOTADeviceIndex);
+                npBleManager.connDevice(bleDevice.getMac());
+            }
+        }, 10 * 1000);
     }
 
 
     /**
      * 延时OTA，设备关机后，也需要时间开机
      */
-    private void delayedOta() {
-        handler.removeCallbacksAndMessages(null);
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                next(false);
-            }
-        }, 6000);
-    }
-
-    /**
-     * 延时下一个
-     *
-     * @param isNeedPower
-     */
-    private void delayedNext(boolean isNeedPower) {
+    private void delayedNextOta() {
         currentOTADeviceIndex++;
         handler.removeCallbacksAndMessages(null);
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                next(isNeedPower);
+                next();
             }
-        }, timeDelay);
+        }, 6000);
     }
 
 
@@ -198,7 +199,12 @@ public class OTAManager {
      * 结束OTA
      */
     public void stopOTA() {
-
+        isOTA =false;
+        handler.removeCallbacksAndMessages(null);
+        currentOTADeviceIndex = 0;
+        otaList.clear();
+        TeLinkOTAHelper.getInstance().stopOTA();
+        otaTaskCallback = null;
     }
 
 

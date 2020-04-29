@@ -18,7 +18,7 @@
 //import butterknife.BindView;
 //import demo.np.deviceuicustom.R;
 //import demo.np.deviceuicustom.base.TitleActivity;
-//import demo.np.deviceuicustom.ble.MyDeviceFilter;
+//import demo.np.deviceuicustom.ble.EmptyDeviceFilter;
 //import npPermission.nopointer.core.RequestPermissionInfo;
 //import npble.nopointer.ble.scan.BleScanner;
 //import npble.nopointer.ble.scan.ScanListener;
@@ -113,7 +113,7 @@
 //        this.titleBar.setTitle("设备列表");
 //        this.titleBar.setRightText("扫描");
 //        this.type = getIntent().getIntExtra("type", 1);
-//        BleScanner.getInstance().setBleDeviceFilter(MyDeviceFilter.getInstance());
+//        BleScanner.getInstance().setBleDeviceFilter(EmptyDeviceFilter.getInstance());
 //        BleScanner.getInstance().registerScanListener(this);
 //        this.titleBar.setRightViewOnClickListener(new OnClickListener() {
 //            public void onClick(View paramAnonymousView) {

@@ -99,7 +99,8 @@ public class ScanActivity extends TitleActivity implements ScanListener {
     private int type;
 
     private void jump2OpenBleSetting() {
-        startActivityForResult(new Intent("android.bluetooth.adapter.action.REQUEST_ENABLE"), 111);
+        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        startActivityForResult(enableBtIntent, 111);
     }
 
     private void setConnCallback() {

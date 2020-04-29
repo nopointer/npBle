@@ -4,24 +4,61 @@ android {
     compileSdkVersion 29
 
 
-
     defaultConfig {
-        applicationId "demo.np.deviceuicustom.new"
+        applicationId "demo.com.customdeviceui"
         minSdkVersion var.minSdkVersion
         targetSdkVersion var.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 7
+        versionName "1.6"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }
 
-    buildTypes {
+    signingConfigs {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            keyAlias "runchinaup"
+            keyPassword "runchinaup"
+            storeFile file("../runchinaup.jks")
+            storePassword "runchinaup"
+        }
+        debug {
+            keyAlias "runchinaup"
+            keyPassword "runchinaup"
+            storeFile file("../runchinaup.jks")
+            storePassword "runchinaup"
         }
     }
+    buildTypes {
+        release {
+//            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            debuggable false
+            signingConfig signingConfigs.release
+            zipAlignEnabled true
+        }
+        debug {
+            debuggable true
+            signingConfig signingConfigs.release
+            zipAlignEnabled true
+            testCoverageEnabled false
+        }
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+
+            def outputFile = output.outputFile
+            if (outputFile != null && outputFile.name.endsWith('.apk')) {
+                def fileName = "DiriFit Test" + " V${defaultConfig.versionName}.apk"
+                outputFileName = fileName
+            }
+        }
+    }
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
 
     repositories {
         flatDir {

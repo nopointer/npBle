@@ -23,6 +23,7 @@ public class TeLinkOTAHelper {
     private TeLinkOTAHelper() {
     }
 
+    private Device device = null;
 
     private long startTime = 0;
     private long endTime = 0;
@@ -30,17 +31,17 @@ public class TeLinkOTAHelper {
 
     public void startOTA(Context context, String mac, final String filePath, final NpOtaCallback otaCallback) {
         BleDevice bleDevice = new BleDevice("", mac);
-        Device device = new Device(bleDevice);
+        device = new Device(bleDevice);
         device.setCallback(new Device.Callback() {
             @Override
             public void onConnected(final Device device) {
-                NpLog.eAndSave("onConnected=="+device.getMacAddress());
+                NpLog.eAndSave("onConnected==" + device.getMacAddress());
             }
 
             @Override
             public void onDisconnected(final Device device) {
-                NpLog.eAndSave("onDisconnected=="+device.getMacAddress());
-                if (!device.isOTASuccess()){
+                NpLog.eAndSave("onDisconnected==" + device.getMacAddress());
+                if (!device.isOTASuccess()) {
                     if (otaCallback != null) {
                         otaCallback.onFailure(NpOtaErrCode.TELINK_ERROR, "failure");
                     }
@@ -84,6 +85,15 @@ public class TeLinkOTAHelper {
             }
         });
         device.connect(context);
+    }
+
+    /**
+     * 停止OTA
+     */
+    public void stopOTA() {
+        if (device != null) {
+            device.disconnect();
+        }
     }
 
     private byte[] readFirmware(String fileName) {
