@@ -31,6 +31,9 @@ public class TeLinkOTAHelper {
 
     public void startOTA(Context context, String mac, final String filePath, final NpOtaCallback otaCallback) {
         BleDevice bleDevice = new BleDevice("", mac);
+        if (device != null) {
+            device.setCallback(null);
+        }
         device = new Device(bleDevice);
         device.setCallback(new Device.Callback() {
             @Override

@@ -401,8 +401,7 @@ class Peripheral extends BluetoothGattCallback {
             commandContext.clear();
 
             if (callback != null) {
-                callback.error(this, command,
-                        errorMsg);
+                callback.error(this, command, errorMsg);
             }
         }
     }

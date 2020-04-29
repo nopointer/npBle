@@ -119,13 +119,13 @@ public class BleScanner {
                 @Override
                 public void onScanResult(int callbackType, final ScanResult result) {
                     super.onScanResult(callbackType, result);
-                    NpLog.eAndSave("====onScanResult====>单个==>" + result.toString());
+                    NpLog.e("====onScanResult====>单个==>" + result.toString());
                 }
 
                 @Override
                 public void onBatchScanResults(@NonNull final List<ScanResult> results) {
                     super.onBatchScanResults(results);
-                    NpLog.eAndSave("====onScanResult====>批量==>" + results.size());
+                    NpLog.e("====onScanResult====>批量==>" + results.size());
                     cachedThreadPool.execute(new Runnable() {
                         @Override
                         public void run() {

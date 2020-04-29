@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -30,6 +31,9 @@ public class BatchOTAActivity extends TitleActivity {
 
     @BindView(R.id.select_btn_tv)
     TextView select_btn_tv;//当前选择的固件
+
+    @BindView(R.id.select_bin_btn)
+    Button select_bin_btn;//选择固件的按钮
 
     //当前选择的固件路径
     private String selectBinPath = null;
@@ -86,6 +90,7 @@ public class BatchOTAActivity extends TitleActivity {
     @Override
     public void initView() {
         super.initView();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         titleBar.setTitle("OTA");
 
         titleBar.setLeftViewOnClickListener(new View.OnClickListener() {
@@ -93,6 +98,8 @@ public class BatchOTAActivity extends TitleActivity {
             public void onClick(View v) {
                 if (isOTA) {
                     sureExitOTA();
+                } else {
+                    finish();
                 }
             }
         });
@@ -110,6 +117,7 @@ public class BatchOTAActivity extends TitleActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        npRectProgressView.setProgress(0);
                         count_progress_tv.setText((currentIndex + 1) + "/" + totalDeviceCount);
                         StringBuilder stringBuilder = new StringBuilder();
                         BleDevice bleDevice = otaManager.getOtaList().get(currentIndex);
@@ -150,8 +158,9 @@ public class BatchOTAActivity extends TitleActivity {
                         npRectProgressView.setProgress(1);
                         start_ota_btn.setEnabled(true);
                         stop_ota_btn.setEnabled(false);
+                        select_bin_btn.setEnabled(true);
                         text_info_tv.setText("OTA 完成");
-
+                        count_progress_tv.setText(otaList.size() + "/" + otaList.size());
                         showOTAResult();
                     }
                 });
@@ -165,7 +174,7 @@ public class BatchOTAActivity extends TitleActivity {
     private void showOTAResult() {
         HashSet<String> macList = new HashSet<>();
         stringBuilder = new StringBuilder();
-        stringBuilder.append("成功的设备:").append("[" + successList.size() + "]").append("\n ");
+        stringBuilder.append("成功的设备:").append("[" + successList.size() + "]").append("\n");
         for (BleDevice bleDevice : successList) {
             macList.add(bleDevice.getMac());
             stringBuilder.append(bleDevice.getName()).append(" : ").append(bleDevice.getMac()).append("\n");
@@ -209,6 +218,7 @@ public class BatchOTAActivity extends TitleActivity {
             case R.id.start_ota_btn:
                 start_ota_btn.setEnabled(false);
                 stop_ota_btn.setEnabled(true);
+                select_bin_btn.setEnabled(false);
                 startOTA();
                 break;
 
@@ -216,6 +226,7 @@ public class BatchOTAActivity extends TitleActivity {
             case R.id.stop_ota_btn:
                 start_ota_btn.setEnabled(true);
                 stop_ota_btn.setEnabled(false);
+                select_bin_btn.setEnabled(true);
                 break;
         }
     }
@@ -259,7 +270,7 @@ public class BatchOTAActivity extends TitleActivity {
         List<BleDevice> bleDevices = new ArrayList<>();
         bleDevices.addAll(otaList);
 //        bleDevices.add(new BleDevice("MM39", "12:AB:68:01:93:50"));
-//        bleDevices.add(new BleDevice("", "12:AB:68:01:93:50"));
+//        bleDevices.add(new BleDevice("M33", "12:AB:68:01:93:50"));
 //        bleDevices.add(new BleDevice("", "12:AB:68:01:93:50"));
 //        bleDevices.add(new BleDevice("", "12:AB:68:01:93:50"));
         otaManager.setOtaList(bleDevices);

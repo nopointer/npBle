@@ -3,6 +3,7 @@ package demo.np.deviceuicustom.activity.dial;
 import android.content.Intent;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.leon.lfilepickerlibrary.LFilePicker;
@@ -52,6 +53,7 @@ public class DeviceFindMoreDialActivity extends TitleActivity implements NpBleCo
 
     public void initView() {
         super.initView();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         titleBar.setTitle("自定义表盘");
 
         titleBar.setLeftViewOnClickListener(new View.OnClickListener() {

@@ -9,6 +9,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -103,6 +104,7 @@ public class MultiChoiceScanActivity extends TitleActivity implements ScanListen
 
     public void initView() {
         super.initView();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         titleBar.setTitle("设备列表");
         titleBar.setRightText("扫描");
         type = getIntent().getIntExtra("type", 1);
@@ -305,7 +307,7 @@ public class MultiChoiceScanActivity extends TitleActivity implements ScanListen
         isAllSelect = false;
         all_select_btn.setText("全选");
         scanMacList.clear();
-        deviceListAdapter.notifyDataSetChanged();
+        deviceListAdapter.allNotChoice();
     }
 
     /**

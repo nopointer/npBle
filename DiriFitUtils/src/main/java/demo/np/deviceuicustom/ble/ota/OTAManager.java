@@ -5,7 +5,7 @@ import android.os.Handler;
 
 import java.util.List;
 
-import demo.np.deviceuicustom.ble.NpBleManager;
+import demo.np.deviceuicustom.MainApplication;
 import npBase.BaseCommon.util.log.LogUtil;
 import npLog.nopointer.core.NpLog;
 import npble.nopointer.device.BleDevice;
@@ -26,9 +26,6 @@ public class OTAManager {
 
     private OTAManager() {
     }
-
-    private NpBleManager npBleManager = NpBleManager.getInstance();
-
 
     /**
      * 需要OTA的设备列表
@@ -51,7 +48,7 @@ public class OTAManager {
     private Handler handler = new Handler();
 
     //延时时间执行（单位毫秒）
-    private long timeDelay = 12 * 1000;
+    private long timeDelay = 10 * 1000;
 
     /**
      * 当前设备OTA的索引
@@ -85,7 +82,6 @@ public class OTAManager {
         if (!isOTA) {
             isOTA = true;
             currentOTADeviceIndex = 0;
-            npBleManager.setOtaMode(true);
             next();
         }
     }
@@ -124,6 +120,7 @@ public class OTAManager {
         if (otaTaskCallback != null) {
             otaTaskCallback.onDeviceProgress(currentOTADeviceIndex, otaList.size());
         }
+
         TeLinkOTAHelper.getInstance().startOTA(context, bleDevice.getMac(), binPath, new NpOtaCallback() {
             @Override
             public void onFailure(int code, String message) {
@@ -155,9 +152,11 @@ public class OTAManager {
      * 延时关机
      */
     private void delayedPowerOff() {
-        npBleManager.setOnWriteCallback(new NpBleManager.OnWriteCallback() {
+        handler.removeCallbacksAndMessages(null);
+        BlePowerManager powerManager = new BlePowerManager(MainApplication.getMainApplication());
+        powerManager.setOnPowerCallback(new BlePowerManager.OnPowerCallback() {
             @Override
-            public void onDataWriteSuccess(byte[] data) {
+            public void onPowerOffSuccess() {
                 if (otaTaskCallback != null) {
                     otaTaskCallback.onDeviceSuccess(otaList.get(currentOTADeviceIndex));
                 }
@@ -165,18 +164,17 @@ public class OTAManager {
             }
 
             @Override
-            public void onDataWriteFail(byte[] data) {
+            public void onPowerOffFail() {
                 delayedNextOta();
             }
         });
-        handler.removeCallbacksAndMessages(null);
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 BleDevice bleDevice = otaList.get(currentOTADeviceIndex);
-                npBleManager.connDevice(bleDevice.getMac());
+                powerManager.connDevice(bleDevice.getMac());
             }
-        }, 10 * 1000);
+        }, timeDelay);
     }
 
 
@@ -191,7 +189,7 @@ public class OTAManager {
             public void run() {
                 next();
             }
-        }, 6000);
+        }, timeDelay);
     }
 
 
@@ -199,7 +197,7 @@ public class OTAManager {
      * 结束OTA
      */
     public void stopOTA() {
-        isOTA =false;
+        isOTA = false;
         handler.removeCallbacksAndMessages(null);
         currentOTADeviceIndex = 0;
         otaList.clear();

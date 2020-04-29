@@ -48,7 +48,7 @@ class Device extends Peripheral {
     private long delay = 20;
 
     //是否成功
-    private boolean isOTASuccess =false;
+    private boolean isOTASuccess = false;
 
     public boolean isOTASuccess() {
         return isOTASuccess;
@@ -56,12 +56,12 @@ class Device extends Peripheral {
 
     public Device(BluetoothDevice device, byte[] scanRecord, int rssi) {
         super(device, scanRecord, rssi);
-        isOTASuccess =false;
+        isOTASuccess = false;
     }
 
     public Device(BleDevice device) {
         super(device);
-        isOTASuccess =false;
+        isOTASuccess = false;
     }
 
     @Override
@@ -104,12 +104,12 @@ class Device extends Peripheral {
     @Override
     protected void onNotify(byte[] data, UUID serviceUUID, UUID characteristicUUID, Object tag) {
         super.onNotify(data, serviceUUID, characteristicUUID, tag);
-        NpLog.eAndSave( " onNotify ==> " + BleUtil.byte2HexStr(data, ":"));
+        NpLog.eAndSave(" onNotify ==> " + BleUtil.byte2HexStr(data, ":"));
     }
 
 
     protected void onOtaSuccess() {
-        isOTASuccess =true;
+        isOTASuccess = true;
         if (mCallback != null) {
             mCallback.onOtaStateChanged(this, STATE_SUCCESS);
         }
@@ -380,7 +380,9 @@ class Device extends Peripheral {
 
         @Override
         public boolean timeout(Peripheral peripheral, Command command) {
-            NpLog.eAndSave("timeout : " + BleUtil.byte2HexStr(command.data, ":"));
+            if (command != null && command.data != null && command.data.length > 0) {
+                NpLog.eAndSave("timeout : " + BleUtil.byte2HexStr(command.data, ":"));
+            }
             if (command.tag.equals(TAG_OTA_END)) {
                 // ota success
                 resetOta();

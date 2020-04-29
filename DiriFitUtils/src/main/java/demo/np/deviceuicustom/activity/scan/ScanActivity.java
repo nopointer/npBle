@@ -9,6 +9,7 @@ import android.os.Message;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.view.WindowManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -109,6 +110,7 @@ public class ScanActivity extends TitleActivity implements ScanListener {
 
     public void initView() {
         super.initView();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         titleBar.setTitle("设备列表");
         titleBar.setRightText("扫描");
         type = getIntent().getIntExtra("type", 1);

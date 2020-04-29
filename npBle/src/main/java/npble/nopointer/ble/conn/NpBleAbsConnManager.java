@@ -122,6 +122,13 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         NpLog.i(priority + "," + message);
     }
 
+
+    protected void stopListen(Context context) {
+        if (bleStateReceiver != null) {
+            bleStateReceiver.stopListen(context);
+        }
+    }
+
     /**
      * 当前任务的索引
      */
