@@ -8,8 +8,8 @@ android {
         applicationId "demo.com.customdeviceui"
         minSdkVersion var.minSdkVersion
         targetSdkVersion var.targetSdkVersion
-        versionCode 8
-        versionName "1.7"
+        versionCode 9
+        versionName "1.8"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 

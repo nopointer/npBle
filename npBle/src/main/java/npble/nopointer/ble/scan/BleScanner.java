@@ -40,6 +40,7 @@ public class BleScanner {
 
     protected static Context mContext;
 
+
     /**
      * 设置扫描间隔,单位毫秒
      */
@@ -51,6 +52,15 @@ public class BleScanner {
 
     public void setScanRefreshTime(int scanRefreshTime) {
         this.scanRefreshTime = scanRefreshTime;
+    }
+
+
+    public static boolean isIsShowScanLog() {
+        return isShowScanLog;
+    }
+
+    public static void setIsShowScanLog(boolean isShowScanLog) {
+        BleScanner.isShowScanLog = isShowScanLog;
     }
 
     public static void init(Context context) {

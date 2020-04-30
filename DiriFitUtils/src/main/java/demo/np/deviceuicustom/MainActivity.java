@@ -10,6 +10,7 @@ import demo.np.deviceuicustom.activity.scan.MultiChoiceScanActivity;
 import demo.np.deviceuicustom.activity.scan.ScanActivity;
 import demo.np.deviceuicustom.base.TitleActivity;
 import npBase.BaseCommon.util.NpAppBaseUtils;
+import npLog.nopointer.core.NpLog;
 
 public class MainActivity extends TitleActivity {
 
@@ -34,6 +35,7 @@ public class MainActivity extends TitleActivity {
             }, 100);
         }
 
+        NpLog.initLog("DiriFit Test/log", "log");
 //        startActivity(BatchOTAActivity.class);
     }
 

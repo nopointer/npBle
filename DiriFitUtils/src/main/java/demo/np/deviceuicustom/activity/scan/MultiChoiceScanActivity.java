@@ -26,7 +26,6 @@ import demo.np.deviceuicustom.sharedpreferences.SharedPrefereceFilter;
 import demo.np.deviceuicustom.sharedpreferences.bean.FilterBean;
 import npBase.BaseCommon.absimpl.NpEditTextWatchImpl;
 import npBase.BaseCommon.util.toast.ToastHelper;
-import npLog.nopointer.core.NpLog;
 import npPermission.nopointer.core.RequestPermissionInfo;
 import npble.nopointer.ble.scan.BleScanner;
 import npble.nopointer.ble.scan.ScanListener;
@@ -187,11 +186,10 @@ public class MultiChoiceScanActivity extends TitleActivity implements ScanListen
     }
 
     @Override
-    public void onScan(BleDevice paramBleDevice) {
-        NpLog.eAndSave(paramBleDevice.getMac());
-        Message localMessage = handler.obtainMessage();
-        localMessage.obj = paramBleDevice;
-        handler.sendMessage(localMessage);
+    public void onScan(BleDevice bleDevice) {
+        Message message = handler.obtainMessage();
+        message.obj = bleDevice;
+        handler.sendMessage(message);
     }
 
     private void loadFilter() {
