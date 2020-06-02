@@ -61,6 +61,8 @@ public class DeviceFindMoreDialActivity extends TitleActivity implements NpBleCo
             public void onClick(View v) {
                 if (isTraining){
                     sureEndTransportImageProgress();
+                }else {
+                    finish();
                 }
             }
         });
