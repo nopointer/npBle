@@ -1,10 +1,8 @@
 package demo.nopointer.ble.activity;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
-import android.os.Bundle;
 import android.view.View;
 
 import demo.nopointer.ble.R;
@@ -37,6 +35,9 @@ public class MainActivity extends TitleActivity {
             }, 100);
         }
         NpLog.initLog("npBle/bleLog","log");
+
+
+
     }
 
     /**

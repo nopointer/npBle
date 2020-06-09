@@ -1,5 +1,6 @@
-include ':app', ':DiriFitUtils'
+include ':npBleDebug', ':DiriFitUtils',':app'
 //include ':nordicBle'
 include ':npBle'
 include ':npBase'
 include ':x'
+include ':ble'

@@ -1,24 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="demo.nopointer.ble">
+    package="demo.nopointer.npDemo">
 
 
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- 读写sdcard，storage等等 -->
+    <!--获取账户权限-->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+
+    <!--蓝牙权限-->
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <!--蓝牙管理权限-->
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <!--读取短信权限-->
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <!--接收短信权限-->
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+
+    <!--读取通话记录权限-->
+    <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <!--读取电话状态权限-->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <!--读取通讯录权限-->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <!--获取账户权限-->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!-- 必须的权限 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 推荐的权限 -->
+    <!-- 添加如下权限，以便使用更多的第三方SDK和更精准的统计数据 -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <uses-feature android:name="android.hardware.location.gps" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <!--自更新必须权限-->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <!--声明后台定位权限-->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+
 
     <application
         android:name=".MainApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="@string/app_name_main"
         android:roundIcon="@mipmap/ic_launcher_round"
+        android:usesCleartextTraffic="true"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme.NoActionBar">
+        tools:replace="android:name,android:label,android:theme,android:allowBackup,android:icon"
+        android:theme="@style/AppTheme">
+
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
+
         <activity
-            android:name=".activity.MainActivity"
+            android:name=".MainActivity"
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -26,9 +80,59 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.BleActivity" />
-        <activity android:name=".activity.OTAActivity" />
-        <activity android:name=".activity.ble.scan.ScanActivity" />
+        <activity android:name=".scan.ScanActivity" />
+
+
+
+
+        <!--通知栏监听，和dfu-->
+        <service
+            android:name="npNotificationListener.nopointer.core.NpNotificationService"
+            android:label="@string/app_name_main"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name="npNotificationListener.nopointer.core.NpAccessibilityService"
+            android:enabled="true"
+            android:exported="false"
+            android:label="@string/app_name_main"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".bleModule.ota.DfuService"
+            android:exported="true"
+            android:label="DfuService">
+            <intent-filter>
+                <action android:name="no.nordicsemi.android.action.DFU_UPLOAD" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
+
+
+        <!--后台1px activity-->
+        <activity
+            android:name=".keepAlive.activity.Bg1PxActivity"
+            android:excludeFromRecents="true"
+            android:finishOnTaskLaunch="false"
+            android:launchMode="singleInstance"
+            android:theme="@style/SingleActivityStyle" />
+
+        <!--后台守护进程 service-->
+        <service
+            android:name=".keepAlive.service.KeepService"
+            android:process=":KeepService" />
+        <service
+            android:name=".keepAlive.service.GuardService"
+            android:process=":GuardService" />
+        <service android:name=".keepAlive.service.BgCoreService" />
 
     </application>
 

@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name_main">npBle</string>
-
+    <string name="app_name_main">npDemo</string>
 
     <string name="request_permission_title">温馨提示</string>
     <string name="request_permission_message_for_main">为了获得更好的使用体验，请确认授权以下权限：存储、定位/位置信息</string>

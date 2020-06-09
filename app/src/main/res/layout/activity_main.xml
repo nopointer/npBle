@@ -6,39 +6,39 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <include layout="@layout/include_titlebar"/>
-
-
-    <Button
-        android:onClick="normalFunction"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:text="普通功能" />
 
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="6dp"
-        android:text="普通功能里面包含，扫描设备，连接设备"
-        android:textSize="10sp" />
-
-
-    <Button
-        android:visibility="gone"
-        android:onClick="otaFunction"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
-        android:text="OTA" />
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/dp_100"
+        android:text="当前绑定的设备:" />
 
 
     <TextView
-        android:visibility="gone"
-        android:layout_width="match_parent"
+        android:id="@+id/my_device"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="6dp"
-        android:text="OTA 里面包含：nordic、ti、汉天下、泰凌微的ota，后续还会更新其他平台"
-        android:textSize="10sp" />
+        android:layout_gravity="center_horizontal"
+        android:layout_margin="@dimen/dp_20"
+        android:text="当前绑定的设备:" />
+
+    <TextView
+        android:id="@+id/conn_state_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_margin="@dimen/dp_20"
+        android:text="连接状态:" />
+
+
+    <Button
+        android:id="@+id/textBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center"
+        android:minHeight="60dp"
+        android:text="绑定设备" />
 
 </LinearLayout>

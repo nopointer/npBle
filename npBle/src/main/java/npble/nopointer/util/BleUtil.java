@@ -427,4 +427,9 @@ public class BleUtil {
         return BluetoothAdapter.getDefaultAdapter().getRemoteDevice(mac);
     }
 
+
+
+
+
+
 }

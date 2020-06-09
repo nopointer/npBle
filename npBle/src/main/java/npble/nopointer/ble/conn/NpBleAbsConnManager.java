@@ -215,6 +215,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * @param mac
      */
     public void connDevice(String mac) {
+        BleUtil.connDeviceList(getContext());
         if (!verifyConnBefore(mac)) {
             return;
         }
@@ -269,6 +270,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                     .useAutoConnect(false)
                     .enqueue();
         } else {
+            withBleConnState(NpBleConnState.CONNECTING);
             NpLog.eAndSave("名称为空，需要开启一下扫描来缓存一下设备名称");
             hadScanDeviceFlag = true;
             BleScanner.getInstance().registerScanListener(new ScanListener() {
@@ -321,7 +323,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                         }, 1200);
                     }
                 }
-            }, 30 * 1000);
+            }, 15 * 1000);
         }
     }
 
