@@ -486,6 +486,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         public void onDeviceConnected(@NonNull BluetoothDevice device) {
             NpLog.eAndSave("onDeviceConnected : " + device.getAddress());
             withBleConnState(NpBleConnState.CONNECTED);
+            onBleDeviceConnected();
         }
 
         @Override
@@ -837,6 +838,13 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     protected void onNotSupportDevice() {
     }
 
+    /**
+     * Ble设备连接上了
+     */
+
+    protected void  onBleDeviceConnected(){
+
+    }
 
     /**
      * 系统的蓝牙打开
