@@ -11,7 +11,7 @@ android {
         minSdkVersion var.minSdkVersion
         targetSdkVersion var.targetSdkVersion
         versionCode 7
-        versionName "1.0.7"
+        versionName "1.0.7_01"
         multiDexEnabled true
     }
 
@@ -46,7 +46,9 @@ dependencies {
     api 'no.nordicsemi.android.support.v18:scanner:1.4.2'
 //    api project(':nordicBle')
     //np日志收集管理工具
-    implementation 'com.github.nopointer:npLog:1.0.2'
-    implementation project(path: ':ble')
+    implementation 'com.github.nopointer:npLog:1.0.4'
+//    implementation project(path: ':ble')
+
+    implementation 'no.nordicsemi.android:ble:2.1.1'
 
 }
