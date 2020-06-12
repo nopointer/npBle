@@ -11,9 +11,9 @@ import com.example.otalib.boads.WorkOnBoads;
 import java.io.IOException;
 import java.util.UUID;
 
-import npLog.nopointer.core.NpLog;
 import npble.nopointer.ble.conn.NpBleAbsConnManager;
 import npble.nopointer.exception.NpBleUUIDNullException;
+import npble.nopointer.log.NpBleLog;
 import npble.nopointer.ota.NpOtaErrCode;
 import npble.nopointer.ota.callback.NpOtaCallback;
 import npble.nopointer.util.BleUtil;
@@ -73,7 +73,7 @@ public class HTXOTAImpl extends NpBleAbsConnManager implements HTXBleCfg {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             if (msg == null) return;
-            NpLog.iAndSave(msg.toString());
+            NpBleLog.log(msg.toString());
 
             switch (msg.arg1) {
 
@@ -102,7 +102,7 @@ public class HTXOTAImpl extends NpBleAbsConnManager implements HTXBleCfg {
                         if (isConnected()) {
                             boolean result = writeTxCmd(packet_data);
                             if (!result) {
-                                NpLog.eAndSave("writeCharacteristic() TX CMD failed!!!");
+                                NpBleLog.log("writeCharacteristic() TX CMD failed!!!");
                                 return;
                             }
                             pos1 = pos1 + 20;
@@ -118,17 +118,17 @@ public class HTXOTAImpl extends NpBleAbsConnManager implements HTXBleCfg {
                         byte[] packet_data = new byte[tmp1];
                         System.arraycopy(sendcmd, pos1, packet_data, 0, tmp1);
                         if (isConnected()) {
-                            NpLog.i("cmd data:" + Utils.bytesToHexString(packet_data));
+                            NpBleLog.log("cmd data:" + Utils.bytesToHexString(packet_data));
 
                             boolean result = writeTxCmd(packet_data);
                             if (!result) {
-                                NpLog.eAndSave("writeCharacteristic() TX CMD failed!!!");
+                                NpBleLog.log("writeCharacteristic() TX CMD failed!!!");
                                 return;
                             }
                             if (BleUtil.byte2HexStr(packet_data).equals("00000000")) {
-                                NpLog.eAndSave("复位标识");
+                                NpBleLog.log("复位标识");
                             }
-                            NpLog.eAndSave(packet_data.toString());
+                            NpBleLog.log(packet_data.toString());
                         } else {
                             if (otaCallback != null) {
                                 otaCallback.onFailure(NpOtaErrCode.LOST_CONN, "lost conn");
@@ -151,14 +151,14 @@ public class HTXOTAImpl extends NpBleAbsConnManager implements HTXBleCfg {
                         System.arraycopy(senddat, pos, packet_data, 0, 20);
 
                         if (isConnected()) {
-                            NpLog.i("ota send lenth:" + packet_data.length);
+                            NpBleLog.log("ota send lenth:" + packet_data.length);
                             boolean result = writeTxData(packet_data);
                             if (!result) {
-                                NpLog.i("writeCharacteristic() DATA failed!!!");
+                                NpBleLog.log("writeCharacteristic() DATA failed!!!");
                                 return;
                             }
                             pos = pos + 20;
-                            NpLog.i("ota pos:" + pos + " / " + len);
+                            NpBleLog.log("ota pos:" + pos + " / " + len);
 
                         } else {
                             if (otaCallback != null) {
@@ -171,10 +171,10 @@ public class HTXOTAImpl extends NpBleAbsConnManager implements HTXBleCfg {
                         byte[] packet_data = new byte[tmp];
                         System.arraycopy(senddat, pos, packet_data, 0, tmp);
                         if (isConnected()) {
-//                            NpLog.eAndSave("send data:" + Utils.bytesToHexString(packet_data));
+//                            NpBleLog.log("send data:" + Utils.bytesToHexString(packet_data));
                             boolean result = writeTxData(packet_data);
                             if (!result) {
-                                NpLog.eAndSave("writeCharacteristic() DATA failed!!!");
+                                NpBleLog.log("writeCharacteristic() DATA failed!!!");
                                 return;
                             }
                         } else {
@@ -189,7 +189,7 @@ public class HTXOTAImpl extends NpBleAbsConnManager implements HTXBleCfg {
 
                 case Constant.MSG_ARG1_PROGRESS_BAR_MAX: {
                     int len1 = msg.arg2;
-//                    NpLog.eAndSave("len==>1 " + len1);
+//                    NpBleLog.log("len==>1 " + len1);
                     fileTotalSize = len1;
                 }
                 break;
@@ -197,11 +197,11 @@ public class HTXOTAImpl extends NpBleAbsConnManager implements HTXBleCfg {
                 case Constant.MSG_ARG1_PROGRESS_BAR_UPDATA: {
                     int currentValue = msg.arg2;
                     float progress = (currentValue * 100) / fileTotalSize;
-//                    NpLog.eAndSave("len==>2 " + currentValue + "/" + fileTotalSize);
+//                    NpBleLog.log("len==>2 " + currentValue + "/" + fileTotalSize);
 
                     if (progress >= 100) {
                         isOTASuccess = true;
-                        NpLog.eAndSave("OTA 成功了");
+                        NpBleLog.log("OTA 成功了");
                     } else {
                         if (otaCallback != null) {
                             otaCallback.onProgress((int) progress);
@@ -220,7 +220,7 @@ public class HTXOTAImpl extends NpBleAbsConnManager implements HTXBleCfg {
 
     @Override
     public void onDataReceive(byte[] data, UUID uuid) {
-        NpLog.eAndSave("Receive:" + uuid.toString() + "///" + BleUtil.byte2HexStr(data));
+        NpBleLog.log("Receive:" + uuid.toString() + "///" + BleUtil.byte2HexStr(data));
         if (uuid.equals(UUID_OTA_RX_CMD)) {
             workOnBoads.setBluetoothNotifyData(data, Constant.CMDCHARC);
         } else if (uuid.equals(UUID_OTA_RX_DATA)) {
@@ -288,7 +288,7 @@ public class HTXOTAImpl extends NpBleAbsConnManager implements HTXBleCfg {
                 try {
                     //do_work_on_boads.app_buf = op.readSDFile(file_path);
                     tmp_read = op.readSDFile(filePath);
-                    NpLog.eAndSave("tmp_read 固件文件的大小==>" + tmp_read.length);
+                    NpBleLog.log("tmp_read 固件文件的大小==>" + tmp_read.length);
 
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
@@ -335,7 +335,7 @@ public class HTXOTAImpl extends NpBleAbsConnManager implements HTXBleCfg {
                 break;
         }
 
-        NpLog.eAndSave("结束了传输！！！response:" + response + " /// detail:" + detail);
+        NpBleLog.log("结束了传输！！！response:" + response + " /// detail:" + detail);
 //        ycBleLogUtils.e("detail:" + detail);
         Message msg = handler.obtainMessage();
         msg.arg1 = MSG_OTA_RESEPONSE;

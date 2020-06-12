@@ -7,8 +7,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import npLog.nopointer.core.NpLog;
 import npble.nopointer.device.BleDevice;
+import npble.nopointer.log.NpBleLog;
 import npble.nopointer.ota.NpOtaErrCode;
 import npble.nopointer.ota.callback.NpOtaCallback;
 import npble.nopointer.util.BleUtil;
@@ -38,12 +38,12 @@ public class TeLinkOTAHelper {
         device.setCallback(new Device.Callback() {
             @Override
             public void onConnected(final Device device) {
-                NpLog.eAndSave("onConnected==" + device.getMacAddress());
+                NpBleLog.log("onConnected==" + device.getMacAddress());
             }
 
             @Override
             public void onDisconnected(final Device device) {
-                NpLog.eAndSave("onDisconnected==" + device.getMacAddress());
+                NpBleLog.log("onDisconnected==" + device.getMacAddress());
                 if (!device.isOTASuccess()) {
                     if (otaCallback != null) {
                         otaCallback.onFailure(NpOtaErrCode.TELINK_ERROR, "failure");
@@ -72,9 +72,9 @@ public class TeLinkOTAHelper {
                         }
                         break;
                     case Device.STATE_SUCCESS:
-                        NpLog.eAndSave("成功");
+                        NpBleLog.log("成功");
                         endTime = System.currentTimeMillis();
-                        NpLog.eAndSave("time:" + (endTime - startTime) / 1000L / 60.0f);
+                        NpBleLog.log("time:" + (endTime - startTime) / 1000L / 60.0f);
                         if (otaCallback != null) {
                             otaCallback.onSuccess();
                         }

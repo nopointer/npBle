@@ -10,9 +10,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
-import npLog.nopointer.core.NpLog;
 import npble.nopointer.ble.conn.NpBleAbsConnManager;
 import npble.nopointer.exception.NpBleUUIDNullException;
+import npble.nopointer.log.NpBleLog;
 import npble.nopointer.ota.callback.NpOtaCallback;
 import npble.nopointer.util.BleUtil;
 
@@ -183,9 +183,9 @@ class TiOTAImpl extends NpBleAbsConnManager implements TIBleCfg {
                 if (otaCallback != null) {
                     otaCallback.onProgress((int) progress);
                 }
-                NpLog.eAndSave("progress===>" + progress);
+                NpBleLog.log("progress===>" + progress);
                 if (mProgInfo.iBlocks == mProgInfo.nBlocks) {
-                    NpLog.eAndSave("OTA 完成 Programming finished");
+                    NpBleLog.log("OTA 完成 Programming finished");
                     isSuccess = true;
                     if (otaCallback != null) {
                         otaCallback.onSuccess();
@@ -199,7 +199,7 @@ class TiOTAImpl extends NpBleAbsConnManager implements TIBleCfg {
                 }
             }
             if (!success) {
-                NpLog.eAndSave(msg);
+                NpBleLog.log(msg);
             }
         } else {
             mProgramming = false;
@@ -234,7 +234,7 @@ class TiOTAImpl extends NpBleAbsConnManager implements TIBleCfg {
                 stream.close();
             } catch (IOException e) {
                 // Handle exceptions here
-                NpLog.eAndSave("File open failed: " + filePath + "\n");
+                NpBleLog.log("File open failed: " + filePath + "\n");
             }
         }
         // Show image info

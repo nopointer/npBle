@@ -3,7 +3,7 @@ package npble.nopointer.ota;
 import android.content.Context;
 
 import no.nordicsemi.android.dfu.DfuBaseService;
-import npLog.nopointer.core.NpLog;
+import npble.nopointer.log.NpBleLog;
 import npble.nopointer.ota.absimpl.freqchip.FreqchipOTAHelper;
 import npble.nopointer.ota.absimpl.htx.HTXOTAHelper;
 import npble.nopointer.ota.absimpl.nordic.DfuHelper;
@@ -36,10 +36,10 @@ public class NpOtaHelper {
     }
 
 //    public void startOTA(Context context, String filePath, String mac, NpFirmType firmType, OTACallback otaCallback) {
-//        NpLog.eAndSave("startOTA======>");
-//        NpLog.eAndSave("firmType======>" + firmType);
-//        NpLog.eAndSave("filePath======>" + filePath);
-//        NpLog.eAndSave("otaCallback======>" + otaCallback);
+//        NpBleLog.log("startOTA======>");
+//        NpBleLog.log("firmType======>" + firmType);
+//        NpBleLog.log("filePath======>" + filePath);
+//        NpBleLog.log("otaCallback======>" + otaCallback);
 //        startOTA(context, filePath, mac, firmType, otaCallback);
 //    }
 
@@ -50,7 +50,7 @@ public class NpOtaHelper {
                 DfuHelper.getDfuHelper().start(context, filePath, mac,"otaName", otaCallback, dfuBaseService);
                 break;
             case HTX://汉天下的OTA
-                NpLog.eAndSave("开始汉天下的ota======>");
+                NpBleLog.log("开始汉天下的ota======>");
                 HTXOTAHelper htxotaHelper = HTXOTAHelper.getInstance();
                 htxotaHelper.setAppFilePath(filePath);
                 htxotaHelper.setDeviceMac(mac);
@@ -70,7 +70,7 @@ public class NpOtaHelper {
                 new XcOTAImpl().startOTA(context, mac, filePath, otaCallback);
                 break;
             default:
-                NpLog.eAndSave("暂无合适的固件");
+                NpBleLog.log("暂无合适的固件");
                 break;
         }
     }

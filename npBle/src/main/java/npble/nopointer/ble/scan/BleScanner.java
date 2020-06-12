@@ -15,8 +15,8 @@ import no.nordicsemi.android.support.v18.scanner.ScanCallback;
 import no.nordicsemi.android.support.v18.scanner.ScanFilter;
 import no.nordicsemi.android.support.v18.scanner.ScanResult;
 import no.nordicsemi.android.support.v18.scanner.ScanSettings;
-import npLog.nopointer.core.NpLog;
 import npble.nopointer.device.BleDevice;
+import npble.nopointer.log.NpBleLog;
 
 /**
  * Created by nopointer on 2018/8/3.
@@ -129,20 +129,20 @@ public class BleScanner {
                 @Override
                 public void onScanResult(int callbackType, final ScanResult result) {
                     super.onScanResult(callbackType, result);
-                    NpLog.e("====onScanResult====>单个==>" + result.toString());
+                    NpBleLog.log("====onScanResult====>单个==>" + result.toString());
                 }
 
                 @Override
                 public void onBatchScanResults(@NonNull final List<ScanResult> results) {
                     super.onBatchScanResults(results);
-                    NpLog.e("====onScanResult====>批量==>" + results.size());
+                    NpBleLog.log("====onScanResult====>批量==>" + results.size());
                     cachedThreadPool.execute(new Runnable() {
                         @Override
                         public void run() {
                             for (ScanResult result : results) {
                                 BleDevice bleDevice = BleDevice.parserFromScanData(result.getDevice(), result.getScanRecord().getBytes(), result.getRssi());
                                 if (isShowScanLog) {
-                                    NpLog.eAndSave("====onScanResult====>" + bleDevice.toString() + (bleDeviceFilter == null));
+                                    NpBleLog.log("====onScanResult====>" + bleDevice.toString() + (bleDeviceFilter == null));
                                 }
                                 if (bleDeviceFilter != null) {
                                     if (bleDeviceFilter.filter(bleDevice)) {
@@ -159,7 +159,7 @@ public class BleScanner {
                 @Override
                 public void onScanFailed(int errorCode) {
                     super.onScanFailed(errorCode);
-                    NpLog.eAndSave("onScanFailed====>" + errorCode);
+                    NpBleLog.log("onScanFailed====>" + errorCode);
                     onFailure(errorCode);
                 }
             };
@@ -170,10 +170,10 @@ public class BleScanner {
     public void startScan() {
         init();
         if (!isEnabled()) {
-            NpLog.eAndSave("蓝牙没有打开，请先打开手机蓝牙，再进行扫描");
+            NpBleLog.log("蓝牙没有打开，请先打开手机蓝牙，再进行扫描");
             return;
         }
-        NpLog.eAndSave("要求开始扫描设备,当前扫描状态:" + isScan);
+        NpBleLog.log("要求开始扫描设备,当前扫描状态:" + isScan);
         if (isScan) {
             return;
         }
@@ -185,7 +185,7 @@ public class BleScanner {
     public void stopScan() {
         init();
         if (!isEnabled()) {
-            NpLog.eAndSave(" 蓝牙没有打开--");
+            NpBleLog.log(" 蓝牙没有打开--");
             return;
         }
         if (!isScan) {
@@ -243,16 +243,16 @@ public class BleScanner {
                         .setUseHardwareBatchingIfSupported(false).build();
                 final List<ScanFilter> filters = new ArrayList<>();
                 filters.add(new ScanFilter.Builder().build());
-                NpLog.eAndSave("judgeScanOrStop，启动了扫描");
+                NpBleLog.log("judgeScanOrStop，启动了扫描");
                 scanner.startScan(filters, settings, scanCallback);
             } else {
-                NpLog.eAndSave("judgeScanOrStop，停止了扫描");
+                NpBleLog.log("judgeScanOrStop，停止了扫描");
                 scanner.stopScan(scanCallback);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            NpLog.eAndSave("开启扫描失败");
-            NpLog.eAndSave(e.getMessage());
+            NpBleLog.log("开启扫描失败");
+            NpBleLog.log(e.getMessage());
         }
     }
 

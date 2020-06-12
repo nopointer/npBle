@@ -11,7 +11,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import npLog.nopointer.core.NpLog;
+import npble.nopointer.log.NpBleLog;
 import npble.nopointer.ota.NpOtaErrCode;
 import npble.nopointer.ota.callback.NpOtaCallback;
 
@@ -98,12 +98,12 @@ public class XcOTAImpl {
                 updateStatusInfo("DeviceDisconnected :" + device.getAddress() + "\n");
 
                 if (manager.isSuccess()) {
-                    NpLog.eAndSave("OTA 成功了");
+                    NpBleLog.log("OTA 成功了");
                     if (otaCallback != null) {
                         otaCallback.onSuccess();
                     }
                 } else {
-                    NpLog.eAndSave("OTA 失败了");
+                    NpBleLog.log("OTA 失败了");
                     if (otaCallback != null) {
                         otaCallback.onFailure(NpOtaErrCode.FAILURE, "failure");
                     }
@@ -185,7 +185,7 @@ public class XcOTAImpl {
 //                statusInfoTv.setText(buffer.toString());
 //            }
 //        });
-        NpLog.eAndSave(message);
+        NpBleLog.log(message);
 
     }
 

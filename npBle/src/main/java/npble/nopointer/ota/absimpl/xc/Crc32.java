@@ -1,7 +1,7 @@
 package npble.nopointer.ota.absimpl.xc;
 
 
-import npLog.nopointer.core.NpLog;
+import npble.nopointer.log.NpBleLog;
 
 public class Crc32 {
     public static final long CRC32_POLY_VAL = 0x04C11DB7L;
@@ -106,8 +106,8 @@ public class Crc32 {
 //    }
 
    public long  crc32_calc(long crc, byte[] input, int len) {
-       NpLog.eAndSave("crc===>"+crc);
-       NpLog.eAndSave("len===>"+len);
+       NpBleLog.log("crc===>"+crc);
+       NpBleLog.log("len===>"+len);
        long crc32 = crc;
         for (int i = 0; i < len; i++) {
             long a=(crc32 ^ input[i]) & 0xFF;

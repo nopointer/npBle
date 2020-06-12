@@ -7,7 +7,7 @@ import no.nordicsemi.android.dfu.DfuProgressListener;
 import no.nordicsemi.android.dfu.DfuProgressListenerAdapter;
 import no.nordicsemi.android.dfu.DfuServiceInitiator;
 import no.nordicsemi.android.dfu.DfuServiceListenerHelper;
-import npLog.nopointer.core.NpLog;
+import npble.nopointer.log.NpBleLog;
 import npble.nopointer.ota.NpOtaErrCode;
 import npble.nopointer.ota.NpOtaState;
 import npble.nopointer.ota.callback.NpOtaCallback;
@@ -44,7 +44,7 @@ public class DfuHelper {
 
         starter.setZip(zipFilePath);
         if (dfuServiceImpl == null) {
-            NpLog.eAndSave("dfuServiceImpl cant be null");
+            NpBleLog.log("dfuServiceImpl cant be null");
             return;
         }
         starter.setForeground(false);
@@ -55,7 +55,7 @@ public class DfuHelper {
     private final DfuProgressListener mDfuProgressListener = new DfuProgressListenerAdapter() {
         @Override
         public void onDeviceConnecting(final String deviceAddress) {
-            NpLog.eAndSave("R.string.dfu_status_connecting");
+            NpBleLog.log("R.string.dfu_status_connecting");
 
             if (otaCallback != null) {
                 otaCallback.onCurrentState(NpOtaState.connecting);
@@ -65,7 +65,7 @@ public class DfuHelper {
         @Override
         public void onDfuProcessStarting(final String deviceAddress) {
 
-            NpLog.eAndSave("R.string.dfu_status_starting");
+            NpBleLog.log("R.string.dfu_status_starting");
 
             if (otaCallback != null) {
                 otaCallback.onCurrentState(NpOtaState.starting);
@@ -74,7 +74,7 @@ public class DfuHelper {
 
         @Override
         public void onEnablingDfuMode(final String deviceAddress) {
-            NpLog.eAndSave("R.string.dfu_status_switching_to_dfu");
+            NpBleLog.log("R.string.dfu_status_switching_to_dfu");
 
             if (otaCallback != null) {
                 otaCallback.onCurrentState(NpOtaState.switching_to_dfu);
@@ -87,7 +87,7 @@ public class DfuHelper {
         public void onFirmwareValidating(final String deviceAddress) {
 //            mProgressBar.setIndeterminate(true);
 //            mTextPercentage.setText(R.string.dfu_status_validating);
-            NpLog.eAndSave("R.string.dfu_status_validating");
+            NpBleLog.log("R.string.dfu_status_validating");
         }
 
         //
@@ -95,12 +95,12 @@ public class DfuHelper {
         public void onDeviceDisconnecting(final String deviceAddress) {
 //            mProgressBar.setIndeterminate(true);
 //            mTextPercentage.setText(R.string.dfu_status_disconnecting);
-            NpLog.eAndSave("R.string.dfu_status_disconnecting");
+            NpBleLog.log("R.string.dfu_status_disconnecting");
         }
 
         @Override
         public void onDfuCompleted(final String deviceAddress) {
-            NpLog.eAndSave("R.string.dfu_status_completed");
+            NpBleLog.log("R.string.dfu_status_completed");
             if (otaCallback != null) {
                 otaCallback.onSuccess();
             }
@@ -108,7 +108,7 @@ public class DfuHelper {
 
         @Override
         public void onDfuAborted(final String deviceAddress) {
-            NpLog.eAndSave("R.string.dfu_status_aborted");
+            NpBleLog.log("R.string.dfu_status_aborted");
 
             if (otaCallback != null) {
                 otaCallback.onFailure(NpOtaErrCode.NRF_ABORTED,"DfuAborted");
@@ -117,7 +117,7 @@ public class DfuHelper {
 
         @Override
         public void onProgressChanged(final String deviceAddress, final int percent, final float speed, final float avgSpeed, final int currentPart, final int partsTotal) {
-            NpLog.eAndSave("R.string.dfu_uploading_percentage" + percent);
+            NpBleLog.log("R.string.dfu_uploading_percentage" + percent);
             if (otaCallback != null) {
                 otaCallback.onProgress(percent);
             }
@@ -125,7 +125,7 @@ public class DfuHelper {
 
         @Override
         public void onError(final String deviceAddress, final int error, final int errorType, final String message) {
-            NpLog.eAndSave("onError==" + error + ";" + message);
+            NpBleLog.log("onError==" + error + ";" + message);
             if (otaCallback != null) {
                 otaCallback.onFailure(error,message);
             }

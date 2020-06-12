@@ -19,8 +19,8 @@ import java.util.List;
 import java.util.UUID;
 
 import no.nordicsemi.android.dfu.internal.scanner.BootloaderScanner;
-import npLog.nopointer.core.NpLog;
 import npble.nopointer.exception.NpBleUUIDNullException;
+import npble.nopointer.log.NpBleLog;
 
 /**
  * Created by nopointer on 2017/6/12.
@@ -44,7 +44,7 @@ public class BleUtil {
     }
 
     public static void debug(String tag, byte[] data) {
-        NpLog.eAndSave(tag + debug(data));
+        NpBleLog.log(tag + debug(data));
     }
 
     /***
@@ -312,7 +312,7 @@ public class BleUtil {
      * @return
      */
     public static List<BluetoothDevice> connDeviceList(Context context) {
-        NpLog.eAndSave("读取当前系统连接的蓝牙设备");
+        NpBleLog.log("读取当前系统连接的蓝牙设备");
         if (context == null) {
             return null;
         }
@@ -322,7 +322,7 @@ public class BleUtil {
         }
         final List<BluetoothDevice> devices = manager.getConnectedDevices(BluetoothProfile.GATT);
         for (BluetoothDevice device : devices) {
-            NpLog.eAndSave("debug==>device：===>" + device.getAddress() + "==" + device.getName());
+            NpBleLog.log("debug==>device：===>" + device.getAddress() + "==" + device.getName());
         }
         return devices;
     }

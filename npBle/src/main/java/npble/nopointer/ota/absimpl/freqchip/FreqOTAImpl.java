@@ -12,9 +12,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
-import npLog.nopointer.core.NpLog;
 import npble.nopointer.ble.conn.NpBleAbsConnManager;
 import npble.nopointer.exception.NpBleUUIDNullException;
+import npble.nopointer.log.NpBleLog;
 import npble.nopointer.ota.NpOtaErrCode;
 import npble.nopointer.ota.callback.NpOtaCallback;
 import npble.nopointer.util.BleUtil;
@@ -77,7 +77,7 @@ class FreqOTAImpl extends NpBleAbsConnManager implements FreqBleCfg {
 
     @Override
     public void onDataReceive(byte[] data, UUID uuid) {
-        NpLog.eAndSave("接收到数据" + BleUtil.byte2HexStr(data));
+        NpBleLog.log("接收到数据" + BleUtil.byte2HexStr(data));
         baseaddr = data;
         setRecv_data(1);
     }
@@ -228,7 +228,7 @@ class FreqOTAImpl extends NpBleAbsConnManager implements FreqBleCfg {
             }
 
         } else {
-            NpLog.eAndSave("请选择要发送的文件");
+            NpBleLog.log("请选择要发送的文件");
         }
     }
 

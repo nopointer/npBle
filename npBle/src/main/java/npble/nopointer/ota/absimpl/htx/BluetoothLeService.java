@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Semaphore;
 
-import npLog.nopointer.core.NpLog;
+import npble.nopointer.log.NpBleLog;
 import npble.nopointer.util.BleUtil;
 
 
@@ -213,7 +213,7 @@ public class BluetoothLeService extends Service {
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
 
-            NpLog.eAndSave("onCharacteristicChanged==>"+characteristic.getUuid()+"///"+BleUtil.byte2HexStr(characteristic.getValue()));
+            NpBleLog.log("onCharacteristicChanged==>"+characteristic.getUuid()+"///"+BleUtil.byte2HexStr(characteristic.getValue()));
 
 //        	if(SampleGattAttributes.BLUE_RECV_VALUE.equals(characteristic.getUuid().toString())){
 //        		
@@ -242,7 +242,7 @@ public class BluetoothLeService extends Service {
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
 //            Log.e("peng","gatt1gatt1:"+mGattCallback);
             Log.i("DEBUG_OTA", "write status: " + status);
-            NpLog.eAndSave("onCharacteristicWrite==>"+characteristic.getUuid()+"///"+BleUtil.byte2HexStr(characteristic.getValue()));
+            NpBleLog.log("onCharacteristicWrite==>"+characteristic.getUuid()+"///"+BleUtil.byte2HexStr(characteristic.getValue()));
 
             write_characer_lock.release(1);
 //        	if(SampleGattAttributes.otas_tx_dat_uuid.equals(characteristic.getUuid().toString()))
@@ -258,14 +258,14 @@ public class BluetoothLeService extends Service {
         if (mBluetoothManager == null) {
             mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
             if (mBluetoothManager == null) {
-                NpLog.eAndSave( "Unable to initialize BluetoothManager.");
+                NpBleLog.log( "Unable to initialize BluetoothManager.");
                 return false;
             }
         }
 
         mBluetoothAdapter = mBluetoothManager.getAdapter();
         if (mBluetoothAdapter == null) {
-            NpLog.eAndSave( "Unable to obtain a BluetoothAdapter.");
+            NpBleLog.log( "Unable to obtain a BluetoothAdapter.");
             return false;
         }
 
@@ -290,7 +290,7 @@ public class BluetoothLeService extends Service {
         // Previously connected device.  Try to reconnect.
         if (mBluetoothDeviceAddress != null && address.equals(mBluetoothDeviceAddress)
                 && mBluetoothGatt != null) {
-            NpLog.eAndSave( "Trying to use an existing mBluetoothGatt for connection.");
+            NpBleLog.log( "Trying to use an existing mBluetoothGatt for connection.");
             if (mBluetoothGatt.connect()) {
                 return true;
             } else {
@@ -305,7 +305,7 @@ public class BluetoothLeService extends Service {
         // We want to directly connect to the device, so we are setting the autoConnect
         // parameter to false.
         mBluetoothGatt = device.connectGatt(mContext, false, mGattCallback);
-        NpLog.eAndSave( "Trying to create a new connection.");
+        NpBleLog.log( "Trying to create a new connection.");
         mBluetoothDeviceAddress = address;
         return true;
     }
@@ -458,13 +458,13 @@ public class BluetoothLeService extends Service {
             int format = -1;
             if ((flag & 0x01) != 0) {
                 format = BluetoothGattCharacteristic.FORMAT_UINT16;
-                NpLog.eAndSave( "Heart rate format UINT16.");
+                NpBleLog.log( "Heart rate format UINT16.");
             } else {
                 format = BluetoothGattCharacteristic.FORMAT_UINT8;
-                NpLog.eAndSave( "Heart rate format UINT8.");
+                NpBleLog.log( "Heart rate format UINT8.");
             }
             final int heartRate = characteristic.getIntValue(format, 1);
-            NpLog.eAndSave( String.format("Received heart rate: %d", heartRate));
+            NpBleLog.log( String.format("Received heart rate: %d", heartRate));
             intent.putExtra(EXTRA_DATA, String.valueOf(heartRate));
         } else if (UUID_RSSI_VALUE.equals(characteristic.getUuid())) {
             final byte[] data1 = characteristic.getValue();
