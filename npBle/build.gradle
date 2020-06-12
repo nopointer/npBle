@@ -10,9 +10,8 @@ android {
     defaultConfig {
         minSdkVersion var.minSdkVersion
         targetSdkVersion var.targetSdkVersion
-        versionCode 7
-        versionName "1.0.7_01"
-        multiDexEnabled true
+        versionCode 8
+        versionName "1.0.8"
     }
 
     buildTypes {
@@ -38,17 +37,15 @@ android {
 
 dependencies {
     testImplementation 'junit:junit:4.12'
-    //dfu nordic
-    //    implementation 'no.nordicsemi.android:dfu:1.6.1'
-    implementation 'no.nordicsemi.android:dfu:1.7.0'
-    api fileTree(include: '*.jar', dir: 'libs')
-    api(name: 'otalib', ext: 'aar')
-    api 'no.nordicsemi.android.support.v18:scanner:1.4.2'
-//    api project(':nordicBle')
-    //np日志收集管理工具
-    implementation 'com.github.nopointer:npLog:1.0.4'
-//    implementation project(path: ':ble')
+    implementation fileTree(include: '*.jar', dir: 'libs')
 
+
+    //汉天下ota的aar
+    api(name: 'otalib', ext: 'aar')
+    implementation 'no.nordicsemi.android:dfu:1.7.0'
+    implementation 'no.nordicsemi.android.support.v18:scanner:1.4.2'
     implementation 'no.nordicsemi.android:ble:2.1.1'
+    //np日志收集管理工具
+    implementation 'com.github.nopointer:npLog:1.0.5'
 
 }

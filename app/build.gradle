@@ -80,12 +80,12 @@ dependencies {
 
     //    implementation 'com.github.nopointer:npBle:1.0.5'
     implementation 'no.nordicsemi.android:dfu:1.7.0'
-    implementation 'no.nordicsemi.android.support.v18:scanner:1.4.0'
+    implementation 'no.nordicsemi.android.support.v18:scanner:1.4.2'
 
-    //    implementation 'no.nordicsemi.android:ble:2.1.1'
+        implementation 'no.nordicsemi.android:ble:2.1.1'
 
     //np日志收集管理工具
-    implementation 'com.github.nopointer:npLog:1.0.4'
+    implementation 'com.github.nopointer:npLog:1.0.5'
 
     //np通知栏监听
     implementation 'com.github.nopointer:npNotificationListener:1.0.2'
@@ -104,7 +104,8 @@ dependencies {
     //阿里巴巴的json库
     api 'com.alibaba:fastjson:1.2.47'
     implementation project(path: ':npBle')
-    implementation project(path: ':ble')
+//    implementation project(path: ':ble')
+
 //    implementation files('libs/commons-lang-2.4.jar')
 
     implementation 'com.github.nopointer:npPermission:1.0.2'
