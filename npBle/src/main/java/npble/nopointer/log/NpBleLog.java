@@ -1,10 +1,9 @@
 package npble.nopointer.log;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 public class NpBleLog {
-
-
 
 
     public static void log(String message) {
@@ -17,6 +16,9 @@ public class NpBleLog {
     }
 
     public static void log(String tag, String message) {
+        if (TextUtils.isEmpty(tag)) {
+            tag = "NpBleLog";
+        }
         if (mNpBleLogPrinter == null) {
             Log.e(tag, message);
         } else {

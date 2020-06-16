@@ -265,6 +265,19 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                 NpBleLog.log("已经有过设备缓存信息,刷新后,开始连接");
 //                refreshDeviceCache().enqueue();
             }
+            String phoneBrand = android.os.Build.BRAND;
+            if (
+                    phoneBrand.equalsIgnoreCase("OPPO") ||
+                            phoneBrand.equalsIgnoreCase("VIVO")
+            ) {
+                BleScanner.getInstance().startScan();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        BleScanner.getInstance().stopScan();
+                    }
+                }, 15 * 1000);
+            }
             connect(bluetoothDevice)
                     .retry(3, 300)
                     .useAutoConnect(false)
