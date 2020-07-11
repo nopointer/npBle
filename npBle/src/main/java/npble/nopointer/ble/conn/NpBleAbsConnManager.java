@@ -621,6 +621,20 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     }
 
     /**
+     * 写特征数据 不要写回调监听
+     *
+     * @param serviceUUId
+     * @param uuid
+     * @throws NpBleUUIDNullException
+     */
+    protected void writeCharacteristicWithOutCallback(UUID serviceUUId, UUID uuid, byte[] data) throws NpBleUUIDNullException {
+        BluetoothGattCharacteristic bluetoothGattCharacteristic = BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid);
+        bluetoothGattCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
+        bluetoothGattCharacteristic.setValue(data);
+        writeCharacteristicWithOutCallback(bluetoothGattCharacteristic);
+    }
+
+    /**
      * 写特征数据 无响应写
      *
      * @param serviceUUId
@@ -632,6 +646,20 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         bluetoothGattCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
         bluetoothGattCharacteristic.setValue(data);
         writeCharacteristic(bluetoothGattCharacteristic);
+    }
+
+    /**
+     * 写特征数据 无响应写
+     *
+     * @param serviceUUId
+     * @param uuid
+     * @throws NpBleUUIDNullException
+     */
+    protected void writeCharacteristicWithOutResponseWithOutCallback(UUID serviceUUId, UUID uuid, byte[] data) throws NpBleUUIDNullException {
+        BluetoothGattCharacteristic bluetoothGattCharacteristic = BleUtil.getCharacteristic(mBluetoothGatt, serviceUUId, uuid);
+        bluetoothGattCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
+        bluetoothGattCharacteristic.setValue(data);
+        writeCharacteristicWithOutCallback(bluetoothGattCharacteristic);
     }
 
 
@@ -749,6 +777,16 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                 onDataWriteFail(uuid, data, status);
             }
         }).enqueue();
+    }
+
+    /**
+     * 写特征数据 不要回调
+     *
+     * @param bluetoothGattCharacteristic
+     */
+    private void writeCharacteristicWithOutCallback(final BluetoothGattCharacteristic bluetoothGattCharacteristic) {
+        byte[] data = bluetoothGattCharacteristic.getValue();
+        writeCharacteristic(bluetoothGattCharacteristic, data).enqueue();
     }
 
     /**
