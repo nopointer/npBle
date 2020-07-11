@@ -67,7 +67,7 @@ public class MainActivity extends Activity implements NpBleConnCallback {
     @Override
     protected void onResume() {
         super.onResume();
-//        NpLog.e("MainActivity-->onResume()");
+//        NpBleLog.log("MainActivity-->onResume()");
         NpBleManager.getInstance().registerConnCallback(this::onConnState);
         onConnState(NpBleManager.getInstance().getBleConnState());
 

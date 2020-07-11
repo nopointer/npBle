@@ -198,7 +198,7 @@ public class DeviceFindMoreDialActivity extends TitleActivity implements NpBleCo
             @Override
             public void onReady() {
                 //表盘数据装载解析并装载好了
-                NpLog.eAndSave("表盘数据装载解析并装载好了");
+                NpBleLog.log("表盘数据装载解析并装载好了");
                 NpBleManager.getInstance().writeData(DevDataUtils.updateImageMode(1, 1));
             }
 

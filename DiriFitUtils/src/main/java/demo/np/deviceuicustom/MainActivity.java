@@ -35,7 +35,7 @@ public class MainActivity extends TitleActivity {
             }, 100);
         }
 
-        NpLog.initLog("DiriFit Test/log", "log");
+        NpBleLog.lognitLog("DiriFit Test/log", "log");
 //        startActivity(BatchOTAActivity.class);
     }
 

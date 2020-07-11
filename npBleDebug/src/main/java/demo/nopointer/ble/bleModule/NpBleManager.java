@@ -14,9 +14,9 @@ import demo.nopointer.ble.MainApplication;
 import demo.nopointer.ble.bleModule.bean.CharaBean;
 import demo.nopointer.ble.dialog.bleservice.BleServiceBean;
 import demo.nopointer.ble.utils.ToastHelper;
-import npLog.nopointer.core.NpLog;
 import npble.nopointer.ble.conn.NpBleAbsConnManager;
 import npble.nopointer.exception.NpBleUUIDNullException;
+import npble.nopointer.log.NpBleLog;
 import npble.nopointer.util.BleUtil;
 
 public class NpBleManager extends NpBleAbsConnManager {
@@ -65,22 +65,22 @@ public class NpBleManager extends NpBleAbsConnManager {
     }
 
     protected void onBeforeWriteData(UUID uuid, byte[] data) {
-        NpLog.eAndSave(uuid.toString() + "写指令之前:" + BleUtil.byte2HexStr(data));
+        NpBleLog.log(uuid.toString() + "写指令之前:" + BleUtil.byte2HexStr(data));
     }
 
     protected void onConnException() {
         if (isHandDisConn()) {
-            NpLog.eAndSave("这是手动断开的，不处理");
+            NpBleLog.log("这是手动断开的，不处理");
             return;
         }
-        NpLog.eAndSave("连接异常，重连");
+        NpBleLog.log("连接异常，重连");
     }
 
     protected void onDataReceive(byte[] paramArrayOfByte, UUID paramUUID) {
         StringBuilder localStringBuilder = new StringBuilder();
         localStringBuilder.append("onDataReceive====>");
         localStringBuilder.append(BleUtil.byte2HexStr(paramArrayOfByte));
-        NpLog.eAndSave(localStringBuilder.toString());
+        NpBleLog.log(localStringBuilder.toString());
         if (this.dataReceiveListener != null) {
             this.dataReceiveListener.onReceiveData(paramUUID.toString(), paramArrayOfByte);
         }
@@ -88,11 +88,11 @@ public class NpBleManager extends NpBleAbsConnManager {
     }
 
     protected void onDataWriteFail(UUID uuid, byte[] data, int code) {
-        NpLog.eAndSave(uuid.toString() + "onDataWriteFail:" + BleUtil.byte2HexStr(data) + "///" + code);
+        NpBleLog.log(uuid.toString() + "onDataWriteFail:" + BleUtil.byte2HexStr(data) + "///" + code);
     }
 
     protected void onDataWriteSuccess(UUID uuid, byte[] data) {
-        NpLog.eAndSave(uuid.toString() + "onDataWriteSuccess:" + BleUtil.byte2HexStr(data));
+        NpBleLog.log(uuid.toString() + "onDataWriteSuccess:" + BleUtil.byte2HexStr(data));
     }
 
     public void onDiscoveredServices(BluetoothGatt paramBluetoothGatt) {
@@ -119,11 +119,11 @@ public class NpBleManager extends NpBleAbsConnManager {
                 this.bleServiceBeanList.add(serviceBean);
             }
         }
-        NpLog.eAndSave("获取到了设备的uuid");
+        NpBleLog.log("获取到了设备的uuid");
     }
 
     protected void onFinishTaskAfterConn() {
-        NpLog.eAndSave("onFinishTaskAfterConn===>时序任务完成");
+        NpBleLog.log("onFinishTaskAfterConn===>时序任务完成");
     }
 
     public void readCharaData() {
@@ -151,8 +151,8 @@ public class NpBleManager extends NpBleAbsConnManager {
         StringBuilder localStringBuilder = new StringBuilder();
         localStringBuilder.append("自动设置上次的读或者通知uuid");
         localStringBuilder.append(paramCharaBean.toString());
-        NpLog.e(localStringBuilder.toString());
-        NpLog.e("应该是遇到了同名称的别家设备");
+        NpBleLog.log(localStringBuilder.toString());
+        NpBleLog.log("应该是遇到了同名称的别家设备");
     }
 
     public void setWriteUuid(CharaBean paramCharaBean) {
@@ -161,10 +161,10 @@ public class NpBleManager extends NpBleAbsConnManager {
             StringBuilder localStringBuilder = new StringBuilder();
             localStringBuilder.append("自动设置上次的写uuid");
             localStringBuilder.append(paramCharaBean.toString());
-            NpLog.e(localStringBuilder.toString());
+            NpBleLog.log(localStringBuilder.toString());
             return;
         }
-        NpLog.e("应该是遇到了同名称的别家设备");
+        NpBleLog.log("应该是遇到了同名称的别家设备");
     }
 
     public void startReadNotifyUuid() {

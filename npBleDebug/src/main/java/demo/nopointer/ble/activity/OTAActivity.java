@@ -30,12 +30,12 @@ public class OTAActivity extends Activity {
 
             @Override
             public void onSuccess() {
-                NpLog.e("OTA成功");
+                NpBleLog.log("OTA成功");
             }
 
             @Override
             public void onProgress(int progress) {
-                NpLog.e("进度:" + progress + "%");
+                NpBleLog.log("进度:" + progress + "%");
             }
         });
     }

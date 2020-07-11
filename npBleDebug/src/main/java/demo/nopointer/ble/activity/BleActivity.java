@@ -153,9 +153,9 @@ public class BleActivity extends TitleActivity implements NpBleConnCallback, NpB
         StringBuilder localStringBuilder = new StringBuilder();
         localStringBuilder.append("加载上次选择的uuid");
         localStringBuilder.append(new Gson().toJson(localDeviceUuidTable));
-        NpLog.eAndSave(localStringBuilder.toString());
+        NpBleLog.log(localStringBuilder.toString());
         if (localDeviceUuidTable == null) {
-            NpLog.e("本地设备记录uuid为空");
+            NpBleLog.log("本地设备记录uuid为空");
             return;
         }
         if ((!TextUtils.isEmpty(localDeviceUuidTable.getWriteServiceUUid())) && (!TextUtils.isEmpty(localDeviceUuidTable.getWriteCharaUUid()))) {
@@ -330,7 +330,7 @@ public class BleActivity extends TitleActivity implements NpBleConnCallback, NpB
                         localStringBuilder.append("当前所有的数据：");
                         localStringBuilder.append(((HexCommandBean) hexCommand).toString());
                     }
-                    NpLog.eAndSave(localStringBuilder.toString());
+                    NpBleLog.log(localStringBuilder.toString());
 
                     hexCommandAdapter.notifyDataSetChanged();
                     return;
@@ -416,7 +416,7 @@ public class BleActivity extends TitleActivity implements NpBleConnCallback, NpB
                 StringBuilder localStringBuilder = new StringBuilder();
                 localStringBuilder.append("初始化监听文件夹名称");
                 localStringBuilder.append(paramAnonymousString);
-                NpLog.e(localStringBuilder.toString());
+                NpBleLog.log(localStringBuilder.toString());
                 BleLogUtils.initLog("npBle/Logs", paramAnonymousString);
                 BleLogUtils.setIsShowTime(paramAnonymousBoolean);
                 BleLogUtils.clearLogFile();
@@ -457,7 +457,7 @@ public class BleActivity extends TitleActivity implements NpBleConnCallback, NpB
 
     public void onReceiveData(String paramString, final byte[] paramArrayOfByte) {
         if (!paramString.equalsIgnoreCase(lastReadUUid)) {
-            NpLog.eAndSave("上报数据的uuid 与监听的不一致！！！");
+            NpBleLog.log("上报数据的uuid 与监听的不一致！！！");
         }
         runOnUiThread(new Runnable() {
             public void run() {

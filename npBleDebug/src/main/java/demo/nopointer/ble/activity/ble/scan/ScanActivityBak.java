@@ -175,7 +175,7 @@ public class ScanActivityBak extends TitleActivity implements ScanListener {
 
     @Override
     public void onScan(BleDevice bluetoothDevice) {
-        NpLog.eAndSave(bluetoothDevice.getMac());
+        NpBleLog.log(bluetoothDevice.getMac());
         Message message = handler.obtainMessage();
         message.obj = bluetoothDevice;
         handler.sendMessage(message);

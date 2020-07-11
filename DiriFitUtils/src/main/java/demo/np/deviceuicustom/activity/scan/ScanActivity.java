@@ -205,7 +205,7 @@ public class ScanActivity extends TitleActivity implements ScanListener {
     }
 
     public void onScan(BleDevice paramBleDevice) {
-        NpLog.eAndSave(paramBleDevice.getMac());
+        NpBleLog.log(paramBleDevice.getMac());
         Message localMessage = handler.obtainMessage();
         localMessage.obj = paramBleDevice;
         handler.sendMessage(localMessage);

@@ -5,8 +5,8 @@ import android.support.v4.util.SimpleArrayMap;
 
 import java.util.UUID;
 
-import npLog.nopointer.core.NpLog;
 import npble.nopointer.ble.conn.NpTimeOutUtilHelper;
+import npble.nopointer.log.NpBleLog;
 import npble.nopointer.util.BleUtil;
 
 /**
@@ -48,13 +48,13 @@ public class BleDataProcessingUtils {
             public void run() {
                 currentRetryCount++;
                 if (retryMap.containsKey(npTimeOutUtilHelper.getStrData()) && retryMap.get(npTimeOutUtilHelper.getStrData()) < currentRetryCount) {
-                    NpLog.eAndSave("已经超过尝试次数了！,超时");
+                    NpBleLog.log("已经超过尝试次数了！,超时");
                     if (!bleManager.isHasAfterConnectedTaskEnd()) {
                         bleManager.taskSuccess();
                     }
                     currentRetryCount = 0;
                 } else {
-                    NpLog.eAndSave("当前尝试次数" + currentRetryCount);
+                    NpBleLog.log("当前尝试次数" + currentRetryCount);
                     bleManager.writeData(BleUtil.hexStr2Byte(npTimeOutUtilHelper.getStrData()));
                 }
 

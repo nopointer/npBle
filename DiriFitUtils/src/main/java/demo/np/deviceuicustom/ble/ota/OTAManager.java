@@ -92,11 +92,11 @@ public class OTAManager {
      */
     private void next() {
         if (otaList == null || otaList.size() < 1) {
-            NpLog.eAndSave("设备列表为空");
+            NpBleLog.log("设备列表为空");
             return;
         }
         if (currentOTADeviceIndex >= otaList.size()) {
-            NpLog.eAndSave("任务完成");
+            NpBleLog.log("任务完成");
             isOTA = false;
             currentOTADeviceIndex = 0;
             if (otaTaskCallback != null) {
@@ -104,11 +104,11 @@ public class OTAManager {
             }
             return;
         }
-        NpLog.eAndSave("============================================");
-        NpLog.eAndSave("||                                          ");
-        NpLog.eAndSave("||      " + currentOTADeviceIndex);
-        NpLog.eAndSave("||                                          ");
-        NpLog.eAndSave("============================================");
+        NpBleLog.log("============================================");
+        NpBleLog.log("||                                          ");
+        NpBleLog.log("||      " + currentOTADeviceIndex);
+        NpBleLog.log("||                                          ");
+        NpBleLog.log("============================================");
         ota();
     }
 
@@ -120,7 +120,7 @@ public class OTAManager {
         if (otaTaskCallback != null) {
             otaTaskCallback.onDeviceProgress(currentOTADeviceIndex, otaList.size());
         }
-        NpLog.eAndSave("开始OTA的设备"+bleDevice.getName()+"///"+ bleDevice.getMac());
+        NpBleLog.log("开始OTA的设备"+bleDevice.getName()+"///"+ bleDevice.getMac());
         TeLinkOTAHelper.getInstance().startOTA(context, bleDevice.getMac(), binPath, new NpOtaCallback() {
             @Override
             public void onFailure(int code, String message) {
@@ -139,7 +139,7 @@ public class OTAManager {
 
             @Override
             public void onProgress(int progress) {
-                NpLog.eAndSave("OTA 单个进度:" + progress);
+                NpBleLog.log("OTA 单个进度:" + progress);
                 if (otaTaskCallback != null) {
                     float singleProgress = progress / 100.0f;
                     float deviceProgress = (currentOTADeviceIndex + 1.0f) / (otaList.size());
@@ -174,7 +174,7 @@ public class OTAManager {
             @Override
             public void run() {
                 BleDevice bleDevice = otaList.get(currentOTADeviceIndex);
-                NpLog.eAndSave("开始关机的设备"+bleDevice.getName()+"///"+ bleDevice.getMac());
+                NpBleLog.log("开始关机的设备"+bleDevice.getName()+"///"+ bleDevice.getMac());
                 powerManager.connDevice(bleDevice.getMac());
             }
         }, timeDelay);

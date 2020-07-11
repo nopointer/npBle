@@ -19,11 +19,11 @@ import demo.nopointer.npDemo.base.activity.TitleActivity;
 import demo.nopointer.npDemo.ble.MyDeviceFilter;
 import demo.nopointer.npDemo.ble.NpBleManager;
 import demo.nopointer.npDemo.sharedpreferences.SharedPrefereceDevice;
-import npLog.nopointer.core.NpLog;
 import npPermission.nopointer.core.RequestPermissionInfo;
 import npble.nopointer.ble.scan.BleScanner;
 import npble.nopointer.ble.scan.ScanListener;
 import npble.nopointer.device.BleDevice;
+import npble.nopointer.log.NpBleLog;
 
 public class ScanActivity extends TitleActivity implements ScanListener {
 
@@ -152,7 +152,7 @@ public class ScanActivity extends TitleActivity implements ScanListener {
     }
 
     public void onScan(BleDevice paramBleDevice) {
-        NpLog.eAndSave(paramBleDevice.getMac());
+        NpBleLog.log(paramBleDevice.getMac());
         Message localMessage = handler.obtainMessage();
         localMessage.obj = paramBleDevice;
         handler.sendMessage(localMessage);

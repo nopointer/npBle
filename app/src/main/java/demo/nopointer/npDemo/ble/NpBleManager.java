@@ -14,9 +14,9 @@ import java.util.UUID;
 import demo.nopointer.npDemo.MainApplication;
 import no.nordicsemi.android.ble.ConnectionPriorityRequest;
 import no.nordicsemi.android.ble.callback.WriteProgressCallback;
-import npLog.nopointer.core.NpLog;
 import npble.nopointer.ble.conn.NpBleAbsConnManager;
 import npble.nopointer.exception.NpBleUUIDNullException;
+import npble.nopointer.log.NpBleLog;
 import npble.nopointer.util.BleUtil;
 
 /**
@@ -56,7 +56,7 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
 
     @Override
     protected void onConnException() {
-        NpLog.e("检测到断开:(isHandDisConn)" + isHandDisConn());
+        NpBleLog.log("检测到断开:(isHandDisConn)" + isHandDisConn());
         if (!isHandDisConn()) {
             reConn();
         }
@@ -70,7 +70,7 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
                 connDevice(mac);
 //                BleDevice bleDevice = SharedPrefereceDevice.read();
 //                if (bleDevice != null && !TextUtils.isEmpty(bleDevice.getMac())) {
-//                    NpLog.eAndSave("尝试重连");
+//                    NpBleLog.log("尝试重连");
 ////                    connDevice(bleDevice.getMac());
 //                    connDevice(mac);
 //                } else {
@@ -103,13 +103,13 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
 
     @Override
     protected void onFinishTaskAfterConn() {
-        NpLog.e("同步时序完成");
+        NpBleLog.log("同步时序完成");
 
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    NpLog.e("开始请求间隔更改");
+                    NpBleLog.log("开始请求间隔更改");
                     ConnectionPriorityRequest connectionPriorityRequest =
                             requestConnectionPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
                     connectionPriorityRequest.enqueue();
@@ -130,20 +130,20 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
 
     @Override
     protected void onDataReceive(byte[] data, UUID uuid) {
-        NpLog.eAndSave(uuid + " 接收到数据: " + BleUtil.byte2HexStr(data));
+        NpBleLog.log(uuid + " 接收到数据: " + BleUtil.byte2HexStr(data));
 //        bleDataProcessingUtils.onDataReceive(uuid, data);
     }
 
 
     @Override
     protected void onDataWriteSuccess(UUID uuid, byte[] data) {
-        NpLog.eAndSave(uuid + " 写成功数据: " + BleUtil.byte2HexStr(data));
+        NpBleLog.log(uuid + " 写成功数据: " + BleUtil.byte2HexStr(data));
 //        bleDataProcessingUtils.handWriteCallback(uuid, data);
     }
 
     @Override
     protected void onDataWriteFail(UUID uuid, byte[] data, int status) {
-        NpLog.eAndSave(uuid + " 写失败数据: " + BleUtil.byte2HexStr(data));
+        NpBleLog.log(uuid + " 写失败数据: " + BleUtil.byte2HexStr(data));
     }
 
 
@@ -171,7 +171,7 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
             @Override
             public void onPacketSent(@NonNull BluetoothDevice device, @Nullable byte[] data, int index) {
                 try {
-                    NpLog.eAndSave("onPacketSent ： " + npble.nopointer.util.BleUtil.byte2HexStr(data) + "///" + index);
+                    NpBleLog.log("onPacketSent ： " + npble.nopointer.util.BleUtil.byte2HexStr(data) + "///" + index);
                     writeCharacteristicWithMostPack(dataServiceUUID, dataWriteUUID, data, (index + 1) * 20, data.length, this);
                 } catch (NpBleUUIDNullException e) {
                     e.printStackTrace();
@@ -197,7 +197,7 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
     public void connDevice(String mac) {
         BluetoothGatt bluetoothGatt = BleUtil.getBluetoothDevice(mac).connectGatt(getContext(), false, new BluetoothGattCallback() {
         });
-        NpLog.eAndSave("bluetoothGatt" + bluetoothGatt.getDevice().toString());
+        NpBleLog.log("bluetoothGatt" + bluetoothGatt.getDevice().toString());
         bluetoothGatt.disconnect();
         refreshDeviceCache().enqueue();
         handler.postDelayed(new Runnable() {

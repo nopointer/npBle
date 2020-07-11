@@ -117,7 +117,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     @Override
     public void log(int priority, @NonNull String message) {
 //        super.log(priority, message);
-        NpBleLog.log(priority + "," + message);
+        NpBleLog.logLibBleLog(priority + "," + message);
     }
 
 

@@ -95,7 +95,7 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
     protected void onDataReceive(byte[] data, UUID uuid) {
         if (uuid.equals(imageDataNotifyUUID)) {
             int index = BleUtil.byte2IntLR(data[1], data[2]);
-            NpLog.eAndSave("续传图片传输的索引:" + index);
+            NpBleLog.log("续传图片传输的索引:" + index);
             DevImageUtils.getInstance().withNext(index);
         }
     }
@@ -107,13 +107,13 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
 
     @Override
     protected void onDataWriteSuccess(UUID uuid, byte[] data) {
-        NpLog.e("onDataWriteSuccess:" + uuid.toString() + "///" + BleUtil.byte2HexStr(data));
+        NpBleLog.log("onDataWriteSuccess:" + uuid.toString() + "///" + BleUtil.byte2HexStr(data));
         if (uuid.equals(dataWriteUUID)) {
             if (isOtaMode && onWriteCallback != null) {
                 onWriteCallback.onDataWriteSuccess(data);
             }
         } else if (uuid.equals(imageDataWriteUUID)) {
-            NpLog.e("开始写下一包图片的数据");
+            NpBleLog.log("开始写下一包图片的数据");
             DevImageUtils.getInstance().next();
         }
 
@@ -121,7 +121,7 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
 
     @Override
     protected void onDataWriteFail(UUID uuid, byte[] data, int status) {
-        NpLog.e("onDataWriteSuccess:" + uuid.toString() + "///" + BleUtil.byte2HexStr(data));
+        NpBleLog.log("onDataWriteSuccess:" + uuid.toString() + "///" + BleUtil.byte2HexStr(data));
         if (isOtaMode && onWriteCallback != null) {
             onWriteCallback.onDataWriteFail(data);
         }

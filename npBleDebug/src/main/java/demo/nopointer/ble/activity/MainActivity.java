@@ -34,7 +34,7 @@ public class MainActivity extends TitleActivity {
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
             }, 100);
         }
-        NpLog.initLog("npBle/bleLog","log");
+        NpBleLog.lognitLog("npBle/bleLog","log");
 
 
 

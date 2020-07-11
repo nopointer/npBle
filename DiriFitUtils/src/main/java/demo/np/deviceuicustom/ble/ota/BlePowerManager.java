@@ -67,9 +67,9 @@ public class BlePowerManager extends NpBleAbsConnManager implements BleSomeCfg {
 
     @Override
     protected void onDataWriteSuccess(UUID uuid, byte[] data) {
-        NpLog.e("onDataWriteSuccess:" + uuid.toString() + "///" + BleUtil.byte2HexStr(data));
+        NpBleLog.log("onDataWriteSuccess:" + uuid.toString() + "///" + BleUtil.byte2HexStr(data));
         if (uuid.equals(dataWriteUUID) && BleUtil.byte2HexStr(data).equalsIgnoreCase("AB0005FFFE800001")) {
-            NpLog.eAndSave("关机指令发送完成了");
+            NpBleLog.log("关机指令发送完成了");
             isWritePowderOffCommand = true;
         }
 
@@ -77,9 +77,9 @@ public class BlePowerManager extends NpBleAbsConnManager implements BleSomeCfg {
 
     @Override
     protected void onDataWriteFail(UUID uuid, byte[] data, int status) {
-        NpLog.e("onDataWriteSuccess:" + uuid.toString() + "///" + BleUtil.byte2HexStr(data));
+        NpBleLog.log("onDataWriteSuccess:" + uuid.toString() + "///" + BleUtil.byte2HexStr(data));
         if (uuid.equals(dataWriteUUID) && BleUtil.byte2HexStr(data).equalsIgnoreCase("AB0005FFFE800001")) {
-            NpLog.eAndSave("关机指令发送失败了");
+            NpBleLog.log("关机指令发送失败了");
             isWritePowderOffCommand = false;
         }
     }
