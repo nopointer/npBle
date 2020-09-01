@@ -6,9 +6,9 @@ import java.util.UUID;
 
 import demo.np.deviceuicustom.ble.BleSomeCfg;
 import demo.np.deviceuicustom.ble.utils.DevDataUtils;
-import npLog.nopointer.core.NpLog;
 import npble.nopointer.ble.conn.NpBleAbsConnManager;
 import npble.nopointer.exception.NpBleUUIDNullException;
+import npble.nopointer.log.NpBleLog;
 import npble.nopointer.util.BleUtil;
 
 /**

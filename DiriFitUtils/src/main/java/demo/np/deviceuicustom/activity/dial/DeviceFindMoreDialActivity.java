@@ -1,6 +1,7 @@
 package demo.np.deviceuicustom.activity.dial;
 
 import android.content.Intent;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
@@ -28,9 +29,9 @@ import demo.np.deviceuicustom.ble.utils.DevDataUtils;
 import demo.np.deviceuicustom.dialog.TransportImageDialog;
 import demo.np.deviceuicustom.sharedpreferences.SharedPreferecelastPath;
 import npBase.BaseCommon.util.toast.ToastHelper;
-import npLog.nopointer.core.NpLog;
 import npble.nopointer.ble.conn.NpBleConnCallback;
 import npble.nopointer.ble.conn.NpBleConnState;
+import npble.nopointer.log.NpBleLog;
 
 
 public class DeviceFindMoreDialActivity extends TitleActivity implements NpBleConnCallback {
@@ -199,7 +200,12 @@ public class DeviceFindMoreDialActivity extends TitleActivity implements NpBleCo
             public void onReady() {
                 //表盘数据装载解析并装载好了
                 NpBleLog.log("表盘数据装载解析并装载好了");
-                NpBleManager.getInstance().writeData(DevDataUtils.updateImageMode(1, 1));
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        NpBleManager.getInstance().writeData(DevDataUtils.updateImageMode(1, 2));
+                    }
+                },2000);
             }
 
             @Override
@@ -215,7 +221,7 @@ public class DeviceFindMoreDialActivity extends TitleActivity implements NpBleCo
                         isTraining =false;
                     }
                 });
-                NpBleManager.getInstance().writeData(DevDataUtils.updateImageMode(0, 1));
+                NpBleManager.getInstance().writeData(DevDataUtils.updateImageMode(0, 2));
                 NpBleManager.getInstance().writeData(DevDataUtils.switchDevDialUI(UIModeStyle.MORE_DIAL));
             }
 
@@ -258,7 +264,7 @@ public class DeviceFindMoreDialActivity extends TitleActivity implements NpBleCo
                         dialog.dismiss();
                         transportImageDialog.dismiss();
                         DevImageUtils.getInstance().stop();
-                        NpBleManager.getInstance().writeData(DevDataUtils.updateImageMode(0, 1));
+                        NpBleManager.getInstance().writeData(DevDataUtils.updateImageMode(0, 2));
                         NpBleManager.getInstance().writeData(DevDataUtils.switchDevDialUI(UIModeStyle.DEFAULT1));
                         finish();
                     }

@@ -19,6 +19,7 @@ import demo.nopointer.npDemo.scan.ScanActivity;
 import npLog.nopointer.core.NpLog;
 import npble.nopointer.ble.conn.NpBleConnCallback;
 import npble.nopointer.ble.conn.NpBleConnState;
+import npble.nopointer.util.BleUtil;
 //import  org.apache.commons.lang.*;
 
 
@@ -60,6 +61,9 @@ public class MainActivity extends Activity implements NpBleConnCallback {
 //        debug();
 
         NpBleManager.getInstance().connDevice(mac);
+
+        NpLog.e("原始数据:"+BleUtil.byte2HexStr("ABCDEF".getBytes()));
+
     }
 
 

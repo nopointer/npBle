@@ -278,8 +278,9 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                     }
                 }, 15 * 1000);
             }
+            withBleConnState(NpBleConnState.CONNECTING);
             connect(bluetoothDevice)
-                    .retry(3, 300)
+                    .retry(3, 500)
                     .useAutoConnect(false)
                     .enqueue();
         } else {
@@ -302,11 +303,11 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                                 @Override
                                 public void run() {
                                     connect(bluetoothDevice)
-                                            .retry(3, 100)
+                                            .retry(3, 500)
                                             .useAutoConnect(false)
                                             .enqueue();
                                 }
-                            }, 2000);
+                            }, 3000);
                         }
                     }
                 }
@@ -317,23 +318,25 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                 }
             });
             BleScanner.getInstance().startScan();
+
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     //如果过了30秒后，还是没有扫描到设备的话，就采取直连的方式
+                    BleScanner.getInstance().stopScan();
+                    NpBleLog.log("扫描设备超时，停止扫描，然后再连接");
+
                     if (hadScanDeviceFlag) {
                         hadScanDeviceFlag = false;
-                        BleScanner.getInstance().stopScan();
-                        NpBleLog.log("扫描设备超时，停止扫描，然后再连接");
                         handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 connect(bluetoothDevice)
-                                        .retry(3, 100)
+                                        .retry(3, 500)
                                         .useAutoConnect(false)
                                         .enqueue();
                             }
-                        }, 1200);
+                        }, 2000);
                     }
                 }
             }, 15 * 1000);

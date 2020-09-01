@@ -27,7 +27,7 @@
             android:layout_width="fill_parent"
             android:layout_height="50.0dip"
             android:layout_marginTop="30dp"
-            android:text="表盘更新" />
+            android:text="UI更新" />
     </LinearLayout>
 
     <TextView

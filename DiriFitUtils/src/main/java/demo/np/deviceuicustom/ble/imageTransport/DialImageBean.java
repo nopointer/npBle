@@ -16,7 +16,7 @@ public class DialImageBean {
     //总共的字节数，这个需要根据颜色配置计算得出
     private long totalByte = 0;
     //单包数的长度
-    private int singlePckDataLen = 18;
+    private int singlePckDataLen = 16;
     //要传输的图片的包数，这个需要根据单包数据传参的字节数计算得出
     private long totalBytePckCount = 0;
 

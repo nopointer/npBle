@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import demo.np.deviceuicustom.ble.NpBleManager;
-import npLog.nopointer.core.NpLog;
+import npble.nopointer.log.NpBleLog;
 import npble.nopointer.util.BleUtil;
 
 public class DevImageUtils {
@@ -106,6 +106,7 @@ public class DevImageUtils {
             return;
         } else {
             isTransportIng = true;
+            NpBleManager.tmpIndex =0;
             prepare();
         }
     }
@@ -113,6 +114,7 @@ public class DevImageUtils {
     public void stop() {
         isTransportIng = false;
         dialImageBean = null;
+        NpBleManager.tmpIndex =0;
     }
 
     private void onFinish() {
@@ -125,11 +127,11 @@ public class DevImageUtils {
     /**
      * 下一包数据
      */
-    public void next() {
+    public void next(boolean isNeedCallback) {
         if (isTransportIng) {
             if (transportIndex < totalBytePckCount) {
                 int tmpIndex = transportIndex;
-                writeImageData(tmpIndex, true);
+                writeImageData(tmpIndex, true,isNeedCallback);
                 transportIndex++;
             } else {
                 isTransportIng = false;
@@ -150,7 +152,7 @@ public class DevImageUtils {
             transportIndex = index;
             if (transportIndex < totalBytePckCount) {
                 int tmpIndex = transportIndex;
-                writeImageData(tmpIndex, false);
+                writeImageData(tmpIndex, false,true);
                 transportIndex++;
             } else {
                 onFinish();
@@ -167,7 +169,7 @@ public class DevImageUtils {
      * @param index             数据索引位置
      * @param isContinuousState 是否是连续状态，如果是连续状态的话，就是每写一百包就停止一下
      */
-    private void writeImageData(int index, boolean isContinuousState) {
+    private void writeImageData(int index, boolean isContinuousState,boolean isNeedCallback) {
         //图片的数据
         byte imageBytes[] = new byte[dialImageBean.getSinglePckDataLen()];
         //实际要写下去的ble数据
@@ -179,20 +181,22 @@ public class DevImageUtils {
         //加载图片/二进制文件 到内存里面
         System.arraycopy(imageByteArray, index * dialImageBean.getSinglePckDataLen(), imageBytes, 0, imageBytes.length);
 
-        bleData[0] = (byte) ((index & 0xff00) >> 8);
-        bleData[1] = (byte) (index & 0xff);
+        bleData[0] = (byte) ((index & 0xff000000) >> 24);
+        bleData[1] = (byte) ((index & 0xff0000) >> 16);
+        bleData[2] = (byte) ((index & 0xff00) >> 8);
+        bleData[3] = (byte) (index & 0xff);
 
         //拼装成带有索引的BLE 协议数据（这里指本项目的协议）
-        System.arraycopy(imageBytes, 0, bleData, 2, imageBytes.length);
+        System.arraycopy(imageBytes, 0, bleData, 4, imageBytes.length);
 
         if (isContinuousState) {
             if (index == 0 || index % 100 != 0) {
-                NpBleManager.getInstance().writeImageData(bleData);
+                NpBleManager.getInstance().writeImageData(bleData,isNeedCallback);
             } else {
                 NpBleLog.log("整百包:暂停，等待索引");
             }
         } else {
-            NpBleManager.getInstance().writeImageData(bleData);
+            NpBleManager.getInstance().writeImageData(bleData,isNeedCallback);
         }
 
         float progress = (index + 1.0f) / totalBytePckCount;

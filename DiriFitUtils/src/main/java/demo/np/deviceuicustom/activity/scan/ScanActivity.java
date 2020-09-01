@@ -21,13 +21,13 @@ import demo.np.deviceuicustom.base.TitleActivity;
 import demo.np.deviceuicustom.ble.DiriFitDeviceFilter;
 import demo.np.deviceuicustom.ble.NpBleManager;
 import npBase.BaseCommon.util.toast.ToastHelper;
-import npLog.nopointer.core.NpLog;
 import npPermission.nopointer.core.RequestPermissionInfo;
 import npble.nopointer.ble.conn.NpBleConnCallback;
 import npble.nopointer.ble.conn.NpBleConnState;
 import npble.nopointer.ble.scan.BleScanner;
 import npble.nopointer.ble.scan.ScanListener;
 import npble.nopointer.device.BleDevice;
+import npble.nopointer.log.NpBleLog;
 
 public class ScanActivity extends TitleActivity implements ScanListener {
 

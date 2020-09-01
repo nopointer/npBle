@@ -7,8 +7,8 @@ import android.os.Looper;
 import java.util.List;
 
 import demo.np.deviceuicustom.MainApplication;
-import npLog.nopointer.core.NpLog;
 import npble.nopointer.device.BleDevice;
+import npble.nopointer.log.NpBleLog;
 import npble.nopointer.ota.absimpl.telink.TeLinkOTAHelper;
 import npble.nopointer.ota.callback.NpOtaCallback;
 

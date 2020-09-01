@@ -1,17 +1,15 @@
 package demo.np.deviceuicustom.ble;
 
 import android.content.Context;
-import android.os.Build;
 
 import java.util.UUID;
 
 import demo.np.deviceuicustom.MainApplication;
 import demo.np.deviceuicustom.ble.imageTransport.DevImageUtils;
 import demo.np.deviceuicustom.ble.utils.DevDataUtils;
-import no.nordicsemi.android.ble.ConnectionPriorityRequest;
-import npLog.nopointer.core.NpLog;
 import npble.nopointer.ble.conn.NpBleAbsConnManager;
 import npble.nopointer.exception.NpBleUUIDNullException;
+import npble.nopointer.log.NpBleLog;
 import npble.nopointer.util.BleUtil;
 
 /**
@@ -40,6 +38,7 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
 
     private NpBleManager(Context paramContext) {
         super(paramContext);
+        tmpIndex = 0;
     }
 
 
@@ -62,6 +61,9 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
 
     }
 
+
+    public static int tmpIndex;
+
     @Override
     protected void loadCfg() {
         if (isOtaMode) {
@@ -74,9 +76,9 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
                 setNotificationCallback(dataServiceUUID, imageDataNotifyUUID);
                 enableNotifications(dataServiceUUID, imageDataNotifyUUID);
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    requestConnectionPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH).enqueue();
-                }
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                    requestConnectionPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH).enqueue();
+//                }
             } catch (NpBleUUIDNullException e) {
                 e.printStackTrace();
             }
@@ -94,7 +96,7 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
     @Override
     protected void onDataReceive(byte[] data, UUID uuid) {
         if (uuid.equals(imageDataNotifyUUID)) {
-            int index = BleUtil.byte2IntLR(data[1], data[2]);
+            int index = BleUtil.byte2IntLR(data[1], data[2],data[3],data[4]);
             NpBleLog.log("续传图片传输的索引:" + index);
             DevImageUtils.getInstance().withNext(index);
         }
@@ -113,8 +115,16 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
                 onWriteCallback.onDataWriteSuccess(data);
             }
         } else if (uuid.equals(imageDataWriteUUID)) {
-            NpBleLog.log("开始写下一包图片的数据");
-            DevImageUtils.getInstance().next();
+//            NpBleLog.log("开始写下一包图片的数据" + tmpIndex);
+            if (tmpIndex % 10 == 0) {
+                for (int i = 0; i < 9; i++) {
+//                    NpBleLog.log("连续写" + i);
+                    DevImageUtils.getInstance().next(false);
+                    tmpIndex++;
+                }
+                DevImageUtils.getInstance().next(true);
+                tmpIndex++;
+            }
         }
 
     }
@@ -142,9 +152,16 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
      *
      * @param data
      */
-    public void writeImageData(byte[] data) {
+    public void writeImageData(byte[] data, boolean isNeedCallback) {
         try {
-            writeCharacteristicWithOutResponse(dataServiceUUID, imageDataWriteUUID, data);
+
+            if (isNeedCallback) {
+                writeCharacteristicWithOutResponse(dataServiceUUID, imageDataWriteUUID, data);
+            } else {
+                writeCharacteristicWithOutResponseWithOutCallback(dataServiceUUID, imageDataWriteUUID, data);
+            }
+
+//            writeCharacteristicWithOutResponse(dataServiceUUID, imageDataWriteUUID, data);
         } catch (NpBleUUIDNullException e) {
             e.printStackTrace();
         }
