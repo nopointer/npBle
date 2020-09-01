@@ -17,9 +17,15 @@ public class NpBleLog {
      */
     public static boolean enableLibLog = false;
 
+
+
     public static void logLibBleLog(String message) {
         if (!enableLibLog) return;
-        Log.e("NpBleLog", message);
+        if (mNpBleLogPrinter != null) {
+            log(mNpBleLogPrinter.initTag(), message);
+        } else {
+            log("LibNpBleLog", message);
+        }
     }
 
     public static void log(String message) {
