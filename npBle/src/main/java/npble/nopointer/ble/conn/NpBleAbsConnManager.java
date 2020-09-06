@@ -92,10 +92,6 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      */
     private boolean isHandDisConn = false;
 
-    protected boolean isHandDisConn() {
-        return isHandDisConn;
-    }
-
     /**
      * 是否拦截中途拦截蓝牙的连接
      */
@@ -219,7 +215,6 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         if (!verifyConnBefore(mac)) {
             return;
         }
-        isHandDisConn = false;
         BluetoothDevice bluetoothDevice = BleUtil.getBluetoothDevice(mac);
         if (bluetoothDevice != null) {
             isConnectIng = true;
@@ -258,7 +253,6 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     protected void connectCode(final BluetoothDevice bluetoothDevice) {
         NpBleLog.log("当前实际发出连接请求的设备是:" + new Gson().toJson(new String[]{bluetoothDevice.getAddress(), bluetoothDevice.getName()}));
         boolIsInterceptConn = false;
-        isHandDisConn = false;
 
         if (!TextUtils.isEmpty(bluetoothDevice.getName())) {
             if (mBluetoothGatt != null) {
@@ -513,13 +507,14 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         @Override
         public void onDeviceDisconnected(@NonNull BluetoothDevice device) {
             NpBleLog.log("onDeviceDisconnected : " + device.getAddress());
+            isConnectIng = false;
             if (isHandDisConn) {
                 withBleConnState(NpBleConnState.HANDDISCONN);
+                onHandDisConnected();
             } else {
-                isConnectIng = false;
                 refreshDeviceCache().enqueue();
-                onConnException();
                 withBleConnState(NpBleConnState.CONNEXCEPTION);
+                onConnException();
             }
             isHandDisConn = false;
         }
@@ -863,6 +858,14 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * 连接异常
      */
     protected abstract void onConnException();
+
+
+    /**
+     * 手动断开设备
+     */
+    protected void onHandDisConnected() {
+
+    }
 
     /**
      * 数据写成功

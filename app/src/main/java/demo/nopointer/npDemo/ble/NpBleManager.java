@@ -56,10 +56,10 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
 
     @Override
     protected void onConnException() {
-        NpBleLog.log("检测到断开:(isHandDisConn)" + isHandDisConn());
-        if (!isHandDisConn()) {
+//        NpBleLog.log("检测到断开:(isHandDisConn)" + isHandDisConn());
+//        if (!isHandDisConn()) {
             reConn();
-        }
+//        }
     }
 
 

@@ -26,7 +26,8 @@ import npble.nopointer.util.BleUtil;
 public class MainActivity extends Activity implements NpBleConnCallback {
 
 
-    private String mac ="A4:C1:38:7A:67:4F";
+//    private String mac ="A4:C1:38:7A:67:4F";
+    private String mac ="A4:C1:38:C6:89:F6";
     private TextView my_device;
 
     private TextView conn_state_tv;
