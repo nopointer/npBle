@@ -19,7 +19,6 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
 
     private static NpBleManager instance = null;
 
-
     public static NpBleManager getInstance() {
         try {
             if (instance == null) {
@@ -96,7 +95,8 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
     @Override
     protected void onDataReceive(byte[] data, UUID uuid) {
         if (uuid.equals(imageDataNotifyUUID)) {
-            int index = BleUtil.byte2IntLR(data[1], data[2],data[3],data[4]);
+            NpBleLog.log("续传图片传输的索引返回数据:" + BleUtil.byte2HexStr(data));
+            int index = BleUtil.byte2IntLR(data[1], data[2], data[3], data[4]);
             NpBleLog.log("续传图片传输的索引:" + index);
             DevImageUtils.getInstance().withNext(index);
         }
@@ -152,7 +152,7 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
      *
      * @param data
      */
-    public void writeImageData(byte[] data, boolean isNeedCallback) {
+    public void sendImageData(byte[] data, boolean isNeedCallback) {
         try {
 
             if (isNeedCallback) {

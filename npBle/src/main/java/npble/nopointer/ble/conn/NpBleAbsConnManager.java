@@ -253,7 +253,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     protected void connectCode(final BluetoothDevice bluetoothDevice) {
         NpBleLog.log("当前实际发出连接请求的设备是:" + new Gson().toJson(new String[]{bluetoothDevice.getAddress(), bluetoothDevice.getName()}));
         boolIsInterceptConn = false;
-
+        isHandDisConn = false;
         if (!TextUtils.isEmpty(bluetoothDevice.getName())) {
             if (mBluetoothGatt != null) {
                 NpBleLog.log("已经有过设备缓存信息,刷新后,开始连接");
@@ -510,13 +510,20 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             isConnectIng = false;
             if (isHandDisConn) {
                 withBleConnState(NpBleConnState.HANDDISCONN);
+                NpBleLog.log("onDeviceDisconnected : withBleConnState(NpBleConnState.HANDDISCONN)");
                 onHandDisConnected();
+                NpBleLog.log("onDeviceDisconnected : onHandDisConnected");
             } else {
+                NpBleLog.log("onDeviceDisconnected : refreshDeviceCache().enqueue() start");
                 refreshDeviceCache().enqueue();
+                NpBleLog.log("onDeviceDisconnected : refreshDeviceCache().enqueue() end");
                 withBleConnState(NpBleConnState.CONNEXCEPTION);
+                NpBleLog.log("onDeviceDisconnected : withBleConnState(NpBleConnState.CONNEXCEPTION)");
                 onConnException();
+                NpBleLog.log("onDeviceDisconnected : onConnException");
             }
             isHandDisConn = false;
+
         }
 
         @Override
@@ -907,7 +914,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * 系统的蓝牙打开
      */
     public void onBleOpen() {
-
+        isConnectIng = false;
     }
 
     /**
@@ -1031,22 +1038,27 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             NpBleLog.log("verifyConnBefore，蓝牙没有打开呢！");
             return false;
         }
-        //2.判断连接状态
-        if (isConnected()) {
-            NpBleLog.log("verifyConnBefore，已经是连接的，，不需要花里胡哨的了");
-            return false;
-        }
-        //3.判断mac地址的正确性
+
+        //2.判断mac地址的正确性
         if (!BleUtil.isRightBleMacAddress(mac)) {
             NpBleLog.log("verifyConnBefore，mac地址都不对,地址要注意大写,且不能为空！！！！！");
             return false;
         }
-        //4.判断当前的连接是否已经回应了
+
+        //3.判断当前的连接动作，是不是在连接
         if (isConnectIng) {
             NpBleLog.log("verifyConnBefore，ble-当前已经发出了连接请求，还没响应，不需要再发送这次请求");
 //            withBleConnState(NpBleConnState.CONNECTING);
             return false;
         }
+
+        //4.判断连接状态
+        if (isConnected()) {
+            NpBleLog.log("verifyConnBefore，已经是连接的，，不需要花里胡哨的了");
+            return false;
+        }
+
+
         return true;
     }
 

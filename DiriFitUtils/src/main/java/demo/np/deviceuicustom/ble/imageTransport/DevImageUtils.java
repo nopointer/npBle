@@ -11,12 +11,14 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import demo.np.deviceuicustom.ble.NpBleManager;
-import npble.nopointer.log.NpBleLog;
+import npLog.nopointer.core.NpLog;
 import npble.nopointer.util.BleUtil;
 
 public class DevImageUtils {
 
     private static DevImageUtils instance = new DevImageUtils();
+
+    private NpBleManager npBleManager = NpBleManager.getInstance();
 
     private DevImageUtils() {
     }
@@ -46,7 +48,7 @@ public class DevImageUtils {
      */
     private void prepare() {
         if (dialImageBean == null) {
-            NpBleLog.log("当前没有传输图片对象，dialImageBean=null");
+            NpLog.e("当前没有传输图片对象，dialImageBean=null");
             return;
         }
         if (dialImageBean.getColorCfg() == null) {
@@ -56,12 +58,12 @@ public class DevImageUtils {
         //如果不是二进制文件的话，要对图片进行裁剪压缩
         if (dialImageBean.getColorCfg() != ColorCfg.BIN_FILE) {
             if (TextUtils.isEmpty(dialImageBean.getImagePath())) {
-                NpBleLog.log("没有指定表盘图片路径！");
+                NpLog.e("没有指定表盘图片路径！");
                 return;
             }
             File file = new File(dialImageBean.getImagePath());
             if (!file.exists()) {
-                NpBleLog.log("指定的表盘图片不存在");
+                NpLog.e("指定的表盘图片不存在");
                 return;
             } else {
                 new Thread(new Runnable() {
@@ -82,7 +84,7 @@ public class DevImageUtils {
                 File file = new File(dialImageBean.getImagePath());
                 imageByteArray = new byte[(int) file.length()];
                 int len = new FileInputStream(dialImageBean.getImagePath()).read(imageByteArray);
-                NpBleLog.log("len:" + len);
+                NpLog.eAndSave("len:" + len);
                 onReady();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -95,6 +97,7 @@ public class DevImageUtils {
         totalBytePckCount = dialImageBean.getTotalBytePckCount();
         transportIndex = 0;
 
+//        npBleManager.requestConnectionPriority();
         if (devImageTransportCallback != null) {
             devImageTransportCallback.onReady();
         }
@@ -102,7 +105,7 @@ public class DevImageUtils {
 
     public void start() {
         if (isTransportIng) {
-            NpBleLog.log("当前正在传输图片的嘛");
+            NpLog.e("当前正在传输图片的嘛");
             return;
         } else {
             isTransportIng = true;
@@ -118,7 +121,8 @@ public class DevImageUtils {
     }
 
     private void onFinish() {
-        NpBleLog.log("加载完成了");
+        NpLog.e("图片数据加载完成了");
+//        npBleManager.setImageTransmissionMode(false);
         if (devImageTransportCallback != null) {
             devImageTransportCallback.onFinish();
         }
@@ -131,14 +135,14 @@ public class DevImageUtils {
         if (isTransportIng) {
             if (transportIndex < totalBytePckCount) {
                 int tmpIndex = transportIndex;
-                writeImageData(tmpIndex, true,isNeedCallback);
+                sendImageData(tmpIndex, true,isNeedCallback);
                 transportIndex++;
             } else {
                 isTransportIng = false;
                 onFinish();
             }
         } else {
-            NpBleLog.log("当前不是传输模式");
+            NpLog.eAndSave("当前不是传输模式");
         }
     }
 
@@ -152,13 +156,13 @@ public class DevImageUtils {
             transportIndex = index;
             if (transportIndex < totalBytePckCount) {
                 int tmpIndex = transportIndex;
-                writeImageData(tmpIndex, false,true);
+                sendImageData(tmpIndex, false,true);
                 transportIndex++;
             } else {
                 onFinish();
             }
         } else {
-            NpBleLog.log("当前不是传输模式");
+            NpLog.eAndSave("当前不是传输模式");
         }
     }
 
@@ -169,7 +173,7 @@ public class DevImageUtils {
      * @param index             数据索引位置
      * @param isContinuousState 是否是连续状态，如果是连续状态的话，就是每写一百包就停止一下
      */
-    private void writeImageData(int index, boolean isContinuousState,boolean isNeedCallback) {
+    private void sendImageData(int index, boolean isContinuousState,boolean isNeedCallback) {
         //图片的数据
         byte imageBytes[] = new byte[dialImageBean.getSinglePckDataLen()];
         //实际要写下去的ble数据
@@ -191,15 +195,17 @@ public class DevImageUtils {
 
         if (isContinuousState) {
             if (index == 0 || index % 100 != 0) {
-                NpBleManager.getInstance().writeImageData(bleData,isNeedCallback);
+                npBleManager.sendImageData(bleData,isNeedCallback);
             } else {
-                NpBleLog.log("整百包:暂停，等待索引");
+                NpLog.e("整百包:暂停，等待索引");
             }
         } else {
-            NpBleManager.getInstance().writeImageData(bleData,isNeedCallback);
+            npBleManager.sendImageData(bleData,isNeedCallback);
         }
 
+//        NpLog.e("图片传输index===>"+index);
         float progress = (index + 1.0f) / totalBytePckCount;
+
         if (devImageTransportCallback != null) {
             devImageTransportCallback.onProgress(progress);
         }
@@ -240,16 +246,16 @@ public class DevImageUtils {
         }
 
         int bytes = resultBmp.getByteCount();
-        NpBleLog.log("debug===分配的数据长度是:" + bytes);
+        NpLog.e("debug===分配的数据长度是:" + bytes);
 
         ByteBuffer buf = ByteBuffer.allocate(bytes);
         resultBmp.copyPixelsToBuffer(buf);
         imageByteArray = buf.array();
 
-        NpBleLog.log("=======================");
-        NpBleLog.log("imageByteArray:" + BleUtil.byte2HexStr(imageByteArray));
-        NpBleLog.log("=======================");
-        NpBleLog.log("debug===转换后的是:" + imageByteArray.length);
+        NpLog.e("=======================");
+        NpLog.e("imageByteArray:" + BleUtil.byte2HexStr(imageByteArray));
+        NpLog.e("=======================");
+        NpLog.e("debug===转换后的是:" + imageByteArray.length);
     }
 
 
