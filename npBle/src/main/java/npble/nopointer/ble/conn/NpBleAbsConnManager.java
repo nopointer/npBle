@@ -462,22 +462,28 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             mBluetoothGatt = gatt;
             NpBleLog.log("验证设备所需的uuid列表===>" + new Gson().toJson(mustUUIDList));
             if (mustUUIDList == null || mustUUIDList.size() < 0) return true;
-            int count = 0;
+            int count = 0, totalCharaCount = 0;
             for (BluetoothGattService bluetoothGattService : gatt.getServices()) {
                 for (BluetoothGattCharacteristic bluetoothGattCharacteristic : bluetoothGattService.getCharacteristics()) {
                     for (UUID uuid : mustUUIDList) {
                         if (uuid.equals(bluetoothGattCharacteristic.getUuid())) {
                             count++;
                         }
+                        totalCharaCount++;
                     }
                 }
             }
-            if (count == mustUUIDList.size()) {
-                return true;
-            } else {
-                NpBleLog.log("uuid对不上，情况不对");
-                isHandDisConn = true;
+            if (totalCharaCount == 0) {
+                NpBleLog.log("扫描服务特征为0，断开");
                 return false;
+            } else {
+                if (count == mustUUIDList.size()) {
+                    return true;
+                } else {
+                    NpBleLog.log("uuid对不上，情况不对");
+                    isHandDisConn = true;
+                    return false;
+                }
             }
         }
 
