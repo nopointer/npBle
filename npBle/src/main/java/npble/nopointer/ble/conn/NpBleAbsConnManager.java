@@ -465,14 +465,15 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             NpBleLog.log("====================================");
             NpBleLog.log("====================================");
 
-            int count = 0, totalCharaCount = 0;
+            int totalCharaCount = 0;
+            HashSet<String> tmpUUidList = new HashSet<>();
             for (BluetoothGattService bluetoothGattService : gatt.getServices()) {
                 NpBleLog.log("service UUID:" + bluetoothGattService.getUuid());
                 for (BluetoothGattCharacteristic bluetoothGattCharacteristic : bluetoothGattService.getCharacteristics()) {
                     NpBleLog.log("chara UUID:" + bluetoothGattCharacteristic.getUuid());
                     for (UUID uuid : mustUUIDList) {
                         if (uuid.toString().equalsIgnoreCase(bluetoothGattCharacteristic.getUuid().toString())) {
-                            count++;
+                            tmpUUidList.add(uuid.toString());
                         }
                     }
                     totalCharaCount++;
@@ -484,12 +485,13 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
 
             NpBleLog.log("验证设备所需的uuid列表===>" + new Gson().toJson(mustUUIDList));
             if (mustUUIDList == null || mustUUIDList.size() < 0) return true;
+            NpBleLog.log("tmpUUidList:" + tmpUUidList.size());
             NpBleLog.log("totalCharaCount:" + totalCharaCount);
             if (totalCharaCount == 0) {
                 NpBleLog.log("扫描服务特征为0，断开");
                 return false;
             } else {
-                if (count == mustUUIDList.size()) {
+                if (tmpUUidList.size() == mustUUIDList.size()) {
                     return true;
                 } else {
                     NpBleLog.log("uuid对不上，情况不对");
