@@ -16,8 +16,10 @@ import android.text.TextUtils;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import no.nordicsemi.android.ble.BleManager;
@@ -370,6 +372,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      */
     private HashSet<UUID> mustUUIDList = null;
 
+
     /**
      * 设置设备的uuid 用来区分是否是本项目的设备
      *
@@ -461,14 +464,21 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         public boolean isRequiredServiceSupported(@NonNull final BluetoothGatt gatt) {
             mBluetoothGatt = gatt;
 
-
             NpBleLog.log("====================================");
             NpBleLog.log("====================================");
 
+            HashMap<String, Integer> tmpUUIDCountMap = new HashMap<>();
             int totalCharaCount = 0;
             HashSet<String> tmpUUidList = new HashSet<>();
             for (BluetoothGattService bluetoothGattService : gatt.getServices()) {
                 NpBleLog.log("service UUID:" + bluetoothGattService.getUuid());
+                String serviceUUIDName = bluetoothGattService.getUuid().toString() + "_service";
+                int serviceCount = 0;
+                if (tmpUUIDCountMap.containsKey(serviceUUIDName)) {
+                    serviceCount = tmpUUIDCountMap.get(serviceUUIDName);
+                }
+                serviceCount++;
+                tmpUUIDCountMap.put(serviceUUIDName, serviceCount);
                 for (BluetoothGattCharacteristic bluetoothGattCharacteristic : bluetoothGattService.getCharacteristics()) {
                     NpBleLog.log("chara UUID:" + bluetoothGattCharacteristic.getUuid());
                     for (UUID uuid : mustUUIDList) {
@@ -477,11 +487,28 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                         }
                     }
                     totalCharaCount++;
+
+                    String CharaUUIDName = bluetoothGattCharacteristic.getUuid().toString() + "_chara";
+                    int charaCount = 0;
+                    if (tmpUUIDCountMap.containsKey(CharaUUIDName)) {
+                        charaCount = tmpUUIDCountMap.get(CharaUUIDName);
+                    }
+                    charaCount++;
+                    tmpUUIDCountMap.put(CharaUUIDName, charaCount);
                 }
             }
             NpBleLog.log("====================================");
             NpBleLog.log("====================================");
 
+            NpBleLog.log("UUID数量统计===>" + new Gson().toJson(tmpUUIDCountMap));
+            if (!isAllowRepeatUUID() && tmpUUIDCountMap != null && tmpUUIDCountMap.size() > 0) {
+                for (Map.Entry<String, Integer> entry : tmpUUIDCountMap.entrySet()) {
+//                    NpBleLog.log(entry.getKey()+":"+entry.getValue());
+                    if (entry.getValue() > 1) {
+                        return false;
+                    }
+                }
+            }
 
             NpBleLog.log("验证设备所需的uuid列表===>" + new Gson().toJson(mustUUIDList));
             if (mustUUIDList == null || mustUUIDList.size() < 0) return true;
@@ -918,6 +945,15 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
 
     protected void onBleDeviceConnected() {
 
+    }
+
+    /**
+     * 是否允许出现重复的UUID，针对部分华为手机，这个目前只是在定性阶段 还没完全确定下来 慎用
+     *
+     * @return
+     */
+    protected boolean isAllowRepeatUUID() {
+        return false;
     }
 
     /**
