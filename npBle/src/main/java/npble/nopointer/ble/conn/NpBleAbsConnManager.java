@@ -460,19 +460,31 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         @Override
         public boolean isRequiredServiceSupported(@NonNull final BluetoothGatt gatt) {
             mBluetoothGatt = gatt;
-            NpBleLog.log("验证设备所需的uuid列表===>" + new Gson().toJson(mustUUIDList));
-            if (mustUUIDList == null || mustUUIDList.size() < 0) return true;
+
+
+            NpBleLog.log("====================================");
+            NpBleLog.log("====================================");
+
             int count = 0, totalCharaCount = 0;
             for (BluetoothGattService bluetoothGattService : gatt.getServices()) {
+                NpBleLog.log("service UUID:" + bluetoothGattService.getUuid());
                 for (BluetoothGattCharacteristic bluetoothGattCharacteristic : bluetoothGattService.getCharacteristics()) {
+                    NpBleLog.log("chara UUID:" + bluetoothGattCharacteristic.getUuid());
                     for (UUID uuid : mustUUIDList) {
-                        if (uuid.equals(bluetoothGattCharacteristic.getUuid())) {
+                        if (uuid.toString().equalsIgnoreCase(bluetoothGattCharacteristic.getUuid().toString())) {
                             count++;
                         }
-                        totalCharaCount++;
                     }
+                    totalCharaCount++;
                 }
             }
+            NpBleLog.log("====================================");
+            NpBleLog.log("====================================");
+
+
+            NpBleLog.log("验证设备所需的uuid列表===>" + new Gson().toJson(mustUUIDList));
+            if (mustUUIDList == null || mustUUIDList.size() < 0) return true;
+            NpBleLog.log("totalCharaCount:" + totalCharaCount);
             if (totalCharaCount == 0) {
                 NpBleLog.log("扫描服务特征为0，断开");
                 return false;
@@ -486,8 +498,6 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                 }
             }
         }
-
-
     };
 
 
@@ -540,14 +550,6 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         @Override
         public void onServicesDiscovered(@NonNull BluetoothDevice device, boolean optionalServicesFound) {
             NpBleLog.log("onServicesDiscovered : " + device.getAddress());
-            if (mBluetoothGatt != null) {
-                for (BluetoothGattService bluetoothGattService : mBluetoothGatt.getServices()) {
-                    NpBleLog.log("service UUID:" + bluetoothGattService.getUuid());
-                    for (BluetoothGattCharacteristic bluetoothGattCharacteristic : bluetoothGattService.getCharacteristics()) {
-                        NpBleLog.log("chara UUID:" + bluetoothGattCharacteristic.getUuid());
-                    }
-                }
-            }
             onDiscoveredServices(mBluetoothGatt);
         }
 
