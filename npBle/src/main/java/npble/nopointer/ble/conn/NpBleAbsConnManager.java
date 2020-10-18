@@ -62,6 +62,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      */
     public NpBleAbsConnManager(@NonNull Context context) {
         super(context);
+        mustUUIDList = new HashSet<>();
         if (bleStateReceiver == null) {
             bleStateReceiver = new BleStateReceiver();
         }
@@ -481,9 +482,11 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                 tmpUUIDCountMap.put(serviceUUIDName, serviceCount);
                 for (BluetoothGattCharacteristic bluetoothGattCharacteristic : bluetoothGattService.getCharacteristics()) {
                     NpBleLog.log("chara UUID:" + bluetoothGattCharacteristic.getUuid());
-                    for (UUID uuid : mustUUIDList) {
-                        if (uuid.toString().equalsIgnoreCase(bluetoothGattCharacteristic.getUuid().toString())) {
-                            tmpUUidList.add(uuid.toString());
+                    if (mustUUIDList != null) {
+                        for (UUID uuid : mustUUIDList) {
+                            if (uuid.toString().equalsIgnoreCase(bluetoothGattCharacteristic.getUuid().toString())) {
+                                tmpUUidList.add(uuid.toString());
+                            }
                         }
                     }
                     totalCharaCount++;
