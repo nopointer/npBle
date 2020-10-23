@@ -16,10 +16,8 @@ import android.text.TextUtils;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import no.nordicsemi.android.ble.BleManager;
@@ -126,10 +124,11 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         }
     }
 
-    /**
-     * 当前记录的mac地址，主要作用是用来标记，在连接超时之前,换了设备同时连接超时的场景
-     */
-    private String currentMac = null;
+
+    //某个特征uuid是否可以存在重复的情况
+    private String repeatChartUUID = null;
+    //某个特征uuid是否可以存在重复的情况 实际重复的次数（默认情况是都是1，除非实际项目里面有多个重复的）
+    private int repeatChartUUIDCount = 1;
 
     /**
      * 当前任务的索引
@@ -260,7 +259,6 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      */
     protected void connectCode(final BluetoothDevice bluetoothDevice) {
         NpBleLog.log("当前实际发出连接请求的设备是:" + new Gson().toJson(new String[]{bluetoothDevice.getAddress(), bluetoothDevice.getName()}));
-        currentMac = bluetoothDevice.getAddress();
         boolIsInterceptConn = false;
         isHandDisConn = false;
         if (!TextUtils.isEmpty(bluetoothDevice.getName())) {
@@ -474,18 +472,12 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             NpBleLog.log("====================================");
             NpBleLog.log("====================================");
 
-            HashMap<String, Integer> tmpUUIDCountMap = new HashMap<>();
-            int totalCharaCount = 0;
+            int totalCharaCount = 0;//总特征数量
+            int flagChartCount = 0;//被标记的UUID数量
+
             HashSet<String> tmpUUidList = new HashSet<>();
             for (BluetoothGattService bluetoothGattService : gatt.getServices()) {
                 NpBleLog.log("service UUID:" + bluetoothGattService.getUuid());
-                String serviceUUIDName = bluetoothGattService.getUuid().toString() + "_service";
-                int serviceCount = 0;
-                if (tmpUUIDCountMap.containsKey(serviceUUIDName)) {
-                    serviceCount = tmpUUIDCountMap.get(serviceUUIDName);
-                }
-                serviceCount++;
-                tmpUUIDCountMap.put(serviceUUIDName, serviceCount);
                 for (BluetoothGattCharacteristic bluetoothGattCharacteristic : bluetoothGattService.getCharacteristics()) {
                     NpBleLog.log("chara UUID:" + bluetoothGattCharacteristic.getUuid());
                     if (mustUUIDList != null) {
@@ -495,45 +487,40 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                             }
                         }
                     }
+                    if (!TextUtils.isEmpty(repeatChartUUID) && repeatChartUUID.equalsIgnoreCase(bluetoothGattCharacteristic.getUuid().toString())) {
+                        flagChartCount++;
+                    }
                     totalCharaCount++;
-
-                    String CharaUUIDName = bluetoothGattCharacteristic.getUuid().toString() + "_chara";
-                    int charaCount = 0;
-                    if (tmpUUIDCountMap.containsKey(CharaUUIDName)) {
-                        charaCount = tmpUUIDCountMap.get(CharaUUIDName);
-                    }
-                    charaCount++;
-                    tmpUUIDCountMap.put(CharaUUIDName, charaCount);
                 }
             }
             NpBleLog.log("====================================");
             NpBleLog.log("====================================");
 
-            NpBleLog.log("UUID数量统计===>" + new Gson().toJson(tmpUUIDCountMap));
-            if (!isAllowRepeatUUID() && tmpUUIDCountMap != null && tmpUUIDCountMap.size() > 0) {
-                for (Map.Entry<String, Integer> entry : tmpUUIDCountMap.entrySet()) {
-//                    NpBleLog.log(entry.getKey()+":"+entry.getValue());
-                    if (entry.getValue() > 1) {
-                        return false;
-                    }
+
+            if (totalCharaCount == 0) {
+                NpBleLog.log("扫描服务特征为0，断开");
+                return false;
+            }
+
+            //如果唯一UUID不为空，
+            if (!TextUtils.isEmpty(repeatChartUUID)) {
+                if (flagChartCount != repeatChartUUIDCount) {
+                    NpBleLog.log("特征uuid重复数量错误，断开");
+                    return false;
                 }
             }
+
 
             NpBleLog.log("验证设备所需的uuid列表===>" + new Gson().toJson(mustUUIDList));
             if (mustUUIDList == null || mustUUIDList.size() < 0) return true;
             NpBleLog.log("tmpUUidList:" + tmpUUidList.size());
             NpBleLog.log("totalCharaCount:" + totalCharaCount);
-            if (totalCharaCount == 0) {
-                NpBleLog.log("扫描服务特征为0，断开");
-                return false;
+            if (tmpUUidList.size() == mustUUIDList.size()) {
+                return true;
             } else {
-                if (tmpUUidList.size() == mustUUIDList.size()) {
-                    return true;
-                } else {
-                    NpBleLog.log("uuid对不上，情况不对");
-                    isHandDisConn = true;
-                    return false;
-                }
+                NpBleLog.log("uuid对不上，情况不对");
+                isHandDisConn = true;
+                return false;
             }
         }
     };
@@ -566,13 +553,6 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
 
 
             if (isHandDisConn) {
-
-
-                if (mac.equalsIgnoreCase(currentMac)) {
-
-                }
-
-
                 withBleConnState(NpBleConnState.HANDDISCONN);
                 NpBleLog.log("onDeviceDisconnected : withBleConnState(NpBleConnState.HANDDISCONN)");
                 onHandDisConnected();
@@ -966,14 +946,25 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
 
     }
 
+
     /**
      * 是否允许出现重复的UUID，针对部分华为手机，这个目前只是在定性阶段 还没完全确定下来 慎用
+     * <p>
+     * 后面发现有的设备里面本来就有同名的uuid存在的情况，所以此函数增加2个参数，用于记录某个uuid真实的次数
      *
+     * @param uuid
+     * @param allowCount
      * @return
      */
-    protected boolean isAllowRepeatUUID() {
-        return false;
+    protected void setRepeatChartUUID(String uuid, int allowCount) {
+        this.repeatChartUUID = uuid;
+        if (allowCount <= 1) {
+            allowCount = 1;
+        }
+        this.repeatChartUUIDCount = allowCount;
     }
+
+
 
     /**
      * 系统的蓝牙打开
@@ -1138,6 +1129,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
 
     /**
      * 是否是手动断开连接
+     *
      * @return
      */
     protected boolean isHandDisConn() {
