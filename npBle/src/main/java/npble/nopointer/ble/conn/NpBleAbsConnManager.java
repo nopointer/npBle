@@ -127,6 +127,11 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     }
 
     /**
+     * 当前记录的mac地址，主要作用是用来标记，在连接超时之前,换了设备同时连接超时的场景
+     */
+    private String currentMac = null;
+
+    /**
      * 当前任务的索引
      */
     private int taskIndex = -1;
@@ -229,7 +234,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * 手动断开连接,同时也做成拦截（防止蓝牙在发出连接请求后，后续连接上的情况）
      */
     public void disConnectDevice() {
-        NpBleLog.log("=====>手动断开指令");
+        NpBleLog.log("=====>手动处理断开");
         isHandDisConn = true;
         isConnectIng = false;
         if (mBluetoothGatt != null && isConnected()) {
@@ -255,6 +260,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      */
     protected void connectCode(final BluetoothDevice bluetoothDevice) {
         NpBleLog.log("当前实际发出连接请求的设备是:" + new Gson().toJson(new String[]{bluetoothDevice.getAddress(), bluetoothDevice.getName()}));
+        currentMac = bluetoothDevice.getAddress();
         boolIsInterceptConn = false;
         isHandDisConn = false;
         if (!TextUtils.isEmpty(bluetoothDevice.getName())) {
@@ -554,9 +560,19 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
 
         @Override
         public void onDeviceDisconnected(@NonNull BluetoothDevice device) {
-            NpBleLog.log("onDeviceDisconnected : " + device.getAddress());
+            String mac = device.getAddress();
+            NpBleLog.log("onDeviceDisconnected : " + mac + " /// " + isHandDisConn);
             isConnectIng = false;
+
+
             if (isHandDisConn) {
+
+
+                if (mac.equalsIgnoreCase(currentMac)) {
+
+                }
+
+
                 withBleConnState(NpBleConnState.HANDDISCONN);
                 NpBleLog.log("onDeviceDisconnected : withBleConnState(NpBleConnState.HANDDISCONN)");
                 onHandDisConnected();
@@ -1111,4 +1127,20 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         return true;
     }
 
+    /**
+     * 是否正在连接中
+     *
+     * @return
+     */
+    protected boolean isConnectIng() {
+        return isConnectIng;
+    }
+
+    /**
+     * 是否是手动断开连接
+     * @return
+     */
+    protected boolean isHandDisConn() {
+        return isHandDisConn;
+    }
 }
