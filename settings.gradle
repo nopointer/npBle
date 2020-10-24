@@ -1,6 +1,3 @@
-include ':npBleDebug', ':DiriFitUtils',':app'
-//include ':nordicBle'
+include ':npBleDemo'
 include ':npBle'
 include ':npBase'
-include ':x'
-//include ':ble'

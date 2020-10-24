@@ -4,7 +4,7 @@ android {
     compileSdkVersion var.compileSdkVersion
 
     defaultConfig {
-        applicationId "demo.nopointer.npDemo"
+        applicationId "demo.nopointer.npBleDemo"
         minSdkVersion var.minSdkVersion
         targetSdkVersion var.targetSdkVersion
         versionCode 1
