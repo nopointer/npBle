@@ -419,6 +419,8 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      */
     private final BleManagerGattCallback mGattCallback = new BleManagerGattCallback() {
 
+
+
         /**
          * 这个函数就是在扫描完服务后回调的函数
          */
@@ -536,6 +538,8 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         @Override
         public void onDeviceConnected(@NonNull BluetoothDevice device) {
             NpBleLog.log("onDeviceConnected : " + device.getAddress());
+            isConnectIng = false;
+
             withBleConnState(NpBleConnState.CONNECTED);
             onBleDeviceConnected();
         }
