@@ -102,7 +102,7 @@ public class BleDevice implements Serializable {
         }
     }
 
-    private HashMap<String, String> getAdvData() {
+    public HashMap<String, String> getAdvData() {
         scanHexStr = scanHexStr.replace(" ", "");
         // advStr = tmp;
         // 先判断长度,如果长度小于1，或者大于124（62个字节）
@@ -163,6 +163,7 @@ public class BleDevice implements Serializable {
                 ", name='" + name + '\'' +
                 ", rssi=" + rssi +
                 ", scanBytes=" + Arrays.toString(scanBytes) +
+                "\n scanBytesByHex=" + BleUtil.byte2HexStr(scanBytes) + "\n" +
                 '}';
     }
 }
