@@ -41,4 +41,11 @@
         android:minHeight="60dp"
         android:text="绑定设备" />
 
+
+    <Button
+        android:text="寻找设备"
+        android:id="@+id/btn_find_device"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
 </LinearLayout>

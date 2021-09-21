@@ -4,6 +4,7 @@ import demo.nopointer.npDemo.keepAlive.KeepHelper;
 import npBase.BaseCommon.base.application.NpBaseApplication;
 import npBase.BaseCommon.util.sharedpreferences.SaveObjectUtils;
 import npLog.nopointer.mail.SendMailUtil;
+import npble.nopointer.log.NpBleLog;
 
 
 public class MainApplication extends NpBaseApplication {
@@ -12,7 +13,7 @@ public class MainApplication extends NpBaseApplication {
     public static MainApplication mainApplication = null;
 
 
-    private static final String PROCESS_NAME = "demo.nopointer.npDemo";
+    private static final String PROCESS_NAME = "demo.nopointer.npBleDemo";
 
     @Override
     protected void initCfgAfterCreate() {
@@ -24,7 +25,8 @@ public class MainApplication extends NpBaseApplication {
             SendMailUtil.setFromAdd("3343249301@qq.com");
             SendMailUtil.setFromPsw("davpgtmyazmbciij");
 
-            KeepHelper.getInstance().startKeep(this);
+            NpBleLog.enableLibLog =true;
+        KeepHelper.getInstance().startKeep(this);
         }
     }
 

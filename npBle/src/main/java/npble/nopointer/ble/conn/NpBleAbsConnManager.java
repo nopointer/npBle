@@ -66,6 +66,75 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         }
         bleStateReceiver.startListen(context);
         setGattCallbacks(npBleCallback);
+
+
+    }
+
+    /**
+     * 发起连接请求的mac地址
+     */
+    private String connRequestMac = null;
+
+
+    /**
+     * 有的破手机 完全没有回调，比如努比亚的破手机，需要每3s做一次连接断开的检测
+     */
+    private Handler connCheckHandler = new Handler();
+
+    /**
+     * 单位秒，更新连接状态的间隔
+     */
+    private int connCheckIntervalSecond = 5;
+
+    private Runnable connCheckRunner = new Runnable() {
+        @Override
+        public void run() {
+            if (TextUtils.isEmpty(connRequestMac)) {
+                NpBleLog.log("connRequestMac 为空 null，不检测");
+                if (connCheckHandler != null) {
+                    NpBleLog.log("connCheckHandler 为空 null");
+                    connCheckHandler.removeCallbacksAndMessages(null);
+                }
+            } else {
+
+                boolean isConnected = isConnected();
+                boolean isInConnList = isInConnList();
+                NpBleLog.log("isConnected():" + isConnected + "///isInConnList():" + isInConnList);
+
+                if (isConnected && isInConnList) {
+                    NpBleLog.log("真正意义上的连接了");
+                } else {
+                    NpBleLog.log("破手机 识别不了状态，误认为还连接着");
+                    if (npBleCallback != null) {
+                        try {
+                            BluetoothDevice bluetoothDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(connRequestMac);
+                            npBleCallback.onDeviceDisconnected(bluetoothDevice);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                if (connCheckHandler != null) {
+                    connCheckHandler.postDelayed(this, connCheckIntervalSecond * 1000);
+                }
+            }
+
+        }
+    };
+
+
+    /**
+     * 设置刷新连接状态的间隔  单位秒
+     * 不能低于3，不能高于30 （如果不符合的话，就是用默认5）
+     *
+     * @param connCheckIntervalSecond
+     */
+    public void setConnCheckIntervalSecond(int connCheckIntervalSecond) {
+        if (connCheckIntervalSecond < 3 || connCheckIntervalSecond > 30) {
+            connCheckIntervalSecond = 5;
+        }
+
+        this.connCheckIntervalSecond = connCheckIntervalSecond;
     }
 
     /**
@@ -100,6 +169,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
 
 
     private BluetoothGatt mBluetoothGatt = null;
+
 
     /**
      * 设备的连接状态
@@ -236,6 +306,10 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         NpBleLog.log("=====>手动处理断开");
         isHandDisConn = true;
         isConnectIng = false;
+        connRequestMac = null;
+        if (connCheckHandler != null) {
+            connCheckHandler.removeCallbacksAndMessages(null);
+        }
         if (mBluetoothGatt != null && isConnected()) {
             NpBleLog.log("已经在连接中，就不发出拦截请求了，直接断开");
             disconnect().enqueue();
@@ -258,6 +332,11 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * @param bluetoothDevice
      */
     protected void connectCode(final BluetoothDevice bluetoothDevice) {
+
+        connRequestMac = bluetoothDevice.getAddress();
+
+        connCheckHandler.postDelayed(connCheckRunner, connCheckIntervalSecond * 1000);
+
         NpBleLog.log("当前实际发出连接请求的设备是:" + new Gson().toJson(new String[]{bluetoothDevice.getAddress(), bluetoothDevice.getName()}));
         boolIsInterceptConn = false;
         isHandDisConn = false;
@@ -292,6 +371,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                 @Override
                 public void onScan(BleDevice bleDevice) {
                     NpBleLog.log("hadScanDeviceFlag=====>" + hadScanDeviceFlag + "///扫描到的设备:" + new Gson().toJson(bleDevice));
+                    NpBleLog.log("bleDevice=====>" + bleDevice.getMac() + "///" + bluetoothDevice.getAddress());
                     if (hadScanDeviceFlag) {
                         if (bleDevice != null && bleDevice.getMac().equalsIgnoreCase(bluetoothDevice.getAddress())) {
                             BleScanner.getInstance().unRegisterScanListener(this);
@@ -418,7 +498,6 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      * BluetoothGatt callbacks object.
      */
     private final BleManagerGattCallback mGattCallback = new BleManagerGattCallback() {
-
 
 
         /**
@@ -969,7 +1048,6 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     }
 
 
-
     /**
      * 系统的蓝牙打开
      */
@@ -1138,5 +1216,47 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
      */
     protected boolean isHandDisConn() {
         return isHandDisConn;
+    }
+
+
+    /**
+     * 设备是否连接上了
+     *
+     * @return
+     */
+    protected boolean isDeviceConnected() {
+        return isConnected() && isInConnList();
+    }
+
+
+    /**
+     * 是否在连接队列中
+     *
+     * @return
+     */
+    protected boolean isInConnList() {
+        if (TextUtils.isEmpty(connRequestMac)) return false;
+        List<BluetoothDevice> connDeviceList = BleUtil.connDeviceList(getContext());
+        NpBleLog.log("当前系统连接的设备数量有:" + connDeviceList.size());
+        if (connDeviceList != null) {
+            int index = -1, size = connDeviceList.size();
+
+            for (int i = 0; i < size; i++) {
+                BluetoothDevice bluetoothDevice = connDeviceList.get(i);
+                if (bluetoothDevice.getAddress().equalsIgnoreCase(connRequestMac)) {
+                    index = i;
+                    break;
+                }
+            }
+
+            if (index != -1) {
+                NpBleLog.log("在连接队列中");
+                return true;
+            } else {
+                NpBleLog.log("不在连接队列中");
+                return false;
+            }
+        }
+        return false;
     }
 }

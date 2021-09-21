@@ -2,7 +2,6 @@ package demo.nopointer.npDemo.keepAlive.activity;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 
 import java.lang.ref.WeakReference;
 
@@ -36,9 +35,9 @@ public class ScreenManager {
      * 启动SinglePixelActivity
      */
     public void startActivity() {
-        Intent intent = new Intent(mContext, Bg1PxActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        mContext.startActivity(intent);
+//        Intent intent = new Intent(mContext, Bg1PxActivity.class);
+//        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        mContext.startActivity(intent);
     }
 
     /**

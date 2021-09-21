@@ -11,18 +11,21 @@ public interface BleSomeCfg {
     /**
      * 主服务service
      */
-    UUID dataServiceUUID = UUID.fromString("6E400001-B5A3-F393-E0A9-E50E24DCCA9F");
+//    UUID dataServiceUUID = UUID.fromString("6E400001-B5A3-F393-E0A9-E50E24DCCA9F");
+    UUID dataServiceUUID = UUID.fromString("6E40FC00-B5A3-F393-E0A9-E50E24DCCA9E");
 
     /**
      * 数据写特征
      */
-    UUID dataWriteUUID = UUID.fromString("6E400002-B5A3-F393-E0A9-E50E24DCCA9F");
+//    UUID dataWriteUUID = UUID.fromString("6E400002-B5A3-F393-E0A9-E50E24DCCA9F");
+    UUID dataWriteUUID = UUID.fromString("6E40FC20-B5A3-F393-E0A9-E50E24DCCA9E");
 
 
     /**
      * 数据通知特征
      */
-    UUID dataNotifyUUID = UUID.fromString("6E400003-B5A3-F393-E0A9-E50E24DCCA9F");
+//    UUID dataNotifyUUID = UUID.fromString("6E400003-B5A3-F393-E0A9-E50E24DCCA9F");
+    UUID dataNotifyUUID = UUID.fromString("6E40FC21-B5A3-F393-E0A9-E50E24DCCA9E");
 
 
     /**

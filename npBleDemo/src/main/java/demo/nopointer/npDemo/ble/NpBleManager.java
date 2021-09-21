@@ -1,8 +1,6 @@
 package demo.nopointer.npDemo.ble;
 
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
 import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
@@ -44,7 +42,7 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
         bleDataProcessingUtils = new BleDataProcessingUtils(this);
     }
 
-    private String mac = "A4:C1:38:7A:67:4F";
+    private String mac = null;
 
     /**
      * 数据解析工具
@@ -58,7 +56,7 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
     protected void onConnException() {
 //        NpBleLog.log("检测到断开:(isHandDisConn)" + isHandDisConn());
 //        if (!isHandDisConn()) {
-            reConn();
+        reConn();
 //        }
     }
 
@@ -195,14 +193,17 @@ public class NpBleManager extends NpBleAbsConnManager implements BleSomeCfg {
 
     @Override
     public void connDevice(String mac) {
-        BluetoothGatt bluetoothGatt = BleUtil.getBluetoothDevice(mac).connectGatt(getContext(), false, new BluetoothGattCallback() {
-        });
-        NpBleLog.log("bluetoothGatt" + bluetoothGatt.getDevice().toString());
-        bluetoothGatt.disconnect();
-        refreshDeviceCache().enqueue();
+//        BluetoothGatt bluetoothGatt = BleUtil.getBluetoothDevice(mac).connectGatt(getContext(), false, new BluetoothGattCallback() {
+//        });
+//        NpBleLog.log("努比亚 智障bluetoothGatt" + bluetoothGatt.getDevice().toString());
+//        bluetoothGatt.disconnect();
+//        refreshDeviceCache().enqueue();
+        NpBleLog.log("智障努比亚:" + mac);
+        this.mac = mac;
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+
                 NpBleManager.super.connDevice(mac);
             }
         }, 2000);
