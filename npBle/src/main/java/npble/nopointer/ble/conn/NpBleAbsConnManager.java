@@ -310,7 +310,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         if (connCheckHandler != null) {
             connCheckHandler.removeCallbacksAndMessages(null);
         }
-        if (mBluetoothGatt != null && isConnected()) {
+        if (mBluetoothGatt != null && isConnected()&&isInConnList()) {
             NpBleLog.log("已经在连接中，就不发出拦截请求了，直接断开");
             disconnect().enqueue();
         } else {
@@ -1191,7 +1191,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         }
 
         //4.判断连接状态
-        if (isConnected()) {
+        if (isConnected()&&isInConnList()) {
             NpBleLog.log("verifyConnBefore，已经是连接的，，不需要花里胡哨的了");
             return false;
         }
