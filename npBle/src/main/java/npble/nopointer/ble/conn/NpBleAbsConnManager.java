@@ -1237,8 +1237,8 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     protected boolean isInConnList() {
         if (TextUtils.isEmpty(connRequestMac)) return false;
         List<BluetoothDevice> connDeviceList = BleUtil.connDeviceList(getContext());
-        NpBleLog.log("当前系统连接的设备数量有:" + connDeviceList.size());
         if (connDeviceList != null) {
+            NpBleLog.log("当前系统连接的设备数量有:" + connDeviceList.size());
             int index = -1, size = connDeviceList.size();
 
             for (int i = 0; i < size; i++) {

@@ -10,8 +10,8 @@ android {
     defaultConfig {
         minSdkVersion var.minSdkVersion
         targetSdkVersion var.targetSdkVersion
-        versionCode 24
-        versionName "1.0.23"
+        versionCode 25
+        versionName "1.0.23_01"
     }
 
     buildTypes {
