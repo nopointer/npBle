@@ -97,6 +97,14 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                 }
             } else {
 
+                if (connCheckHandler != null) {
+                    connCheckHandler.postDelayed(this, connCheckIntervalSecond * 1000);
+                }
+                if (isConnectIng()) {
+                    NpBleLog.log("正在连接中，不用判断连接与否");
+                    return;
+                }
+
                 boolean isConnected = isConnected();
                 boolean isInConnList = isInConnList();
                 NpBleLog.log("isConnected():" + isConnected + "///isInConnList():" + isInConnList);
@@ -114,9 +122,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                         }
                     }
                 }
-                if (connCheckHandler != null) {
-                    connCheckHandler.postDelayed(this, connCheckIntervalSecond * 1000);
-                }
+
             }
 
         }
@@ -310,7 +316,10 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         if (connCheckHandler != null) {
             connCheckHandler.removeCallbacksAndMessages(null);
         }
-        if (mBluetoothGatt != null && isConnected()&&isInConnList()) {
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
+        }
+        if (mBluetoothGatt != null && isConnected() && isInConnList()) {
             NpBleLog.log("已经在连接中，就不发出拦截请求了，直接断开");
             disconnect().enqueue();
         } else {
@@ -325,6 +334,8 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     private boolean hadScanDeviceFlag = true;
 
     private Handler handler = new Handler();
+
+    ScanListener scanListener = null;
 
     /**
      * 连接设备
@@ -343,7 +354,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         if (!TextUtils.isEmpty(bluetoothDevice.getName())) {
             if (mBluetoothGatt != null) {
                 NpBleLog.log("已经有过设备缓存信息,刷新后,开始连接");
-//                refreshDeviceCache().enqueue();
+                refreshDeviceCache().enqueue();
             }
             String phoneBrand = android.os.Build.BRAND;
             if (
@@ -366,46 +377,53 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         } else {
             withBleConnState(NpBleConnState.CONNECTING);
             NpBleLog.log("名称为空，需要开启一下扫描来缓存一下设备名称");
+
             hadScanDeviceFlag = true;
-            BleScanner.getInstance().registerScanListener(new ScanListener() {
-                @Override
-                public void onScan(BleDevice bleDevice) {
-                    NpBleLog.log("hadScanDeviceFlag=====>" + hadScanDeviceFlag + "///扫描到的设备:" + new Gson().toJson(bleDevice));
-                    NpBleLog.log("bleDevice=====>" + bleDevice.getMac() + "///" + bluetoothDevice.getAddress());
-                    if (hadScanDeviceFlag) {
-                        if (bleDevice != null && bleDevice.getMac().equalsIgnoreCase(bluetoothDevice.getAddress())) {
-                            BleScanner.getInstance().unRegisterScanListener(this);
-                            hadScanDeviceFlag = false;
-                            //扫描到设备，移除扫描的超时处理
-                            handler.removeCallbacksAndMessages(null);
-                            BleScanner.getInstance().stopScan();
-                            NpBleLog.log("扫描到设备了，停止扫描，然后再连接");
-                            handler.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    connect(bluetoothDevice)
-                                            .retry(3, 500)
-                                            .useAutoConnect(false)
-                                            .enqueue();
-                                }
-                            }, 3000);
+
+            if (scanListener == null) {
+                scanListener = new ScanListener() {
+                    @Override
+                    public void onScan(BleDevice bleDevice) {
+                        NpBleLog.log("hadScanDeviceFlag=====>" + hadScanDeviceFlag + "///扫描到的设备:" + new Gson().toJson(bleDevice));
+                        NpBleLog.log("bleDevice=====>" + bleDevice.getMac() + "///" + bluetoothDevice.getAddress());
+                        if (hadScanDeviceFlag) {
+                            if (bleDevice != null && bleDevice.getMac().equalsIgnoreCase(bluetoothDevice.getAddress())) {
+                                //扫描到设备，移除扫描的超时处理
+                                hadScanDeviceFlag = false;
+                                BleScanner.getInstance().unRegisterScanListener(this);
+                                handler.removeCallbacksAndMessages(null);
+                                BleScanner.getInstance().stopScan();
+                                NpBleLog.log("扫描到设备了，停止扫描，然后再连接");
+                                handler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        connect(bluetoothDevice)
+                                                .retry(3, 500)
+                                                .useAutoConnect(false)
+                                                .enqueue();
+                                    }
+                                }, 3000);
+                            }
                         }
                     }
-                }
 
-                @Override
-                public void onFailure(int code) {
-                    NpBleLog.log("onScanFailed====>" + code);
-                }
-            });
+                    @Override
+                    public void onFailure(int code) {
+                        NpBleLog.log("onScanFailed====>" + code);
+                    }
+                };
+            }
+
+            BleScanner.getInstance().registerScanListener(scanListener);
             BleScanner.getInstance().startScan();
 
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     //如果过了30秒后，还是没有扫描到设备的话，就采取直连的方式
-                    BleScanner.getInstance().stopScan();
                     NpBleLog.log("扫描设备超时，停止扫描，然后再连接");
+                    BleScanner.getInstance().stopScan();
+                    BleScanner.getInstance().unRegisterScanListener(scanListener);
 
                     if (hadScanDeviceFlag) {
                         hadScanDeviceFlag = false;
@@ -1191,7 +1209,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         }
 
         //4.判断连接状态
-        if (isConnected()&&isInConnList()) {
+        if (isConnected() && isInConnList()) {
             NpBleLog.log("verifyConnBefore，已经是连接的，，不需要花里胡哨的了");
             return false;
         }
