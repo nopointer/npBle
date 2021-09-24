@@ -312,13 +312,17 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
         NpBleLog.log("=====>手动处理断开");
         isHandDisConn = true;
         isConnectIng = false;
-        connRequestMac = null;
+
         if (connCheckHandler != null) {
             connCheckHandler.removeCallbacksAndMessages(null);
         }
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
         }
+
+        NpBleLog.log("isConnected()"+isConnected());
+        NpBleLog.log("isInConnList()"+isInConnList());
+
         if (mBluetoothGatt != null && isConnected() && isInConnList()) {
             NpBleLog.log("已经在连接中，就不发出拦截请求了，直接断开");
             disconnect().enqueue();
@@ -326,6 +330,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
             NpBleLog.log("没有在连接中，发出拦截请求即连接后立马断开）");
             boolIsInterceptConn = true;
         }
+        connRequestMac = null;
     }
 
     /**

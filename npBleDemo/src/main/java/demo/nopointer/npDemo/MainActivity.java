@@ -65,7 +65,8 @@ public class MainActivity extends Activity implements NpBleConnCallback {
         findViewById(R.id.btn_find_device).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                NpBleManager.getInstance().sendCommand(new byte[]{0x51,0x01});
+                NpBleManager.getInstance().disConnectDevice();
+//                NpBleManager.getInstance().sendCommand(new byte[]{0x51,0x01});
             }
         });
     }
