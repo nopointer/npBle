@@ -25,6 +25,7 @@ import no.nordicsemi.android.ble.BleManager;
 import no.nordicsemi.android.ble.WriteRequest;
 import no.nordicsemi.android.ble.callback.BeforeCallback;
 import no.nordicsemi.android.ble.callback.FailCallback;
+import no.nordicsemi.android.ble.callback.MtuCallback;
 import no.nordicsemi.android.ble.callback.SuccessCallback;
 import no.nordicsemi.android.ble.callback.WriteProgressCallback;
 import no.nordicsemi.android.ble.data.Data;
@@ -764,6 +765,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
                 onDataReceive(data.getValue(), uuid);
             }
         }).enqueue();
+
     }
 
     /**
@@ -968,6 +970,15 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     }
 
 
+    public void reqMTU(int mtuValue) {
+        requestMtu(mtuValue).with(new MtuCallback() {
+            @Override
+            public void onMtuChanged(@androidx.annotation.NonNull @NonNull BluetoothDevice device, int mtu) {
+                onMtuGet(mtu);
+            }
+        }).enqueue();
+    }
+
     /**
      * 创建一个写任务的请求，并不会写数据（等待调用），用于里连接后的时序
      *
@@ -1064,6 +1075,8 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     protected void onBleDeviceConnected() {
 
     }
+
+    protected void onMtuGet(int mtuValue){}
 
 
     /**
