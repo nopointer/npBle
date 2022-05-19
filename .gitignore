@@ -56,7 +56,6 @@ freeline/
 freeline_project_description.json
 
 /.idea
-/gradle
 *.iml
 .gradle
 /local.properties
