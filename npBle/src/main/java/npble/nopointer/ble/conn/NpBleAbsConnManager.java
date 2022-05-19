@@ -189,6 +189,9 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
 
     private BluetoothGatt mBluetoothGatt = null;
 
+    public BluetoothGatt getmBluetoothGatt() {
+        return mBluetoothGatt;
+    }
 
     /**
      * 设备的连接状态
