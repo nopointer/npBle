@@ -10,8 +10,8 @@ android {
     defaultConfig {
         minSdkVersion var.minSdkVersion
         targetSdkVersion var.targetSdkVersion
-        versionCode 31
-        versionName "1.0.31"
+        versionCode 33
+        versionName "1.0.33"
     }
 
     buildTypes {
@@ -41,16 +41,19 @@ dependencies {
     api(name: 'otalib', ext: 'aar')
 
     // project用括号包裹住
-    implementation ('no.nordicsemi.android:dfu:1.7.0') {
-        exclude group: 'androidx.annotation', module: 'annotation'
-    }
-    implementation ('no.nordicsemi.android.support.v18:scanner:1.4.2') {
-        exclude group: 'androidx.annotation', module: 'annotation'
-    }
+    implementation ('no.nordicsemi.android:dfu:1.7.0')
+//            {
+//        exclude group: 'androidx.annotation', module: 'annotation'
+//    }
+    implementation ('no.nordicsemi.android.support.v18:scanner:1.4.2')
+//            {
+//        exclude group: 'androidx.annotation', module: 'annotation'
+//    }
 
     // project用括号包裹住
-    implementation ('no.nordicsemi.android:ble:2.1.1') {
-        exclude group: 'androidx.annotation', module: 'annotation'
-    }
+    implementation ('no.nordicsemi.android:ble:2.1.1')
+//            {
+//        exclude group: 'androidx.annotation', module: 'annotation'
+//    }
 
 }
