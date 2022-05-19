@@ -10,8 +10,8 @@ android {
     defaultConfig {
         minSdkVersion var.minSdkVersion
         targetSdkVersion var.targetSdkVersion
-        versionCode 29
-        versionName "1.0.29"
+        versionCode 30
+        versionName "1.0.30"
     }
 
     buildTypes {
@@ -36,14 +36,21 @@ android {
 
 
 dependencies {
-    testImplementation 'junit:junit:4.12'
-    implementation fileTree(include: '*.jar', dir: 'libs')
-
 
     //汉天下ota的aar
     api(name: 'otalib', ext: 'aar')
-    implementation 'no.nordicsemi.android:dfu:1.7.0'
-    implementation 'no.nordicsemi.android.support.v18:scanner:1.4.2'
-    implementation 'no.nordicsemi.android:ble:2.1.1'
+
+    // project用括号包裹住
+    implementation ('no.nordicsemi.android:dfu:1.7.0') {
+        exclude group: 'androidx.annotation', module: 'annotation'
+    }
+    implementation ('no.nordicsemi.android.support.v18:scanner:1.4.2') {
+        exclude group: 'androidx.annotation', module: 'annotation'
+    }
+
+    // project用括号包裹住
+    implementation ('no.nordicsemi.android:ble:2.1.1') {
+        exclude group: 'androidx.annotation', module: 'annotation'
+    }
 
 }
