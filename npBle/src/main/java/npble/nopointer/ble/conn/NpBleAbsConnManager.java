@@ -976,7 +976,7 @@ public abstract class NpBleAbsConnManager extends BleManager<NpBleCallback> {
     public void reqMTU(int mtuValue) {
         requestMtu(mtuValue).with(new MtuCallback() {
             @Override
-            public void onMtuChanged(@androidx.annotation.NonNull @NonNull BluetoothDevice device, int mtu) {
+            public void onMtuChanged(BluetoothDevice device, int mtu) {
                 onMtuGet(mtu);
             }
         }).enqueue();

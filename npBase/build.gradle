@@ -69,7 +69,7 @@ dependencies {
     //PickerView选择器
 //    api 'com.contrarywind:Android-PickerView:4.1.8'
     //图片选择工具/剪切
-    api 'com.github.LuckSiege.PictureSelector:picture_library:v2.2.0'
+    api 'com.github.LuckSiege.PictureSelector:picture_library:v2.2.3'
     //np 权限管理工具
     api 'com.github.nopointer:npPermission:1.0.0'
 
